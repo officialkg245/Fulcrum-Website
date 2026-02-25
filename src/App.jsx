@@ -1,6 +1,13 @@
-import React, { useState, useMemo, useRef, useEffect } from "react";
+import React, { useState, useMemo, useRef, useEffect, useLayoutEffect } from "react";
 
-import { BrowserRouter as Router, Routes, Route, Link, useLocation } from "react-router-dom";
+import {
+  BrowserRouter as Router,
+  Routes,
+  Route,
+  Link,
+  useLocation,
+  useParams,
+} from "react-router-dom";
 import { motion } from "framer-motion";
 
 import {
@@ -26,6 +33,13 @@ import {
   Factory,
   Laptop,
 } from "lucide-react";
+
+import navigatingNewMarkets from "./blogs/navigating-new-markets";
+import healthcareServiceLaunch from "./blogs/healthcare-service-launch";
+import salesPipelineFailing from "./blogs/sales-pipeline-failing";
+import healthcareSpecializedFirm from "./blogs/healthcare-specialized-firm";
+import telehealthMarketing2025 from "./blogs/telehealth-marketing-2025";
+import conversionRateMistakes from "./blogs/conversion-rate-mistakes";
 // TEMP UI COMPONENTS (fast fix – no shadcn needed)
 // UI COMPONENTS (no shadcn needed, but styled)
 function Button({ className = "", variant = "solid", children, href, ...props }) {
@@ -89,6 +103,61 @@ const theme = {
 
 function cx(...classes) {
   return classes.filter(Boolean).join(" ");
+}
+
+function useHeaderReveal({ threshold = 10, topReveal = 8 } = {}) {
+  const [visible, setVisible] = useState(true);
+  const lastYRef = useRef(0);
+  const visibleRef = useRef(true);
+  const rafRef = useRef(0);
+
+  useEffect(() => {
+    lastYRef.current = window.scrollY || 0;
+    visibleRef.current = true;
+    setVisible(true);
+
+    const onScroll = () => {
+      if (rafRef.current) return;
+      rafRef.current = window.requestAnimationFrame(() => {
+        rafRef.current = 0;
+        const y = window.scrollY || 0;
+        const last = lastYRef.current;
+        const dy = y - last;
+
+        // Always show near the top
+        if (y <= topReveal) {
+          if (!visibleRef.current) {
+            visibleRef.current = true;
+            setVisible(true);
+          }
+          lastYRef.current = y;
+          return;
+        }
+
+        // Ignore tiny scroll jitter
+        if (Math.abs(dy) < threshold) {
+          lastYRef.current = y;
+          return;
+        }
+
+        const shouldShow = dy < 0; // scrolling up
+        if (shouldShow !== visibleRef.current) {
+          visibleRef.current = shouldShow;
+          setVisible(shouldShow);
+        }
+
+        lastYRef.current = y;
+      });
+    };
+
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => {
+      window.removeEventListener("scroll", onScroll);
+      if (rafRef.current) window.cancelAnimationFrame(rafRef.current);
+    };
+  }, [threshold, topReveal]);
+
+  return visible;
 }
 
 function LimitedTimePill({ className }) {
@@ -168,32 +237,63 @@ function FloatingConsultCTA() {
 
 function Navbar() {
   return (
-    <nav className="sticky top-0 z-50 bg-[#121212] border-b border-white/10">
+    <nav className="bg-[#121212] border-b border-white/10">
       <div className="max-w-7xl mx-auto flex justify-between items-center px-8 py-5">
-        <Link
-          to="/"
-          className="font-black text-2xl tracking-tight text-[#D6A21E]"
-        >
-          Fulcrum
+        <Link to="/" aria-label="Fulcrum home" className="group relative">
+          {/* Premium logo plaque (image has a light background) */}
+          <div className="relative rounded-2xl bg-gradient-to-br from-[#F8F3E8] via-white to-[#F2E4C2] border border-white/10 px-4 py-2 shadow-sm overflow-hidden">
+            <div className="pointer-events-none absolute inset-0">
+              <div className="absolute -top-16 -right-16 w-56 h-56 bg-[#D6A21E]/18 blur-[34px] opacity-80" />
+              <div className="absolute -bottom-16 -left-16 w-56 h-56 bg-black/5 blur-[40px] opacity-70" />
+              <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-[#D6A21E]/55 to-transparent" />
+              <div
+                className="absolute inset-0 opacity-[0.14]"
+                style={{
+                  backgroundImage: "radial-gradient(rgba(214,162,30,0.20) 1px, transparent 1px)",
+                  backgroundSize: "22px 22px",
+                }}
+              />
+            </div>
+
+            <img
+              src="/brand/fulcrum-wordmark.png"
+              alt="Fulcrum"
+              className="relative h-7 md:h-8 w-auto"
+              loading="eager"
+              draggable={false}
+            />
+          </div>
+
+          {/* subtle grand hover glow */}
+          <div className="pointer-events-none absolute -inset-6 rounded-[1.75rem] opacity-0 group-hover:opacity-100 transition-opacity duration-300 blur-[26px] [background:radial-gradient(circle_at_35%_35%,rgba(214,162,30,0.28),transparent_62%),radial-gradient(circle_at_70%_70%,rgba(255,255,255,0.10),transparent_55%)]" />
         </Link>
 
-        <div className="flex gap-8 text-sm font-semibold items-center text-white">
-          <Link className="hover:text-[#D6A21E]" to="/about">
+        <div className="flex items-center text-sm font-semibold text-white">
+          <Link className="px-3 py-2 hover:text-[#D6A21E]" to="/about">
             About & Contact
           </Link>
-          <Link className="hover:text-[#D6A21E]" to="/services">
+          <span className="mx-2 h-5 w-px bg-gradient-to-b from-transparent via-[#D6A21E]/55 to-transparent opacity-80" />
+          <Link className="px-3 py-2 hover:text-[#D6A21E]" to="/services">
             Services
           </Link>
-          <Link className="hover:text-[#D6A21E]" to="/industries">
+          <span className="mx-2 h-5 w-px bg-gradient-to-b from-transparent via-[#D6A21E]/55 to-transparent opacity-80" />
+          <Link className="px-3 py-2 hover:text-[#D6A21E]" to="/industries">
             Industries
           </Link>
-          <Link className="hover:text-[#D6A21E]" to="/case-studies">
+          <span className="mx-2 h-5 w-px bg-gradient-to-b from-transparent via-[#D6A21E]/55 to-transparent opacity-80" />
+          <Link className="px-3 py-2 hover:text-[#D6A21E]" to="/case-studies">
             Case Studies
           </Link>
-          <Link className="hover:text-[#D6A21E]" to="/academy">
+          <span className="mx-2 h-5 w-px bg-gradient-to-b from-transparent via-[#D6A21E]/55 to-transparent opacity-80" />
+          <Link className="px-3 py-2 hover:text-[#D6A21E]" to="/blogs">
+            Blogs
+          </Link>
+          <span className="mx-2 h-5 w-px bg-gradient-to-b from-transparent via-[#D6A21E]/55 to-transparent opacity-80" />
+          <Link className="px-3 py-2 hover:text-[#D6A21E]" to="/academy">
             Academy
           </Link>
-          <Link to="/consultation">
+          <span className="mx-3 h-6 w-px bg-gradient-to-b from-transparent via-[#D6A21E]/55 to-transparent opacity-80" />
+          <Link to="/consultation" className="pl-1">
             <Button className="bg-[#D6A21E] text-black hover:bg-[#B88A16] rounded-full px-6">
               Limited-Time Free Consultation
             </Button>
@@ -205,11 +305,58 @@ function Navbar() {
 }
 
 export default function FulcrumWebsite() {
+  const headerVisible = useHeaderReveal();
+  const headerRef = useRef(null);
+  const [headerHeight, setHeaderHeight] = useState(0);
+
+  useLayoutEffect(() => {
+    const el = headerRef.current;
+    if (!el) return;
+
+    const update = () => {
+      const h = Math.ceil(el.getBoundingClientRect().height || 0);
+      setHeaderHeight(h);
+    };
+    update();
+
+    const ro = new ResizeObserver(() => update());
+    ro.observe(el);
+    window.addEventListener("resize", update);
+    return () => {
+      ro.disconnect();
+      window.removeEventListener("resize", update);
+    };
+  }, []);
+
   return (
     <Router>
       <div className="min-h-screen bg-[#F3EFE6] text-[#121212]">
-        <Navbar />
-        <AnnouncementBar />
+        {/* Header spacer to prevent layout jump */}
+        <div style={{ height: headerHeight }} aria-hidden="true" />
+
+        <header
+          ref={headerRef}
+          className={cx(
+            "fixed inset-x-0 top-0 z-[80] will-change-transform transition-transform duration-300 ease-out",
+            headerVisible ? "translate-y-0" : "-translate-y-full"
+          )}
+        >
+          <Navbar />
+          <AnnouncementBar />
+        </header>
+
+        {/* BBB badge (site-wide) */}
+        <div className="fixed z-[40] left-4 bottom-4 md:left-6 md:bottom-6">
+          <div className="rounded-2xl border border-white/10 bg-[#121212]/55 backdrop-blur-md shadow-lg px-4 py-3">
+            <img
+              src="/badges/bbb-accredited.png"
+              alt="BBB Accredited Business"
+              className="h-8 md:h-9 w-auto opacity-80 brightness-0 invert"
+              loading="lazy"
+              draggable={false}
+            />
+          </div>
+        </div>
 
         <Routes>
           <Route path="/" element={<Home />} />
@@ -217,7 +364,12 @@ export default function FulcrumWebsite() {
           <Route path="/services" element={<Services />} />
           <Route path="/industries" element={<Industries />} />
           <Route path="/case-studies" element={<CaseStudies />} />
+          <Route path="/blogs" element={<Blogs />} />
+          <Route path="/blogs/:slug" element={<BlogPost />} />
           <Route path="/academy" element={<Academy />} />
+          <Route path="/academy/track/sales" element={<AcademyTrackSales />} />
+          <Route path="/academy/track/marketing" element={<AcademyTrackMarketing />} />
+          <Route path="/academy/track/operations" element={<AcademyTrackOperations />} />
           <Route path="/consultation" element={<Consultation />} />
         </Routes>
 
@@ -275,6 +427,16 @@ const cultureLinkedInPosts = [
 
 const linkedInCompanyUrl = "https://www.linkedin.com/company/33227086";
 const linkedInCompanyId = "33227086";
+
+// Blogs (starter content — swap with real posts anytime)
+const blogPosts = [
+  conversionRateMistakes,
+  navigatingNewMarkets,
+  healthcareServiceLaunch,
+  salesPipelineFailing,
+  healthcareSpecializedFirm,
+  telehealthMarketing2025,
+];
 
 const culturePartnerships = [
   {
@@ -481,19 +643,6 @@ function Home() {
 
   return (
     <>
-      {/* BBB badge (home only) */}
-      <div className="fixed z-[40] left-4 bottom-4 md:left-6 md:bottom-6">
-        <div className="rounded-2xl border border-white/10 bg-[#121212]/55 backdrop-blur-md shadow-lg px-4 py-3">
-          <img
-            src="/badges/bbb-accredited.png"
-            alt="BBB Accredited Business"
-            className="h-8 md:h-9 w-auto opacity-80 brightness-0 invert"
-            loading="lazy"
-            draggable={false}
-          />
-        </div>
-      </div>
-
       {/* HERO (Luxury, centered) */}
       <section className="relative overflow-hidden bg-[#121212] text-white overflow-hidden">
         
@@ -1407,6 +1556,476 @@ const team = [
   },
 ];
 
+function BlogCard({ post, compact = false }) {
+  return (
+    <Link to={`/blogs/${post.slug}`} className="group block h-full">
+      <Card
+        className={cx(
+          "group relative h-full rounded-3xl border border-black/10 bg-white/70 backdrop-blur-sm shadow-sm overflow-hidden hover:shadow-md transition-shadow",
+          compact ? "min-h-[280px]" : "min-h-[320px]"
+        )}
+      >
+        {/* premium accents */}
+        <div className="pointer-events-none absolute inset-0">
+          {post?.coverImage ? (
+            <>
+              <div
+                className="absolute inset-0 bg-cover bg-center opacity-[0.30] saturate-[1.05] contrast-110"
+                style={{ backgroundImage: `url(${post.coverImage})` }}
+              />
+              <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_15%,rgba(214,162,30,0.26),transparent_56%),linear-gradient(180deg,rgba(255,255,255,0.64),rgba(255,255,255,0.48)_45%,rgba(255,255,255,0.62))]" />
+            </>
+          ) : null}
+          <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-[#D6A21E]/55 to-transparent" />
+          <div className="absolute -top-24 -right-24 w-[260px] h-[260px] bg-[#D6A21E]/10 rotate-12 rounded-[60px] blur-[60px]" />
+          <div className="absolute -bottom-24 -left-24 w-[260px] h-[260px] bg-black/5 -rotate-12 rounded-[60px] blur-[70px]" />
+        </div>
+
+        <CardContent className={cx("relative h-full flex flex-col", compact ? "p-8" : "p-10")}>
+          <div className="flex flex-wrap items-center gap-2">
+            <span className="text-xs font-semibold bg-white/70 text-black/70 px-3 py-1 rounded-full border border-black/10">
+              {post.category}
+            </span>
+            <span className="text-xs font-semibold bg-[#121212] text-[#D6A21E] px-3 py-1 rounded-full shadow-sm">
+              {post.readTime}
+            </span>
+          </div>
+
+          <h3
+            className={cx(
+              "font-black mt-5 leading-tight group-hover:text-[#D6A21E] transition",
+              compact ? "text-xl" : "text-2xl md:text-3xl"
+            )}
+            style={{
+              display: "-webkit-box",
+              WebkitBoxOrient: "vertical",
+              WebkitLineClamp: compact ? 2 : 3,
+              overflow: "hidden",
+            }}
+          >
+            {post.title}
+          </h3>
+
+          <p
+            className={cx(
+              "text-black/70 mt-4 leading-relaxed",
+              compact ? "text-sm" : "text-base"
+            )}
+            style={{
+              display: "-webkit-box",
+              WebkitBoxOrient: "vertical",
+              WebkitLineClamp: compact ? 3 : 4,
+              overflow: "hidden",
+            }}
+          >
+            {post.excerpt}
+          </p>
+
+          <div className="mt-auto pt-6 flex items-center justify-between gap-4 flex-wrap">
+            <p className="text-xs font-semibold uppercase tracking-wide text-black/50">
+              {post.date} • {post.author}
+            </p>
+            <div className="inline-flex items-center text-sm font-semibold text-black/70 group-hover:text-black transition">
+              Read post <ArrowRight className="ml-2" size={18} />
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+    </Link>
+  );
+}
+
+function Blogs() {
+  const sorted = useMemo(() => {
+    return [...blogPosts].sort((a, b) => {
+      const ad = a?.publishedAt ? new Date(a.publishedAt).getTime() : 0;
+      const bd = b?.publishedAt ? new Date(b.publishedAt).getTime() : 0;
+      return bd - ad;
+    });
+  }, []);
+
+  const featured = sorted.find((p) => p.featured) || sorted[0];
+  const rest = sorted.filter((p) => p.slug !== featured?.slug);
+
+  return (
+    <>
+      <section className="relative overflow-hidden border-b border-black/10 bg-[#F3EFE6]">
+        <div className="absolute inset-0 pointer-events-none">
+          <div className="absolute -top-28 -right-28 w-[620px] h-[620px] bg-[#121212]/6 rotate-12 rounded-[96px]" />
+          <div className="absolute -bottom-32 -left-32 w-[620px] h-[620px] bg-[#D6A21E]/12 -rotate-12 rounded-[96px]" />
+          <div className="absolute left-1/2 top-8 h-px w-[68%] -translate-x-1/2 bg-gradient-to-r from-transparent via-black/12 to-transparent" />
+          <div className="absolute left-1/2 top-[4.25rem] h-px w-[60%] -translate-x-1/2 bg-gradient-to-r from-transparent via-[#D6A21E]/35 to-transparent" />
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_0%,rgba(255,255,255,0.70),transparent_52%),radial-gradient(circle_at_70%_65%,rgba(0,0,0,0.06),transparent_55%)]" />
+        </div>
+        <div className="pointer-events-none absolute inset-0 opacity-[0.18]">
+          <svg className="absolute inset-0 h-full w-full" aria-hidden="true">
+            <defs>
+              <pattern id="hero-dots-blogs" width="24" height="24" patternUnits="userSpaceOnUse">
+                <circle cx="1.5" cy="1.5" r="1.1" fill="rgba(0,0,0,0.12)" />
+              </pattern>
+            </defs>
+            <rect width="100%" height="100%" fill="url(#hero-dots-blogs)" />
+          </svg>
+        </div>
+
+        <div className="relative max-w-7xl mx-auto px-6 py-24 md:py-28">
+          <div className="max-w-3xl mx-auto text-center">
+            <p className="inline-flex items-center justify-center gap-2 text-xs font-semibold tracking-wider uppercase text-black/70 bg-white/70 border border-black/10 px-4 py-2 rounded-full backdrop-blur-sm">
+              Blogs
+            </p>
+            <h2 className="text-6xl md:text-7xl font-black mt-7 tracking-tight leading-[0.95]">
+              Ideas you can <span className="text-[#D6A21E]">execute</span>.
+            </h2>
+            <p className="text-black/70 text-lg md:text-2xl mt-6 leading-relaxed">
+              Systems, scorecards, and strategy—written for leaders who want repeatable growth.
+            </p>
+            <div className="mt-9 flex items-center justify-center gap-3">
+              <Link to="/consultation">
+                <Button className="bg-[#121212] text-[#D6A21E] hover:bg-black rounded-full px-10 py-6 text-lg shadow-sm hover:shadow transition">
+                  Book a consultation <ArrowRight className="ml-2" />
+                </Button>
+              </Link>
+              <a href={linkedInCompanyUrl} target="_blank" rel="noreferrer">
+                <Button className="bg-white/80 text-black hover:bg-white border border-black/10 rounded-full px-10 py-6 text-lg shadow-sm hover:shadow transition">
+                  Follow on LinkedIn
+                </Button>
+              </a>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section className="px-6 py-16">
+        <div className="max-w-7xl mx-auto">
+          <div className="flex items-end justify-between gap-6 flex-wrap">
+            <div>
+              <p className="text-xs font-semibold tracking-[0.22em] uppercase text-black/60">Featured</p>
+              <h3 className="text-3xl md:text-4xl font-black mt-3">The latest from the team.</h3>
+            </div>
+            <span className="text-xs font-semibold bg-[#121212] text-[#D6A21E] px-3 py-1 rounded-full shadow-sm">
+              Updated regularly
+            </span>
+          </div>
+
+          <div className="mt-10">
+            <BlogCard post={featured} />
+          </div>
+
+          <div className="mt-10 grid md:grid-cols-2 gap-8">
+            {rest.map((p) => (
+              <BlogCard key={p.slug} post={p} compact />
+            ))}
+          </div>
+        </div>
+      </section>
+
+      <section className="px-6 pb-24">
+        <div className="max-w-7xl mx-auto">
+          <div className="rounded-3xl bg-[#121212] text-white p-10 md:p-12 border border-white/10 overflow-hidden relative">
+            <div className="absolute -top-24 -right-24 w-[320px] h-[320px] bg-[#D6A21E]/20 rotate-12 rounded-[56px]" />
+            <div className="relative flex flex-col md:flex-row items-start md:items-center justify-between gap-8">
+              <div>
+                <h3 className="text-3xl md:text-4xl font-black">Want a plan, not a post?</h3>
+                <p className="text-white/70 mt-3 max-w-2xl">
+                  Book the free consultation and we’ll map out the system for your next 30 days.
+                </p>
+              </div>
+              <Link to="/consultation">
+                <Button className="bg-[#D6A21E] text-black hover:bg-[#B88A16] rounded-full px-10 py-6 text-lg">
+                  Book free consultation <ArrowRight className="ml-2" />
+                </Button>
+              </Link>
+            </div>
+          </div>
+        </div>
+      </section>
+    </>
+  );
+}
+
+function BlogPost() {
+  const { slug } = useParams();
+  const post = blogPosts.find((p) => p.slug === slug);
+  const blocks = Array.isArray(post?.content) ? post.content : null;
+  const heroHasImage = Boolean(post?.coverImage);
+  const suggestions = useMemo(() => {
+    const sorted = [...blogPosts].sort((a, b) => {
+      const ad = a?.publishedAt ? new Date(a.publishedAt).getTime() : 0;
+      const bd = b?.publishedAt ? new Date(b.publishedAt).getTime() : 0;
+      return bd - ad;
+    });
+    return sorted.filter((p) => p.slug !== slug).slice(0, 4);
+  }, [slug]);
+
+  if (!post) {
+    return (
+      <section className="px-6 py-24">
+        <div className="max-w-3xl mx-auto text-center">
+          <h2 className="text-4xl md:text-5xl font-black">Post not found</h2>
+          <p className="text-black/70 mt-4">This post doesn’t exist (yet). Head back to the blog index.</p>
+          <div className="mt-8 flex items-center justify-center gap-3">
+            <Link to="/blogs">
+              <Button className="bg-[#121212] text-[#D6A21E] hover:bg-black rounded-full px-10 py-6">
+                Back to blogs <ArrowRight className="ml-2" />
+              </Button>
+            </Link>
+          </div>
+        </div>
+      </section>
+    );
+  }
+
+  return (
+    <>
+      <section
+        className={cx(
+          "relative overflow-hidden border-b border-black/10",
+          heroHasImage ? "bg-[#121212]" : "bg-[#F3EFE6]"
+        )}
+      >
+        <div className="absolute inset-0 pointer-events-none">
+          {heroHasImage ? (
+            <>
+              <img
+                src={post.coverImage}
+                alt=""
+                className="absolute inset-0 h-full w-full object-cover opacity-90"
+                loading="eager"
+                draggable={false}
+              />
+              <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_15%,rgba(214,162,30,0.22),transparent_60%)]" />
+              <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(18,18,18,0.70),rgba(18,18,18,0.50)_35%,rgba(18,18,18,0.25)_60%,rgba(18,18,18,0.10)_78%,rgba(243,239,230,0.92))]" />
+            </>
+          ) : (
+            <>
+              <div className="absolute -top-28 -right-28 w-[620px] h-[620px] bg-[#121212]/6 rotate-12 rounded-[96px]" />
+              <div className="absolute -bottom-32 -left-32 w-[620px] h-[620px] bg-[#D6A21E]/12 -rotate-12 rounded-[96px]" />
+              <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_0%,rgba(255,255,255,0.70),transparent_52%),radial-gradient(circle_at_70%_65%,rgba(0,0,0,0.06),transparent_55%)]" />
+            </>
+          )}
+        </div>
+
+        <div className="relative max-w-7xl mx-auto px-6 py-20 md:py-24">
+          <Link
+            to="/blogs"
+            className={cx(
+              "inline-flex items-center text-sm font-semibold",
+              heroHasImage ? "text-white/80 hover:text-white" : "text-black/70 hover:text-black"
+            )}
+          >
+            <ArrowRight className="mr-2 rotate-180" size={18} /> Back to blogs
+          </Link>
+
+          <div className="mt-8 max-w-4xl">
+            <div className="flex flex-wrap items-center gap-2">
+              <span
+                className={cx(
+                  "text-xs font-semibold px-3 py-1 rounded-full border backdrop-blur-sm",
+                  heroHasImage
+                    ? "bg-white/15 text-white/90 border-white/20"
+                    : "bg-white/70 text-black/70 border-black/10"
+                )}
+              >
+                {post.category}
+              </span>
+              <span
+                className={cx(
+                  "text-xs font-semibold px-3 py-1 rounded-full shadow-sm",
+                  heroHasImage ? "bg-[#121212]/55 text-[#D6A21E] border border-white/10" : "bg-[#121212] text-[#D6A21E]"
+                )}
+              >
+                {post.readTime}
+              </span>
+            </div>
+
+            <h1
+              className={cx(
+                "text-4xl md:text-6xl font-black mt-6 tracking-tight leading-tight",
+                heroHasImage ? "text-white drop-shadow-[0_10px_30px_rgba(0,0,0,0.35)]" : "text-[#121212]"
+              )}
+            >
+              {post.title}
+            </h1>
+            <p
+              className={cx(
+                "mt-4 text-sm font-semibold uppercase tracking-wide",
+                heroHasImage ? "text-white/70" : "text-black/60"
+              )}
+            >
+              {post.date} • {post.author}
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <section className="px-6 py-16">
+        <div className="max-w-7xl mx-auto">
+          <div className="grid lg:grid-cols-[minmax(0,1fr)_360px] gap-10 items-start">
+            <Card className="rounded-3xl border border-black/10 bg-white">
+              <CardContent className="p-10 md:p-12">
+              <p className="text-lg text-black/80 leading-relaxed">{post.excerpt}</p>
+              {blocks ? (
+                <div className="mt-10 space-y-6">
+                  {blocks.map((b, idx) => {
+                    if (!b || typeof b !== "object") return null;
+
+                    if (b.type === "h2") {
+                      return (
+                        <h2
+                          key={idx}
+                          className="text-2xl md:text-3xl font-black tracking-tight text-[#121212] pt-4"
+                        >
+                          {b.text}
+                        </h2>
+                      );
+                    }
+                    if (b.type === "h3") {
+                      return (
+                        <h3 key={idx} className="text-xl md:text-2xl font-black text-[#121212] pt-2">
+                          {b.text}
+                        </h3>
+                      );
+                    }
+                    if (b.type === "p") {
+                      return (
+                        <p key={idx} className="text-black/70 leading-relaxed">
+                          {b.text}
+                        </p>
+                      );
+                    }
+                    if (b.type === "ul") {
+                      return (
+                        <ul key={idx} className="list-disc pl-6 space-y-2 text-black/70 leading-relaxed">
+                          {(b.items || []).map((it, i) => (
+                            <li key={i}>{it}</li>
+                          ))}
+                        </ul>
+                      );
+                    }
+                    if (b.type === "ol") {
+                      const badge = typeof b.badge === "string" ? b.badge : null;
+                      return (
+                        <div key={idx} className="space-y-5">
+                          {(b.items || []).map((it, i) => (
+                            <div key={i} className="rounded-3xl border border-black/10 bg-[#F3EFE6] p-7">
+                              <div className="flex items-start justify-between gap-4">
+                                <h4 className="text-lg font-black text-[#121212]">
+                                  {i + 1}. {it.title}
+                                </h4>
+                                {badge ? (
+                                  <span className="text-xs font-semibold bg-white/70 text-black/70 px-3 py-1 rounded-full border border-black/10">
+                                    {badge}
+                                  </span>
+                                ) : null}
+                              </div>
+                              {Array.isArray(it.bullets) ? (
+                                <ul className="mt-4 list-disc pl-6 space-y-2 text-black/70 leading-relaxed">
+                                  {it.bullets.map((x, j) => (
+                                    <li key={j}>{x}</li>
+                                  ))}
+                                </ul>
+                              ) : null}
+                            </div>
+                          ))}
+                        </div>
+                      );
+                    }
+                    if (b.type === "callout") {
+                      return (
+                        <div
+                          key={idx}
+                          className="relative overflow-hidden rounded-3xl border border-black/10 bg-white p-8 md:p-9"
+                        >
+                          <div className="pointer-events-none absolute inset-0">
+                            <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-[#D6A21E]/55 to-transparent" />
+                            <div className="absolute -top-24 -right-24 w-[360px] h-[360px] bg-[#D6A21E]/12 rotate-12 rounded-[84px] blur-[80px]" />
+                            <div className="absolute -bottom-24 -left-24 w-[360px] h-[360px] bg-black/5 -rotate-12 rounded-[84px] blur-[85px]" />
+                          </div>
+                          <div className="relative">
+                            <p className="text-xs font-semibold tracking-[0.22em] uppercase text-black/60">
+                              {b.title || "Note"}
+                            </p>
+                            <p className="mt-4 text-black/75 leading-relaxed">{b.text}</p>
+                            <div className="mt-7">
+                              <Link to="/consultation">
+                                <Button className="bg-[#121212] text-[#D6A21E] hover:bg-black rounded-full px-10 py-6">
+                                  Book a consultation <ArrowRight className="ml-2" />
+                                </Button>
+                              </Link>
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    }
+                    if (b.type === "cta") {
+                      return (
+                        <div key={idx} className="pt-2">
+                          <Link to={b.href || "/consultation"}>
+                            <Button className="bg-[#D6A21E] text-black hover:bg-[#B88A16] rounded-full px-10 py-6">
+                              {b.text || "Book a consultation"} <ArrowRight className="ml-2" />
+                            </Button>
+                          </Link>
+                        </div>
+                      );
+                    }
+
+                    return null;
+                  })}
+                </div>
+              ) : (
+                <div className="mt-8 space-y-5 text-black/70 leading-relaxed">
+                  <p>
+                    This is a starter blog template. When you’re ready, we can hook this page up to a CMS
+                    (Sanity, Contentful, Notion, etc.) or load markdown files from the repo.
+                  </p>
+                  <p>
+                    For now, update the <span className="font-semibold">blogPosts</span> array in{" "}
+                    <span className="font-semibold">src/App.jsx</span> and we’ll generate posts from real content.
+                  </p>
+                </div>
+              )}
+              </CardContent>
+            </Card>
+
+            <aside className="mt-10 lg:mt-0 lg:sticky lg:top-24 lg:self-start">
+              <Card className="rounded-3xl border border-black/10 bg-white/70 backdrop-blur-sm overflow-hidden">
+                <CardContent className="p-7">
+                  <p className="text-xs font-semibold tracking-[0.22em] uppercase text-black/60">Next reads</p>
+                  <h3 className="text-2xl font-black mt-3 leading-tight">Keep the momentum.</h3>
+                  <p className="text-sm text-black/60 mt-2">A few posts we recommend right after this one.</p>
+
+                  <div className="mt-6 space-y-4">
+                    {suggestions.map((p) => (
+                      <Link
+                        key={p.slug}
+                        to={`/blogs/${p.slug}`}
+                        className="group block rounded-2xl border border-black/10 bg-white/70 px-4 py-4 hover:bg-white transition"
+                      >
+                        <div className="flex items-center justify-between gap-3">
+                          <span className="text-xs font-semibold bg-[#121212] text-[#D6A21E] px-3 py-1 rounded-full shadow-sm">
+                            {p.readTime}
+                          </span>
+                          <span className="text-[11px] font-semibold uppercase tracking-wide text-black/50">
+                            {p.date}
+                          </span>
+                        </div>
+                        <p className="mt-3 font-black text-black/90 leading-snug group-hover:text-[#D6A21E] transition">
+                          {p.title}
+                        </p>
+                        <p className="mt-2 text-xs font-semibold text-black/60">{p.category}</p>
+                      </Link>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+            </aside>
+          </div>
+        </div>
+      </section>
+    </>
+  );
+}
+
 function Services() {
   const offerings = [
     {
@@ -1571,6 +2190,20 @@ function Services() {
     <>
       {/* Services Hero */}
       <section className="relative bg-[#121212] text-white overflow-hidden">
+        {/* Photo background (bleeds + theme overlays) */}
+        <div className="absolute inset-0 pointer-events-none">
+          <img
+            src="/hero/services-hero.png"
+            alt=""
+            className="h-full w-full object-cover object-center scale-[1.04] filter saturate-[0.80] contrast-[1.10] brightness-[0.55] blur-[0.25px]"
+            loading="eager"
+            decoding="async"
+          />
+          <div className="absolute inset-0 bg-gradient-to-b from-black/80 via-black/65 to-[#F3EFE6]" />
+          <div className="absolute inset-0 opacity-[0.55] mix-blend-screen [background-image:radial-gradient(900px_520px_at_18%_12%,rgba(214,162,30,0.28),transparent_58%),radial-gradient(760px_520px_at_86%_26%,rgba(255,255,255,0.10),transparent_62%)]" />
+          <div className="absolute inset-x-0 bottom-0 h-24 bg-gradient-to-b from-transparent to-[#F3EFE6]" />
+        </div>
+
         <div className="absolute inset-0 pointer-events-none">
           <div className="absolute -top-44 -left-44 w-[640px] h-[640px] bg-[#D6A21E]/18 rotate-12 rounded-[80px]" />
           <div className="absolute -bottom-52 -right-52 w-[640px] h-[640px] bg-white/8 -rotate-12 rounded-[80px]" />
@@ -1821,6 +2454,16 @@ function Industries() {
       {/* Industries Hero */}
       <section className="relative bg-[#121212] text-white overflow-hidden">
         <div className="absolute inset-0 pointer-events-none">
+          {/* Photo background (bleeds + theme overlays) */}
+          <img
+            src="/hero/industries-hero.png"
+            alt=""
+            className="absolute inset-0 h-full w-full object-cover object-center scale-[1.04] filter saturate-[0.78] contrast-[1.10] brightness-[0.55] blur-[0.25px]"
+            loading="eager"
+            decoding="async"
+          />
+          <div className="absolute inset-0 bg-gradient-to-b from-black/80 via-black/65 to-black/70" />
+
           {/* depth + vignette */}
           <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_10%,rgba(214,162,30,0.22),transparent_55%),radial-gradient(circle_at_80%_30%,rgba(255,255,255,0.10),transparent_55%),radial-gradient(circle_at_50%_90%,rgba(0,0,0,0.65),transparent_55%)]" />
           <div className="absolute inset-0 bg-gradient-to-b from-black/30 via-transparent to-black/40" />
@@ -1843,6 +2486,9 @@ function Industries() {
           {/* premium rules */}
           <div className="absolute left-1/2 top-8 h-px w-[65%] -translate-x-1/2 bg-gradient-to-r from-transparent via-white/15 to-transparent" />
           <div className="absolute left-1/2 top-[4.25rem] h-px w-[58%] -translate-x-1/2 bg-gradient-to-r from-transparent via-[#D6A21E]/25 to-transparent" />
+
+          {/* bottom bleed into page background (keep this LAST so it stays visible) */}
+          <div className="absolute inset-x-0 bottom-0 h-44 bg-gradient-to-b from-transparent via-[#F3EFE6]/75 to-[#F3EFE6]" />
         </div>
 
         <div className="relative max-w-7xl mx-auto px-6 py-24">
@@ -3614,11 +4260,15 @@ function Academy() {
         </div>
 
         <div className="max-w-7xl mx-auto mt-10">
-          <div className="grid md:grid-cols-3 gap-8">
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-5">
             {apprentices.map((a) => (
               <div key={a.name + a.role} className="group">
-                <div className="relative overflow-hidden rounded-3xl border border-black/10 shadow-md hover:shadow-xl transition">
-                  <div className="aspect-[3/4] bg-black/5 relative overflow-hidden">
+                <div className="relative rounded-3xl border border-black/10 group-hover:border-[#D6A21E]/25 shadow-sm hover:shadow-lg transition-shadow">
+                  {/* gold hover glow (outside card) */}
+                  <div className="pointer-events-none absolute -inset-3 rounded-[2.25rem] bg-[#D6A21E]/25 blur-[20px] opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                  <div className="pointer-events-none absolute -inset-[1px] rounded-3xl ring-1 ring-[#D6A21E]/0 group-hover:ring-[#D6A21E]/25 transition duration-300" />
+
+                  <div className="aspect-[4/5] bg-black/5 relative overflow-hidden rounded-3xl">
                     {a.img ? (
                       <img
                         src={a.img}
@@ -3641,14 +4291,14 @@ function Academy() {
                       Photo Slot
                     </div>
                     {/* readability gradient */}
-                    <div className="absolute inset-x-0 bottom-0 h-32 bg-gradient-to-t from-black/75 via-black/30 to-transparent" />
+                    <div className="absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-black/75 via-black/30 to-transparent" />
                     {/* blur only behind text */}
-                    <div className="absolute inset-x-0 bottom-0 p-4 bg-black/35 backdrop-blur-sm text-center">
-                      <h4 className="font-black text-lg text-white group-hover:text-[#D6A21E] transition">
+                    <div className="absolute inset-x-0 bottom-0 p-3 bg-black/35 backdrop-blur-sm text-center">
+                      <h4 className="font-black text-base text-white group-hover:text-[#D6A21E] transition">
                         {a.name}
                       </h4>
-                      <p className="text-sm text-white/80 mt-1">{a.role}</p>
-                      <p className="text-xs text-white/70 mt-2 italic leading-relaxed line-clamp-2">
+                      <p className="text-xs text-white/80 mt-1">{a.role}</p>
+                      <p className="text-[11px] text-white/70 mt-2 italic leading-relaxed line-clamp-1 hidden sm:block">
                         “{a.quote}”
                       </p>
                     </div>
@@ -3661,13 +4311,6 @@ function Academy() {
       </section>
 
       <section className="py-24 px-6 max-w-7xl mx-auto space-y-20">
-        {/* Why Join */}
-        <div className="grid md:grid-cols-3 gap-10">
-          <FunnelCard title="Hands-On Experience" body="Real campaigns. Real conversations. Real skill." />
-          <FunnelCard title="Paid Growth Path" body="Clear advancement based on performance." />
-          <FunnelCard title="Mentorship" body="Learn directly from leaders and top performers." />
-        </div>
-
         {/* Onboarding Path */}
         <div className="bg-white rounded-3xl border border-black/10 p-10">
           <h3 className="text-3xl font-black text-center mb-10">The Academy Path</h3>
@@ -3677,18 +4320,2500 @@ function Academy() {
             <Step number="3" title="Onboard" desc="Training + shadowing + reps." />
             <Step number="4" title="Advance" desc="Earn more, lead more." />
           </div>
+
+          {/* Discover your track */}
+          <div className="mt-12 pt-10 border-t border-black/10">
+            <div className="text-center">
+              <p className="text-xs font-semibold tracking-[0.22em] uppercase text-black/60">
+                Discover your track
+              </p>
+              <h4 className="text-2xl md:text-3xl font-black mt-3">
+                Pick the lane you want to <span className="text-[#D6A21E]">master</span>.
+              </h4>
+              <p className="text-black/70 mt-3 max-w-2xl mx-auto">
+                Choose a path and see what the work looks like. (You can switch later — we care about reps and growth.)
+              </p>
+            </div>
+
+            <div className="mt-8 grid md:grid-cols-3 gap-6 items-stretch">
+              <Link to="/academy/track/sales" className="group block h-full">
+                <Card className="relative h-full min-h-[280px] rounded-3xl border border-black/10 bg-[#F3EFE6] overflow-hidden shadow-sm hover:shadow-md transition-shadow">
+                  <div className="pointer-events-none absolute inset-0">
+                    <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-[#D6A21E]/55 to-transparent" />
+                    <div className="absolute -top-20 -right-20 w-[240px] h-[240px] bg-[#D6A21E]/14 rotate-12 rounded-[64px] blur-[60px]" />
+                  </div>
+                  <CardContent className="relative p-8 h-full flex flex-col">
+                    <span className="text-xs font-semibold bg-[#121212] text-[#D6A21E] px-3 py-1 rounded-full shadow-sm">
+                      Track 01
+                    </span>
+                    <h5 className="text-2xl font-black mt-5 leading-tight group-hover:text-[#D6A21E] transition">
+                      M&amp;A Tract (Scoutly)
+                    </h5>
+                    <p className="text-black/70 mt-3 leading-relaxed">
+                      Real deal-flow exposure: sourcing, buyer/seller research, outreach, and matchmaking.
+                    </p>
+                    <div className="mt-auto pt-6 inline-flex items-center text-sm font-semibold text-black/70 group-hover:text-black transition">
+                      Explore track <ArrowRight className="ml-2" size={18} />
+                    </div>
+                  </CardContent>
+                </Card>
+              </Link>
+
+              <Link to="/academy/track/marketing" className="group block h-full">
+                <Card className="relative h-full min-h-[280px] rounded-3xl border border-black/10 bg-white overflow-hidden shadow-sm hover:shadow-md transition-shadow">
+                  <div className="pointer-events-none absolute inset-0">
+                    <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-[#D6A21E]/55 to-transparent" />
+                    <div className="absolute -bottom-24 -left-24 w-[260px] h-[260px] bg-black/5 -rotate-12 rounded-[64px] blur-[70px]" />
+                  </div>
+                  <CardContent className="relative p-8 h-full flex flex-col">
+                    <span className="text-xs font-semibold bg-[#121212] text-[#D6A21E] px-3 py-1 rounded-full shadow-sm">
+                      Track 02
+                    </span>
+                    <h5 className="text-2xl font-black mt-5 leading-tight group-hover:text-[#D6A21E] transition">
+                      Sponsored Client Tract
+                    </h5>
+                    <p className="text-black/70 mt-3 leading-relaxed">
+                      A lower-risk way to train, evaluate, and hire sales talent inside real operating conditions.
+                    </p>
+                    <div className="mt-auto pt-6 inline-flex items-center text-sm font-semibold text-black/70 group-hover:text-black transition">
+                      Explore track <ArrowRight className="ml-2" size={18} />
+                    </div>
+                  </CardContent>
+                </Card>
+              </Link>
+
+              <Link to="/academy/track/operations" className="group block h-full">
+                <Card className="relative h-full min-h-[280px] rounded-3xl border border-black/10 bg-white overflow-hidden shadow-sm hover:shadow-md transition-shadow">
+                  <div className="pointer-events-none absolute inset-0">
+                    <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-[#D6A21E]/55 to-transparent" />
+                    <div className="absolute -top-24 -right-24 w-[280px] h-[280px] bg-[#D6A21E]/12 rotate-12 rounded-[72px] blur-[80px]" />
+                    <div className="absolute -bottom-24 -left-24 w-[300px] h-[300px] bg-black/5 -rotate-12 rounded-[76px] blur-[85px]" />
+                  </div>
+                  <CardContent className="relative p-8 h-full flex flex-col">
+                    <span className="text-xs font-semibold bg-[#121212] text-[#D6A21E] px-3 py-1 rounded-full shadow-sm">
+                      Track 03
+                    </span>
+                    <h5 className="text-2xl font-black mt-5 leading-tight group-hover:text-[#D6A21E] transition">
+                      Apprenticeship Tracts
+                    </h5>
+                    <p className="text-black/70 mt-3 leading-relaxed">
+                      Overview flyer: pathways, outcomes, and what it takes to advance.
+                    </p>
+                    <div className="mt-auto pt-6 inline-flex items-center text-sm font-semibold text-black/70 group-hover:text-black transition">
+                      Explore track <ArrowRight className="ml-2" size={18} />
+                    </div>
+                  </CardContent>
+                </Card>
+              </Link>
+            </div>
+          </div>
         </div>
 
         {/* Application */}
         <div id="apply" className="max-w-4xl mx-auto">
           <h3 className="text-4xl font-black text-center mb-8">Apply to Fulcrum Academy</h3>
           <AcademyApplication />
-          <p className="text-xs text-black/55 mt-4 text-center">
-            This form is a frontend demo. Connect it to your ATS/CRM (Airtable, HubSpot, etc.) when you’re ready.
-          </p>
         </div>
       </section>
     </>
+  );
+}
+
+function AcademyTrackShell({ kicker = "Academy track", title, subtitle, bullets = [] }) {
+  return (
+    <>
+      <section className="relative overflow-hidden border-b border-black/10 bg-[#F3EFE6]">
+        <div className="absolute inset-0 pointer-events-none">
+          <div className="absolute -top-28 -right-28 w-[620px] h-[620px] bg-[#121212]/6 rotate-12 rounded-[96px]" />
+          <div className="absolute -bottom-32 -left-32 w-[620px] h-[620px] bg-[#D6A21E]/12 -rotate-12 rounded-[96px]" />
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_0%,rgba(255,255,255,0.70),transparent_52%),radial-gradient(circle_at_70%_65%,rgba(0,0,0,0.06),transparent_55%)]" />
+        </div>
+        <div className="relative max-w-6xl mx-auto px-6 py-20 md:py-24">
+          <Link to="/academy" className="inline-flex items-center text-sm font-semibold text-black/70 hover:text-black">
+            <ArrowRight className="mr-2 rotate-180" size={18} /> Back to Academy
+          </Link>
+          <div className="mt-8 max-w-3xl">
+            <p className="inline-flex items-center justify-center gap-2 text-xs font-semibold tracking-wider uppercase text-black/70 bg-white/70 border border-black/10 px-4 py-2 rounded-full backdrop-blur-sm">
+              {kicker}
+            </p>
+            <h1 className="text-4xl md:text-6xl font-black mt-6 tracking-tight leading-tight">{title}</h1>
+            <p className="text-black/70 text-lg md:text-xl mt-5 leading-relaxed">{subtitle}</p>
+          </div>
+        </div>
+      </section>
+
+      <section className="px-6 py-16">
+        <div className="max-w-6xl mx-auto grid lg:grid-cols-[minmax(0,1fr)_360px] gap-10 items-start">
+          <Card className="rounded-3xl border border-black/10 bg-white">
+            <CardContent className="p-10 md:p-12">
+              <p className="text-xs font-semibold tracking-[0.22em] uppercase text-black/60">Coming next</p>
+              <h2 className="text-2xl md:text-3xl font-black mt-3">Discover your track</h2>
+              <p className="text-black/70 mt-4 leading-relaxed">
+                You said you’ll paste the code for each track page next. When you do, I’ll replace this placeholder
+                with the full page design.
+              </p>
+
+              {bullets?.length ? (
+                <div className="mt-8">
+                  <p className="text-sm font-semibold text-black/70">This track typically covers:</p>
+                  <ul className="mt-4 list-disc pl-6 space-y-2 text-black/70 leading-relaxed">
+                    {bullets.map((b, i) => (
+                      <li key={i}>{b}</li>
+                    ))}
+                  </ul>
+                </div>
+              ) : null}
+            </CardContent>
+          </Card>
+
+          <aside className="lg:sticky lg:top-24 lg:self-start">
+            <Card className="rounded-3xl border border-black/10 bg-white/70 backdrop-blur-sm overflow-hidden">
+              <CardContent className="p-7">
+                <p className="text-xs font-semibold tracking-[0.22em] uppercase text-black/60">Next step</p>
+                <h3 className="text-2xl font-black mt-3 leading-tight">Apply to the Academy.</h3>
+                <p className="text-sm text-black/60 mt-2">You can choose a track now and refine it during onboarding.</p>
+                <div className="mt-6">
+                  <a href="/academy#apply">
+                    <Button className="w-full bg-[#121212] text-[#D6A21E] hover:bg-black rounded-full px-8 py-6">
+                      Go to application <ArrowRight className="ml-2" />
+                    </Button>
+                  </a>
+                </div>
+              </CardContent>
+            </Card>
+          </aside>
+        </div>
+      </section>
+    </>
+  );
+}
+
+function AcademyTrackSales() {
+  return (
+    <section className="px-6 py-12 md:py-16 bg-[#e9eef6]">
+      <div className="max-w-7xl mx-auto">
+        <Link to="/academy" className="inline-flex items-center text-sm font-semibold text-black/70 hover:text-black">
+          <ArrowRight className="mr-2 rotate-180" size={18} /> Back to Academy
+        </Link>
+
+        <div className="mt-6 flex items-end justify-between gap-4 flex-wrap">
+          <div>
+            <p className="text-xs font-semibold tracking-[0.22em] uppercase text-black/60">Track 01</p>
+            <h1 className="text-3xl md:text-4xl font-black mt-2 leading-tight">
+              M&amp;A Tract <span className="text-[#D6A21E]">(Scoutly)</span>
+            </h1>
+            <p className="text-black/70 mt-2 max-w-2xl">
+              Print-friendly 2-page flyer. Use “Print” to save as PDF.
+            </p>
+          </div>
+          <Button
+            type="button"
+            className="bg-[#121212] text-[#D6A21E] hover:bg-black rounded-full px-8 py-5"
+            onClick={() => window.print()}
+          >
+            Print / Save as PDF <ArrowRight className="ml-2" />
+          </Button>
+        </div>
+
+        <div className="mt-10 academy-flyer space-y-10">
+          <div className="overflow-x-auto pb-4">
+            <main className="sheet" role="document" aria-label="Fulcrum Academy Flyer Page 1">
+              <div className="topbar" />
+
+              <section className="content">
+                <header className="brand">
+                  <div className="title-wrap">
+                    <div className="badge">
+                      <span className="dot" /> Fulcrum Academy • Tract Spotlight
+                    </div>
+                    <h1>
+                      Fulcrum Academy —{" "}
+                      <span className="gold-chip">
+                        M&amp;A Tract
+                      </span>{" "}
+                      (Scoutly)
+                    </h1>
+                    <p className="sub">
+                      A hands-on tract built for aspiring deal professionals who want real exposure to M&amp;A business
+                      development, how buyers think, how sellers decide, and how deals start long before bankers and
+                      lawyers step in.
+                    </p>
+                  </div>
+
+                  <div className="logo-wrap" aria-label="Fulcrum logo">
+                    <div className="logo-chip">
+                      <img className="logo-img" src="/brand/fulcrum-wordmark.png" alt="Fulcrum" />
+                    </div>
+                    <div className="pill">Focus: Deal Flow • Sourcing</div>
+                  </div>
+                </header>
+
+                <div className="divider" />
+
+                <section className="section">
+                  <h2>Who This Tract Is For</h2>
+                  <div className="card">
+                    <p>
+                      If you are interested in <strong>Private Equity</strong>, <strong>mergers and acquisitions</strong>,{" "}
+                      <strong>business finance</strong>, and <strong>buying or selling businesses</strong>, the Fulcrum
+                      Academy M&amp;A Tract is designed for you.
+                    </p>
+                    <p>
+                      This tract provides hands-on exposure to the real mechanics of <strong>M&amp;A business development</strong>,{" "}
+                      how buyers think, how sellers decide, and how deals are initiated long before bankers and lawyers step in.
+                    </p>
+                    <p>
+                      You will learn how to speak the language of the industry, understand incentives on both sides of a transaction,
+                      and develop business development skills that are highly attractive to <strong>corporate development teams</strong>,{" "}
+                      <strong>private equity firms</strong>, and <strong>M&amp;A platforms</strong>.
+                    </p>
+                  </div>
+                </section>
+
+                <div className="divider" />
+
+                <section className="section">
+                  <h2>What You’ll Be Doing</h2>
+                  <div className="card">
+                    <p>
+                      As an <strong>M&amp;A Tract apprentice</strong>, you will support Fulcrum’s buy-side and sell-side sourcing efforts
+                      through <strong>Scoutly</strong>, our M&amp;A division. Your work includes:
+                    </p>
+
+                    <ul>
+                      <li><span className="check" /><span className="li-text">Researching active buyers and sellers to assess strategic and financial alignment</span></li>
+                      <li><span className="check" /><span className="li-text">Reaching out to potential buyers and sellers to gauge interest</span></li>
+                      <li><span className="check" /><span className="li-text">Supporting buyers in identifying seller opportunities of interest</span></li>
+                      <li><span className="check" /><span className="li-text">Supporting sellers in identifying potential buyers</span></li>
+                      <li><span className="check" /><span className="li-text">Participating in seller meetings to understand goals, motivations, and constraints</span></li>
+                      <li><span className="check" /><span className="li-text">Creating confidential profiles on buyers and sellers</span></li>
+                      <li><span className="check" /><span className="li-text">Facilitating and coordinating introductory meetings between aligned parties</span></li>
+                    </ul>
+
+                    <div className="highlight">This is real deal-flow work—not simulated exercises.</div>
+                  </div>
+                </section>
+
+                <footer className="contact" aria-label="Contact information">
+                  <div className="contact-right">
+                    <a className="citem" href="mailto:info@workwithfulcrum.com">
+                      <svg className="cicon" viewBox="0 0 24 24" aria-hidden="true">
+                        <path d="M4 6h16v12H4z" />
+                        <path d="M4 7l8 6 8-6" />
+                      </svg>
+                      info@workwithfulcrum.com
+                    </a>
+
+                    <a className="citem" href="tel:+13373069436">
+                      <svg className="cicon" viewBox="0 0 24 24" aria-hidden="true">
+                        <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.8 19.8 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.08 4.18 2 2 0 0 1 4.06 2h3a2 2 0 0 1 2 1.72c.12.86.3 1.7.54 2.5a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.58-1.06a2 2 0 0 1 2.11-.45c.8.24 1.64.42 2.5.54A2 2 0 0 1 22 16.92z" />
+                      </svg>
+                      337-306-9436
+                    </a>
+
+                    <a className="citem" href="https://www.workwithfulcrum.com" target="_blank" rel="noopener noreferrer">
+                      <svg className="cicon" viewBox="0 0 24 24" aria-hidden="true">
+                        <path d="M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20z" />
+                        <path d="M2 12h20" />
+                        <path d="M12 2c3 3.5 4.5 7 4.5 10S15 18.5 12 22" />
+                        <path d="M12 2C9 5.5 7.5 9 7.5 12S9 18.5 12 22" />
+                      </svg>
+                      workwithfulcrum.com
+                    </a>
+
+                    <span className="citem" style={{ cursor: "default" }}>
+                      <svg className="cicon" viewBox="0 0 24 24" aria-hidden="true">
+                        <path d="M12 21s7-4.5 7-11a7 7 0 1 0-14 0c0 6.5 7 11 7 11z" />
+                        <path d="M12 10.5a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5z" />
+                      </svg>
+                      108 Kol Dr, Broussard, LA
+                    </span>
+                  </div>
+                </footer>
+              </section>
+            </main>
+          </div>
+
+          <div className="overflow-x-auto pb-4">
+            <main className="sheet page-break" role="document" aria-label="Fulcrum Academy Flyer Page 2">
+              <div className="topbar" />
+
+              <section className="content">
+                <header className="brand" style={{ marginBottom: 8 }}>
+                  <div className="title-wrap" style={{ maxWidth: "86ch" }}>
+                    <div className="badge">
+                      <span className="dot" /> Fulcrum Academy • M&amp;A Tract (Scoutly)
+                    </div>
+                    <h1 style={{ fontSize: 25, marginTop: 7, marginBottom: 6 }}>
+                      Expectations, Structure &amp; Outcomes
+                    </h1>
+                    <p className="sub" style={{ maxWidth: "80ch" }}>
+                      Clear expectations, a structured path to advancement, and outcomes that translate into credible deal experience.
+                    </p>
+                  </div>
+
+                  <div className="meta">
+                    <div className="pill">Page 2 of 2</div>
+                    <div style={{ height: 6 }} />
+                    <div className="pill">Commitment: 5–10 hrs/week</div>
+                  </div>
+                </header>
+
+                <div style={{ display: "grid", gridTemplateColumns: "1.12fr .88fr", gap: 12, alignItems: "start" }}>
+                  <div>
+                    <section className="section" style={{ marginBottom: 10 }}>
+                      <h2>Expectations &amp; Commitments</h2>
+                      <div className="card">
+                        <p style={{ marginBottom: 8 }}>To succeed in the M&amp;A Tract, apprentices are expected to:</p>
+
+                        <ul style={{ gap: 7 }}>
+                          <li><span className="check" /><span className="li-text">Complete initial training and educational sessions</span></li>
+                          <li><span className="check" /><span className="li-text">Participate in company meetings to quickly learn industry terminology and best practices</span></li>
+                          <li><span className="check" /><span className="li-text">Commit <strong>5–10 hours per week</strong> to business development activities</span></li>
+                          <li><span className="check" /><span className="li-text">Identify <strong>5–10 potential buyer–seller matches per week</strong> and communicate with both sides to gauge interest</span></li>
+                          <li><span className="check" /><span className="li-text">Proactively reach out to new buyers and sellers on a weekly basis</span></li>
+                        </ul>
+
+                        <div className="highlight" style={{ marginTop: 9 }}>
+                          Progress is measured by <strong>quality of matches</strong>, <strong>consistency of effort</strong>, and{" "}
+                          <strong>professional communication</strong>.
+                        </div>
+                      </div>
+                    </section>
+
+                    <section className="section" style={{ marginBottom: 10 }}>
+                      <h2>Why This Tract Matters</h2>
+                      <div className="card">
+                        <p>
+                          <strong>Most people interested in M&amp;A never see how deals actually start.</strong>
+                        </p>
+                        <p style={{ marginTop: 8 }}>
+                          This tract gives you direct exposure, real responsibility, and credible experience—the hardest combination to find in this industry.
+                        </p>
+                        <div className="highlight" style={{ marginTop: 9 }}>
+                          This is a proving ground for future deal professionals.
+                        </div>
+                      </div>
+                    </section>
+
+                    <div className="scoutly-under-section" aria-hidden="true" />
+                  </div>
+
+                  <div>
+                    <section className="section" style={{ marginBottom: 10 }}>
+                      <h2>Program Structure</h2>
+                      <div className="card">
+                        <ul style={{ gap: 7, marginTop: 0 }}>
+                          <li><span className="check" /><span className="li-text"><strong>Duration:</strong> 3–6 months</span></li>
+                          <li><span className="check" /><span className="li-text"><strong>Levels:</strong> 3 (training, execution, performance)</span></li>
+                          <li><span className="check" /><span className="li-text"><strong>Focus:</strong> M&amp;A sourcing, relationship development, and early deal formation</span></li>
+                          <li><span className="check" /><span className="li-text"><strong>Support:</strong> Training, feedback, and direct exposure to live opportunities</span></li>
+                        </ul>
+
+                        <div className="highlight" style={{ marginTop: 9 }}>
+                          Advancement is earned through <strong>execution</strong>, <strong>accuracy</strong>, and <strong>reliability</strong>.
+                        </div>
+                      </div>
+                    </section>
+
+                    <section className="section" style={{ marginBottom: 10 }}>
+                      <h2>By the End of the Program</h2>
+                      <div className="card">
+                        <p style={{ marginBottom: 8 }}>Upon successful completion of the M&amp;A Tract:</p>
+                        <ul style={{ gap: 7 }}>
+                          <li><span className="check" /><span className="li-text">Fair compensation for value created and work completed</span></li>
+                          <li><span className="check" /><span className="li-text">You will receive a Fulcrum Academy Certificate of Completion</span></li>
+                          <li><span className="check" /><span className="li-text">Your completion will be announced on social channels</span></li>
+                          <li><span className="check" /><span className="li-text">You may be offered an opportunity to join Fulcrum’s buy-side scouting team</span></li>
+                        </ul>
+                      </div>
+                    </section>
+
+                    <div className="card" style={{ borderStyle: "dashed", marginTop: 6, padding: "10px 12px" }}>
+                      <p style={{ fontSize: 13, color: "var(--muted)", lineHeight: 1.45 }}>
+                        Built for candidates who want <strong style={{ color: "var(--ink)" }}>real deal-flow exposure</strong> and a repeatable
+                        business development skill set.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                <footer className="contact" aria-label="Contact information">
+                  <div className="contact-right">
+                    <a className="citem" href="mailto:info@workwithfulcrum.com">
+                      <svg className="cicon" viewBox="0 0 24 24" aria-hidden="true">
+                        <path d="M4 6h16v12H4z" />
+                        <path d="M4 7l8 6 8-6" />
+                      </svg>
+                      info@workwithfulcrum.com
+                    </a>
+
+                    <a className="citem" href="tel:+13373069436">
+                      <svg className="cicon" viewBox="0 0 24 24" aria-hidden="true">
+                        <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.8 19.8 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.08 4.18 2 2 0 0 1 4.06 2h3a2 2 0 0 1 2 1.72c.12.86.3 1.7.54 2.5a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.58-1.06a2 2 0 0 1 2.11-.45c.8.24 1.64.42 2.5.54A2 2 0 0 1 22 16.92z" />
+                      </svg>
+                      337-306-9436
+                    </a>
+
+                    <a className="citem" href="https://www.workwithfulcrum.com" target="_blank" rel="noopener noreferrer">
+                      <svg className="cicon" viewBox="0 0 24 24" aria-hidden="true">
+                        <path d="M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20z" />
+                        <path d="M2 12h20" />
+                        <path d="M12 2c3 3.5 4.5 7 4.5 10S15 18.5 12 22" />
+                        <path d="M12 2C9 5.5 7.5 9 7.5 12S9 18.5 12 22" />
+                      </svg>
+                      workwithfulcrum.com
+                    </a>
+
+                    <span className="citem" style={{ cursor: "default" }}>
+                      <svg className="cicon" viewBox="0 0 24 24" aria-hidden="true">
+                        <path d="M12 21s7-4.5 7-11a7 7 0 1 0-14 0c0 6.5 7 11 7 11z" />
+                        <path d="M12 10.5a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5z" />
+                      </svg>
+                      108 Kol Dr, Broussard, LA
+                    </span>
+                  </div>
+                </footer>
+              </section>
+            </main>
+          </div>
+        </div>
+
+        <style>{`
+          .academy-flyer{
+            --ink:#0b0f14;
+            --muted:#5b6676;
+            --paper:#ffffff;
+            --gold:#f2b705;
+            --goldSoft: rgba(242,183,5,.16);
+            --line:#e7edf5;
+            --chip:#f6f8fc;
+            --shadow: 0 18px 40px rgba(11,15,20,.14);
+          }
+
+          @page { size: 8.5in 11in; margin: 0.5in; }
+
+          .academy-flyer, .academy-flyer *{ box-sizing:border-box; }
+
+          .sheet{
+            width: 8.5in;
+            height: 11in;
+            margin: 0 auto;
+            border-radius: 18px;
+            box-shadow: var(--shadow);
+            overflow: hidden;
+            position: relative;
+            background:
+              radial-gradient(900px 520px at 82% 10%, var(--goldSoft), transparent 58%),
+              radial-gradient(820px 520px at 10% 18%, rgba(11,15,20,.06), transparent 60%),
+              linear-gradient(180deg, #ffffff 0%, #fbfcff 100%);
+          }
+
+          .sheet::before{
+            content:"";
+            position:absolute;
+            inset:0;
+            pointer-events:none;
+            opacity:.50;
+            background-image: radial-gradient(rgba(11,15,20,.06) 1px, transparent 1px);
+            background-size: 22px 22px;
+            mask-image: linear-gradient(180deg, rgba(0,0,0,.85), rgba(0,0,0,.35) 55%, rgba(0,0,0,.15));
+          }
+
+          .topbar{
+            height: 0.22in;
+            background: linear-gradient(90deg, var(--ink), #1a2432 55%, var(--gold));
+            position: relative;
+            z-index: 1;
+          }
+
+          .content{
+            padding: 0.34in 0.46in 0.30in;
+            position: relative;
+            z-index: 1;
+            display:flex;
+            flex-direction:column;
+            height: calc(100% - 0.22in);
+          }
+
+          .brand{
+            display:flex;
+            align-items:flex-start;
+            justify-content:space-between;
+            gap: 16px;
+            margin-bottom: 12px;
+          }
+
+          .title-wrap{ max-width: 80ch; }
+
+          .logo-wrap{
+            display:flex;
+            flex-direction:column;
+            align-items:flex-end;
+            gap: 8px;
+            min-width: 220px;
+          }
+          .logo-chip{
+            border: 1px solid var(--line);
+            background: rgba(255,255,255,.86);
+            backdrop-filter: blur(4px);
+            border-radius: 16px;
+            padding: 10px 12px;
+            box-shadow: 0 10px 22px rgba(11,15,20,.08);
+          }
+          .logo-img{
+            display:block;
+            max-width: 250px;
+            width: 100%;
+            height: auto;
+            opacity: .98;
+            filter: contrast(1.25) brightness(0.9);
+          }
+
+          .badge{
+            display:inline-flex;
+            align-items:center;
+            gap:10px;
+            padding: 8px 10px;
+            border-radius: 999px;
+            background: linear-gradient(180deg, rgba(242,183,5,.18), rgba(242,183,5,.06));
+            border: 1px solid rgba(242,183,5,.35);
+            color: var(--ink);
+            font-weight: 650;
+            font-size: 12.5px;
+            letter-spacing: .2px;
+            white-space: nowrap;
+            width: fit-content;
+          }
+          .badge .dot{
+            width: 9px;
+            height: 9px;
+            border-radius: 999px;
+            background: var(--gold);
+            box-shadow: 0 0 0 3px rgba(242,183,5,.18);
+          }
+
+          .gold-chip{
+            background:linear-gradient(180deg, rgba(242,183,5,.65), rgba(242,183,5,.15));
+            padding:0 6px;
+            border-radius:10px;
+          }
+
+          .academy-flyer h1{
+            margin: 8px 0 6px;
+            font-size: 28.5px;
+            line-height: 1.12;
+            letter-spacing: -0.4px;
+          }
+
+          .sub{
+            margin: 0;
+            color: var(--muted);
+            font-size: 14px;
+            line-height: 1.45;
+            max-width: 72ch;
+          }
+
+          .meta{
+            text-align:right;
+            min-width: 210px;
+          }
+
+          .pill{
+            display:inline-flex;
+            align-items:center;
+            gap:8px;
+            padding: 7px 9px;
+            border-radius: 999px;
+            border: 1px solid var(--line);
+            background: rgba(255,255,255,.86);
+            backdrop-filter: blur(4px);
+            color: var(--muted);
+            white-space: nowrap;
+            font-size: 12px;
+          }
+
+          .divider{
+            margin: 12px 0 12px;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, var(--line), transparent);
+          }
+
+          .section{
+            display:grid;
+            grid-template-columns: 1fr;
+            gap: 7px;
+            margin-bottom: 10px;
+          }
+          .section h2{
+            margin: 0;
+            font-size: 15px;
+            letter-spacing: .2px;
+            text-transform: uppercase;
+            color: var(--ink);
+            display:flex;
+            align-items:center;
+            gap:10px;
+          }
+          .section h2::before{
+            content:"";
+            width: 10px;
+            height: 10px;
+            border-radius: 3px;
+            background: var(--gold);
+          }
+
+          .card{
+            border: 1px solid var(--line);
+            background: linear-gradient(180deg, rgba(255,255,255,.92), rgba(251,252,255,.92));
+            border-radius: 16px;
+            padding: 13px 14px;
+            backdrop-filter: blur(6px);
+          }
+          .card p{
+            margin: 0;
+            color: var(--ink);
+            font-size: 14px;
+            line-height: 1.5;
+          }
+          .card p + p{ margin-top: 8px; }
+
+          .highlight{
+            background: linear-gradient(180deg, rgba(255,215,106,.55), rgba(255,215,106,.18));
+            border: 1px solid rgba(242,183,5,.35);
+            padding: 9px 11px;
+            border-radius: 14px;
+            margin-top: 9px;
+            font-weight: 650;
+            font-size: 13.5px;
+          }
+
+          .academy-flyer ul{
+            margin: 9px 0 0;
+            padding: 0;
+            list-style: none;
+            display:grid;
+            gap: 8px;
+          }
+
+          .academy-flyer li{
+            display:flex;
+            gap: 10px;
+            align-items:flex-start;
+            padding: 8px 10px;
+            border-radius: 14px;
+            background: rgba(246,248,252,.92);
+            border: 1px solid #e9eef7;
+            backdrop-filter: blur(4px);
+          }
+
+          .check{
+            width: 17px;
+            height: 17px;
+            border-radius: 6px;
+            background: rgba(242,183,5,.22);
+            border: 1px solid rgba(242,183,5,.55);
+            flex: 0 0 17px;
+            margin-top: 2px;
+            position: relative;
+          }
+          .check::after{
+            content:"";
+            position:absolute;
+            left: 5px;
+            top: 3px;
+            width: 6px;
+            height: 9px;
+            border: solid var(--ink);
+            border-width: 0 2px 2px 0;
+            transform: rotate(45deg);
+            opacity: .9;
+          }
+
+          .li-text{
+            font-size: 14px;
+            line-height: 1.42;
+            color: var(--ink);
+          }
+
+          .contact{
+            margin-top: auto;
+            padding-top: 8px;
+            border-top: 1px dashed var(--line);
+            display:flex;
+            align-items:flex-start;
+            justify-content:flex-end;
+            color: var(--muted);
+          }
+
+          .contact-right{
+            width: 100%;
+            display:flex;
+            justify-content: space-between;
+            align-items:center;
+            gap: 10px;
+            flex-wrap: wrap;
+          }
+
+          .citem{
+            display:flex;
+            align-items:center;
+            gap: 6px;
+            padding: 5px 7px;
+            border-radius: 999px;
+            border: 1px solid var(--line);
+            background: rgba(255,255,255,.86);
+            backdrop-filter: blur(4px);
+            font-size: 11px;
+            color: var(--muted);
+            text-decoration: none;
+            white-space: nowrap;
+            flex: 1 1 160px;
+            justify-content: center;
+            text-align:center;
+          }
+
+          .cicon{
+            width: 14px;
+            height: 14px;
+            flex: 0 0 14px;
+            fill: none;
+            stroke: var(--ink);
+            stroke-width: 1.8;
+            opacity: .9;
+          }
+
+          .page-break{
+            page-break-before: always;
+            break-before: page;
+          }
+
+          .scoutly-under-section{
+            position: relative;
+            height: 95px;
+            margin-top: 6px;
+            margin-bottom: 4px;
+            border-radius: 16px;
+            overflow: hidden;
+            z-index: 1;
+            border: 1px solid var(--line);
+            background: rgba(255,255,255,.72);
+            backdrop-filter: blur(4px);
+          }
+          .scoutly-under-section::after{
+            content:"";
+            position:absolute;
+            inset:0;
+            background-image: url("/brand/scoutly-grey.png");
+            background-repeat: no-repeat;
+            background-position: center;
+            background-size: min(92%, 600px);
+            opacity: 0.78;
+            pointer-events:none;
+            filter: grayscale(100%);
+          }
+
+          @media print{
+            .sheet{
+              margin:0;
+              border-radius:0;
+              box-shadow:none;
+            }
+            .sheet::before{ opacity:.45; }
+          }
+        `}</style>
+      </div>
+    </section>
+  );
+}
+
+function AcademyTrackMarketing() {
+  return (
+    <section className="px-6 py-12 md:py-16 bg-[#eef3fb]">
+      <div className="max-w-7xl mx-auto">
+        <Link to="/academy" className="inline-flex items-center text-sm font-semibold text-black/70 hover:text-black">
+          <ArrowRight className="mr-2 rotate-180" size={18} /> Back to Academy
+        </Link>
+
+        <div className="mt-6 flex items-end justify-between gap-4 flex-wrap">
+          <div>
+            <p className="text-xs font-semibold tracking-[0.22em] uppercase text-black/60">Track 02</p>
+            <h1 className="text-3xl md:text-4xl font-black mt-2 leading-tight">
+              Sponsored Client <span className="text-[#D6A21E]">Apprenticeship</span> Tract
+            </h1>
+            <p className="text-black/70 mt-2 max-w-2xl">
+              Print-friendly flyer. Use “Print” to save as PDF.
+            </p>
+          </div>
+          <Button
+            type="button"
+            className="bg-[#121212] text-[#D6A21E] hover:bg-black rounded-full px-8 py-5"
+            onClick={() => window.print()}
+          >
+            Print / Save as PDF <ArrowRight className="ml-2" />
+          </Button>
+        </div>
+
+        <div className="mt-10 academy-flyer2 space-y-10">
+          <div className="overflow-x-auto pb-4">
+            <main className="sheet" role="document" aria-label="Fulcrum Academy Flyer Page 1">
+              <div className="spine" aria-hidden="true" />
+
+              <section className="content">
+                <header className="top">
+                  <div className="title-wrap">
+                    <div className="kicker">
+                      <span className="kdot" /> Fulcrum Academy • Sponsored Client Tract
+                    </div>
+                    <h1>Sponsored Client Apprenticeship Tract</h1>
+                    <p className="sub">
+                      <strong>A Smarter Way to Build Sales Talent.</strong> The Fulcrum Academy Sponsored Client Tract enables
+                      companies to train, evaluate, and hire sales talent inside real operating conditions—before making a
+                      full-time commitment.
+                    </p>
+                  </div>
+
+                  <div className="meta">
+                    <div className="logo-chip" aria-label="Fulcrum logo">
+                      <img className="logo-img" src="/brand/fulcrum-wordmark.png" alt="Fulcrum" />
+                    </div>
+                    <div className="pill">Lower Risk • Higher Signal</div>
+                  </div>
+                </header>
+
+                <section className="card">
+                  <p>
+                    Instead of relying on resumes and interviews alone, sponsors gain access to apprentices who are trained, vetted,
+                    and actively proving themselves within the sponsor’s actual sales environment.
+                  </p>
+
+                  <div className="bar">
+                    Sponsors see execution, coachability, communication, and results <strong>before hiring</strong>.
+                  </div>
+
+                  <div className="stats" aria-label="Outcome stats">
+                    <div className="stat">
+                      <div className="k">Time</div>
+                      <div className="v">Faster time-to-productivity</div>
+                    </div>
+                    <div className="stat">
+                      <div className="k">Risk</div>
+                      <div className="v">Less payroll + hiring risk</div>
+                    </div>
+                    <div className="stat">
+                      <div className="k">Pipeline</div>
+                      <div className="v">Durable talent funnel</div>
+                    </div>
+                  </div>
+                </section>
+
+                <div className="grid-2">
+                  <section className="card">
+                    <div className="h2">
+                      <h2>What Is the Fulcrum Academy?</h2>
+                      <span className="tag">Built for real execution</span>
+                    </div>
+                    <p>
+                      The Fulcrum Academy is a best-in-class professional apprenticeship program created by{" "}
+                      <strong>Reece Theriot, MBA</strong>, former sales, marketing, and entrepreneurship professor at the University
+                      of Louisiana at Lafayette’s <strong>B.I. Moody III College of Business</strong>.
+                    </p>
+                    <p>
+                      Reece helped design UL’s Entrepreneurship Minor curriculum and served as Head Coach of the UL Ragin’ Sales Team,
+                      which consistently competed and placed at national sales competitions. Universities still license and leverage
+                      Fulcrum’s methods to help advance research through traditional sales applications.
+                    </p>
+                    <p>
+                      The Academy exists to develop job-ready sales and growth professionals through <strong>real execution</strong>,{" "}
+                      <strong>accountability</strong>, and <strong>mentorship</strong>—not classroom theory.
+                    </p>
+                  </section>
+
+                  <section className="card">
+                    <div className="h2">
+                      <h2>What Is a Sponsored Client Tract?</h2>
+                      <span className="tag">Sponsor-specific</span>
+                    </div>
+                    <p>
+                      A Sponsored Client Tract is a customized apprenticeship track built around a sponsor’s sales motion, market, ICP,
+                      and hiring needs.
+                    </p>
+                    <p>
+                      Fulcrum recruits, trains, and manages apprentices who work directly on the sponsor’s live sales initiatives—allowing
+                      leaders to observe performance, coach selectively, and hire with confidence.
+                    </p>
+                    <div className="bar">
+                      In short: a <strong>lower-risk, higher-signal</strong> alternative to traditional sales hiring.
+                    </div>
+                  </section>
+                </div>
+
+                <footer className="contact" aria-label="Contact information">
+                  <div className="contact-right">
+                    <a className="citem" href="mailto:info@workwithfulcrum.com">
+                      <svg className="cicon" viewBox="0 0 24 24" aria-hidden="true">
+                        <path d="M4 6h16v12H4z" />
+                        <path d="M4 7l8 6 8-6" />
+                      </svg>
+                      info@workwithfulcrum.com
+                    </a>
+
+                    <a className="citem" href="tel:+13373069436">
+                      <svg className="cicon" viewBox="0 0 24 24" aria-hidden="true">
+                        <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.8 19.8 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.08 4.18 2 2 0 0 1 4.06 2h3a2 2 0 0 1 2 1.72c.12.86.3 1.7.54 2.5a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.58-1.06a2 2 0 0 1 2.11-.45c.8.24 1.64.42 2.5.54A2 2 0 0 1 22 16.92z" />
+                      </svg>
+                      337-306-9436
+                    </a>
+
+                    <a className="citem" href="https://www.workwithfulcrum.com" target="_blank" rel="noopener noreferrer">
+                      <svg className="cicon" viewBox="0 0 24 24" aria-hidden="true">
+                        <path d="M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20z" />
+                        <path d="M2 12h20" />
+                        <path d="M12 2c3 3.5 4.5 7 4.5 10S15 18.5 12 22" />
+                        <path d="M12 2C9 5.5 7.5 9 7.5 12S9 18.5 12 22" />
+                      </svg>
+                      workwithfulcrum.com
+                    </a>
+
+                    <span className="citem" style={{ cursor: "default" }}>
+                      <svg className="cicon" viewBox="0 0 24 24" aria-hidden="true">
+                        <path d="M12 21s7-4.5 7-11a7 7 0 1 0-14 0c0 6.5 7 11 7 11z" />
+                        <path d="M12 10.5a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5z" />
+                      </svg>
+                      108 Kol Dr, Broussard, LA
+                    </span>
+                  </div>
+                </footer>
+              </section>
+            </main>
+          </div>
+
+          <div className="overflow-x-auto pb-4">
+            <main className="sheet page-break" role="document" aria-label="Fulcrum Academy Flyer Page 2">
+              <div className="spine" aria-hidden="true" />
+              <section className="content tight">
+                <header className="top">
+                  <div className="title-wrap">
+                    <div className="kicker">
+                      <span className="kdot" /> Sponsors • What You Receive
+                    </div>
+                    <h1>What Sponsors Receive, Structure &amp; Commercial Model</h1>
+                    <p className="sub">
+                      Fulcrum handles recruiting, training, management, and reporting—so sponsors can focus on observing performance and
+                      hiring with confidence.
+                    </p>
+                  </div>
+                  <div className="meta">
+                    <div className="pill">Page 2 of 2</div>
+                    <div className="pill">3–6 Months • Performance-Based</div>
+                  </div>
+                </header>
+
+                <div className="page2-body">
+                  <div className="grid-2">
+                    <section className="card">
+                      <div className="h2">
+                        <h2>What Sponsors Receive</h2>
+                        <span className="tag">Talent + proof</span>
+                      </div>
+
+                      <div className="stack">
+                        <div className="mini">
+                          <span className="icon" />
+                          <div className="mini-body">
+                            <div className="mini-head">
+                              <svg className="ticon" viewBox="0 0 24 24" aria-hidden="true">
+                                <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
+                                <path d="M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8z" />
+                                <path d="M22 21v-2a4 4 0 0 0-3-3.87" />
+                                <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+                              </svg>
+                              <p className="mini-title">Immediate Access to Talent</p>
+                            </div>
+                            <div className="mini-points">
+                              <div className="pt">Motivated apprentices eager to learn and prove themselves</div>
+                              <div className="pt">Early-career and career-pivot candidates screened by Fulcrum</div>
+                            </div>
+                          </div>
+                        </div>
+
+                        <div className="mini">
+                          <span className="icon" />
+                          <div className="mini-body">
+                            <div className="mini-head">
+                              <svg className="ticon" viewBox="0 0 24 24" aria-hidden="true">
+                                <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" />
+                                <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" />
+                                <path d="M8 6h8" />
+                                <path d="M8 10h8" />
+                              </svg>
+                              <p className="mini-title">Customized Baseline Training</p>
+                            </div>
+                            <div className="mini-points">
+                              <div className="pt">Sales fundamentals tailored to the sponsor’s:</div>
+                              <div className="pt">Market</div>
+                              <div className="pt">Product or service</div>
+                              <div className="pt">Sales process</div>
+                              <div className="pt">Tools and CRM</div>
+                            </div>
+                          </div>
+                        </div>
+
+                        <div className="mini">
+                          <span className="icon" />
+                          <div className="mini-body">
+                            <div className="mini-head">
+                              <svg className="ticon" viewBox="0 0 24 24" aria-hidden="true">
+                                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+                                <path d="M9 12l2 2 4-4" />
+                              </svg>
+                              <p className="mini-title">Recruiting &amp; Vetting</p>
+                            </div>
+                            <div className="mini-points">
+                              <div className="pt">Fulcrum manages sourcing, screening, onboarding, and performance tracking</div>
+                              <div className="pt">Candidates matched to sponsor-defined criteria and constraints</div>
+                            </div>
+                          </div>
+                        </div>
+
+                        <div className="mini">
+                          <span className="icon" />
+                          <div className="mini-body">
+                            <div className="mini-head">
+                              <svg className="ticon" viewBox="0 0 24 24" aria-hidden="true">
+                                <path d="M3 3v18h18" />
+                                <path d="M7 14l3-3 4 4 6-6" />
+                                <path d="M17 9h3v3" />
+                              </svg>
+                              <p className="mini-title">Real Performance Data</p>
+                            </div>
+                            <div className="mini-points">
+                              <div className="pt">Apprentices work on prospecting, outreach, and pipeline development</div>
+                              <div className="pt">Sponsors see execution, coachability, communication, and results before hiring</div>
+                            </div>
+                          </div>
+                        </div>
+
+                        <div className="mini">
+                          <span className="icon" />
+                          <div className="mini-body">
+                            <div className="mini-head">
+                              <svg className="ticon" viewBox="0 0 24 24" aria-hidden="true">
+                                <path d="M3 11v2a2 2 0 0 0 2 2h2l6 4V7L7 11H5a2 2 0 0 0-2 2z" />
+                                <path d="M13 7l8-3v16l-8-3" />
+                                <path d="M7 15l1.5 4.5a2 2 0 0 0 1.9 1.5H12" />
+                              </svg>
+                              <p className="mini-title">Co-Marketing &amp; Talent Pipeline</p>
+                            </div>
+                            <div className="mini-points">
+                              <div className="pt">Co-branded tract promoted to university partners and applicant networks</div>
+                              <div className="pt">Creates a repeatable hiring funnel—not a one-off placement</div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </section>
+
+                    <div style={{ display: "grid", gap: 9 }}>
+                      <section className="card">
+                        <div className="h2">
+                          <h2>Program Structure</h2>
+                          <span className="tag">Execution first</span>
+                        </div>
+
+                        <ul style={{ marginTop: 0 }}>
+                          <li>
+                            <span className="icon" />
+                            <span className="li-text">
+                              <strong>Duration:</strong> 3–6 months (based on scope and demand)
+                            </span>
+                          </li>
+                          <li>
+                            <span className="icon" />
+                            <span className="li-text">
+                              <strong>Levels:</strong> 1–3 (performance-based progression)
+                            </span>
+                          </li>
+                          <li>
+                            <span className="icon" />
+                            <span className="li-text">
+                              <strong>Focus:</strong> Prospecting, outreach, and early pipeline generation
+                            </span>
+                          </li>
+                          <li>
+                            <span className="icon" />
+                            <span className="li-text">
+                              <strong>Oversight:</strong> Fulcrum provides training, management, and reporting
+                            </span>
+                          </li>
+                        </ul>
+
+                        <div className="bar">Top performers advance. Underperformers are filtered out before payroll risk.</div>
+                      </section>
+
+                      <section className="card">
+                        <div className="h2">
+                          <h2>Commercial Model</h2>
+                          <span className="tag">Aligned incentives</span>
+                        </div>
+
+                        <ul style={{ marginTop: 0 }}>
+                          <li>
+                            <span className="icon" />
+                            <span className="li-text">
+                              <strong>Up-Front Customization Fee</strong>
+                              <div className="subpoints">
+                                <div>Covers tract design, training alignment, and recruiting setup</div>
+                              </div>
+                            </span>
+                          </li>
+
+                          <li>
+                            <span className="icon" />
+                            <span className="li-text">
+                              <strong>Ongoing Management</strong>
+                              <div className="subpoints">
+                                <div>Monthly subscription or hourly rate for active program management</div>
+                              </div>
+                            </span>
+                          </li>
+
+                          <li>
+                            <span className="icon" />
+                            <span className="li-text">
+                              <strong>Placement Fee</strong>
+                              <div className="subpoints">
+                                <div>Paid only upon successful hire, aligning incentives with outcomes</div>
+                              </div>
+                            </span>
+                          </li>
+                        </ul>
+
+                        <div className="bar">
+                          The result: faster time-to-productivity, lower hiring risk, and a durable sales talent pipeline built for your business.
+                        </div>
+                      </section>
+                    </div>
+                  </div>
+                </div>
+
+                <footer className="contact" aria-label="Contact information">
+                  <div className="contact-right">
+                    <a className="citem" href="mailto:info@workwithfulcrum.com">
+                      <svg className="cicon" viewBox="0 0 24 24" aria-hidden="true">
+                        <path d="M4 6h16v12H4z" />
+                        <path d="M4 7l8 6 8-6" />
+                      </svg>
+                      info@workwithfulcrum.com
+                    </a>
+                    <a className="citem" href="tel:+13373069436">
+                      <svg className="cicon" viewBox="0 0 24 24" aria-hidden="true">
+                        <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.8 19.8 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.08 4.18 2 2 0 0 1 4.06 2h3a2 2 0 0 1 2 1.72c.12.86.3 1.7.54 2.5a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.58-1.06a2 2 0 0 1 2.11-.45c.8.24 1.64.42 2.5.54A2 2 0 0 1 22 16.92z" />
+                      </svg>
+                      337-306-9436
+                    </a>
+                    <a className="citem" href="https://www.workwithfulcrum.com" target="_blank" rel="noopener noreferrer">
+                      <svg className="cicon" viewBox="0 0 24 24" aria-hidden="true">
+                        <path d="M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20z" />
+                        <path d="M2 12h20" />
+                        <path d="M12 2c3 3.5 4.5 7 4.5 10S15 18.5 12 22" />
+                        <path d="M12 2C9 5.5 7.5 9 7.5 12S9 18.5 12 22" />
+                      </svg>
+                      workwithfulcrum.com
+                    </a>
+                    <span className="citem" style={{ cursor: "default" }}>
+                      <svg className="cicon" viewBox="0 0 24 24" aria-hidden="true">
+                        <path d="M12 21s7-4.5 7-11a7 7 0 1 0-14 0c0 6.5 7 11 7 11z" />
+                        <path d="M12 10.5a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5z" />
+                      </svg>
+                      108 Kol Dr, Broussard, LA
+                    </span>
+                  </div>
+                </footer>
+              </section>
+            </main>
+          </div>
+        </div>
+
+        <style>{`
+          .academy-flyer2{
+            --ink:#0b0f14;
+            --muted:#5b6676;
+            --paper:#ffffff;
+            --gold:#f2b705;
+            --line:#e6edf6;
+            --bg:#eef3fb;
+            --shadow: 0 16px 38px rgba(11,15,20,.12);
+            --shadow2: 0 10px 22px rgba(11,15,20,.08);
+          }
+
+          @page { size: 8.5in 11in; margin: 0.5in; }
+
+          .academy-flyer2, .academy-flyer2 *{
+            box-sizing:border-box;
+            -webkit-print-color-adjust: exact !important;
+            print-color-adjust: exact !important;
+          }
+
+          .academy-flyer2 .sheet{
+            width: 8.5in;
+            height: 11in;
+            margin: 0 auto;
+            border-radius: 18px;
+            box-shadow: var(--shadow);
+            overflow: hidden;
+            position: relative;
+            background: #fff;
+          }
+
+          .academy-flyer2 .spine{
+            position:absolute;
+            left:0;
+            top:0;
+            bottom:0;
+            width: 0.38in;
+            background: linear-gradient(180deg, var(--gold) 0%, #f7c22d 30%, #1a2432 85%, #0b0f14 100%);
+            z-index: 0;
+          }
+          .academy-flyer2 .spine::after{
+            content:"";
+            position:absolute;
+            inset: 0;
+            opacity: .18;
+            background-image: radial-gradient(rgba(255,255,255,.40) 1px, transparent 1px);
+            background-size: 18px 18px;
+            mask-image: linear-gradient(180deg, rgba(0,0,0,.9), rgba(0,0,0,.15));
+            pointer-events:none;
+          }
+
+          .academy-flyer2 .content{
+            position:relative;
+            z-index: 1;
+            height: 100%;
+            padding: 0.40in 0.50in 0.32in 0.82in;
+            display:flex;
+            flex-direction:column;
+            gap: 12px;
+          }
+
+          .academy-flyer2 .top{
+            display:flex;
+            align-items:flex-start;
+            justify-content:space-between;
+            gap: 16px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid var(--line);
+          }
+
+          .academy-flyer2 .kicker{
+            display:inline-flex;
+            align-items:center;
+            gap: 10px;
+            font-size: 12px;
+            letter-spacing: .20em;
+            text-transform: uppercase;
+            color: var(--muted);
+          }
+          .academy-flyer2 .kdot{
+            width: 10px;
+            height: 10px;
+            border-radius: 3px;
+            background: var(--gold);
+            box-shadow: 0 0 0 3px rgba(242,183,5,.16);
+            flex: 0 0 10px;
+          }
+
+          .academy-flyer2 h1{
+            margin: 8px 0 6px;
+            font-size: 30px;
+            line-height: 1.08;
+            letter-spacing: -0.4px;
+          }
+          .academy-flyer2 .sub{
+            margin:0;
+            color: var(--muted);
+            font-size: 14px;
+            line-height: 1.48;
+            max-width: 86ch;
+          }
+
+          .academy-flyer2 .meta{
+            display:flex;
+            flex-direction:column;
+            align-items:flex-end;
+            gap: 8px;
+            min-width: 250px;
+          }
+
+          .academy-flyer2 .pill{
+            display:inline-flex;
+            align-items:center;
+            gap:8px;
+            padding: 7px 10px;
+            border-radius: 999px;
+            border: 1px solid var(--line);
+            background: #fff;
+            color: var(--muted);
+            font-size: 12px;
+            white-space: nowrap;
+            box-shadow: var(--shadow2);
+          }
+
+          .academy-flyer2 .logo-chip{
+            width: 250px;
+            border: 1px solid var(--line);
+            border-radius: 16px;
+            padding: 10px 12px;
+            background: #fff;
+            box-shadow: var(--shadow2);
+          }
+          .academy-flyer2 .logo-img{
+            display:block;
+            width:100%;
+            height:auto;
+            opacity:.98;
+            filter: contrast(1.25) brightness(0.9);
+          }
+
+          .academy-flyer2 .card{
+            border: 1px solid var(--line);
+            background: #fff;
+            border-radius: 18px;
+            padding: 14px 14px;
+            box-shadow: var(--shadow2);
+          }
+          .academy-flyer2 .card p{
+            margin:0;
+            font-size: 14px;
+            line-height: 1.52;
+            color: var(--ink);
+          }
+          .academy-flyer2 .card p + p{ margin-top: 8px; }
+
+          .academy-flyer2 .bar{
+            margin-top: 10px;
+            border-radius: 14px;
+            padding: 10px 12px;
+            background: linear-gradient(90deg, rgba(242,183,5,.22), rgba(242,183,5,.06));
+            border: 1px solid rgba(242,183,5,.35);
+            font-weight: 650;
+            font-size: 13.5px;
+          }
+
+          .academy-flyer2 .stats{
+            display:grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            margin-top: 10px;
+          }
+          .academy-flyer2 .stat{
+            border: 1px solid var(--line);
+            background: #fbfcff;
+            border-radius: 16px;
+            padding: 10px 10px;
+          }
+          .academy-flyer2 .stat .k{
+            font-size: 11px;
+            letter-spacing: .18em;
+            text-transform: uppercase;
+            color: var(--muted);
+            margin-bottom: 6px;
+          }
+          .academy-flyer2 .stat .v{
+            font-size: 13.5px;
+            font-weight: 750;
+            line-height: 1.25;
+            color: var(--ink);
+          }
+
+          .academy-flyer2 .h2{
+            display:flex;
+            align-items:center;
+            justify-content:space-between;
+            gap: 12px;
+            margin: 2px 0 10px;
+          }
+          .academy-flyer2 .h2 h2{
+            margin:0;
+            font-size: 14px;
+            letter-spacing: .18em;
+            text-transform: uppercase;
+            color: var(--ink);
+          }
+          .academy-flyer2 .tag{
+            font-size: 11.5px;
+            color: var(--muted);
+            border: 1px solid var(--line);
+            background: #fff;
+            padding: 6px 10px;
+            border-radius: 999px;
+            box-shadow: var(--shadow2);
+            white-space: nowrap;
+          }
+
+          .academy-flyer2 .grid-2{
+            display:grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            align-items:start;
+          }
+
+          .academy-flyer2 ul{
+            margin: 10px 0 0;
+            padding: 0;
+            list-style: none;
+            display:grid;
+            gap: 8px;
+          }
+
+          .academy-flyer2 li{
+            display:flex;
+            gap: 10px;
+            align-items:flex-start;
+            padding: 9px 10px;
+            border-radius: 16px;
+            background: #f7f9fe;
+            border: 1px solid #e9effa;
+          }
+
+          .academy-flyer2 .icon{
+            width: 18px;
+            height: 18px;
+            flex: 0 0 18px;
+            margin-top: 2px;
+            border-radius: 6px;
+            background: rgba(242,183,5,.22);
+            border: 1px solid rgba(242,183,5,.55);
+            position: relative;
+          }
+          .academy-flyer2 .icon::after{
+            content:"";
+            position:absolute;
+            left: 6px;
+            top: 3px;
+            width: 6px;
+            height: 10px;
+            border: solid var(--ink);
+            border-width: 0 2px 2px 0;
+            transform: rotate(45deg);
+            opacity: .9;
+          }
+
+          .academy-flyer2 .li-text{
+            font-size: 13.8px;
+            line-height: 1.42;
+            color: var(--ink);
+          }
+          .academy-flyer2 .li-text strong{
+            display:block;
+            margin-bottom: 3px;
+            color: var(--ink);
+          }
+
+          .academy-flyer2 .subpoints{
+            margin-top: 6px;
+            display:grid;
+            gap: 4px;
+            color: var(--muted);
+            font-size: 12.8px;
+            line-height: 1.35;
+          }
+          .academy-flyer2 .subpoints div{
+            display:flex;
+            gap: 8px;
+            align-items:flex-start;
+          }
+          .academy-flyer2 .subpoints div::before{
+            content:"";
+            width: 6px;
+            height: 6px;
+            border-radius: 999px;
+            background: rgba(11,15,20,.25);
+            margin-top: 6px;
+            flex: 0 0 6px;
+          }
+
+          .academy-flyer2 .stack{
+            display:grid;
+            gap: 8px;
+            margin-top: 8px;
+          }
+
+          .academy-flyer2 .mini{
+            border: 1px solid #e9effa;
+            background: #f7f9fe;
+            border-radius: 16px;
+            padding: 9px 10px;
+            display:flex;
+            gap: 10px;
+            align-items:flex-start;
+            break-inside: avoid;
+            page-break-inside: avoid;
+          }
+
+          .academy-flyer2 .mini .mini-body{
+            min-width: 0;
+            flex: 1;
+          }
+
+          .academy-flyer2 .mini-head{
+            display:flex;
+            align-items:center;
+            gap: 8px;
+          }
+
+          .academy-flyer2 .ticon{
+            width: 16px;
+            height: 16px;
+            flex: 0 0 16px;
+            stroke: var(--ink);
+            fill: none;
+            stroke-width: 1.9;
+            opacity: .92;
+          }
+
+          .academy-flyer2 .mini-title{
+            margin: 0;
+            font-weight: 760;
+            font-size: 13.1px;
+            line-height: 1.25;
+            color: var(--ink);
+          }
+
+          .academy-flyer2 .mini-points{
+            margin-top: 5px;
+            display:grid;
+            gap: 3px;
+            color: var(--muted);
+            font-size: 12.2px;
+            line-height: 1.28;
+          }
+
+          .academy-flyer2 .mini-points .pt{
+            display:flex;
+            gap: 8px;
+            align-items:flex-start;
+          }
+          .academy-flyer2 .mini-points .pt::before{
+            content:"";
+            width: 6px;
+            height: 6px;
+            border-radius: 999px;
+            background: rgba(11,15,20,.25);
+            margin-top: 5px;
+            flex: 0 0 6px;
+          }
+
+          .academy-flyer2 .contact{
+            margin-top: auto;
+            padding-top: 10px;
+            border-top: 1px dashed var(--line);
+            display:flex;
+            align-items:flex-start;
+            justify-content:flex-end;
+            color: var(--muted);
+          }
+          .academy-flyer2 .contact-right{
+            width: 100%;
+            display:flex;
+            justify-content: space-between;
+            align-items:center;
+            gap: 10px;
+            flex-wrap: wrap;
+          }
+          .academy-flyer2 .citem{
+            display:flex;
+            align-items:center;
+            gap: 6px;
+            padding: 5px 7px;
+            border-radius: 999px;
+            border: 1px solid var(--line);
+            background: #fff;
+            box-shadow: var(--shadow2);
+            font-size: 11px;
+            color: var(--muted);
+            text-decoration: none;
+            white-space: nowrap;
+            flex: 1 1 160px;
+            justify-content: center;
+            text-align:center;
+          }
+          .academy-flyer2 .cicon{
+            width: 14px;
+            height: 14px;
+            flex: 0 0 14px;
+            fill: none;
+            stroke: var(--ink);
+            stroke-width: 1.8;
+            opacity: .9;
+          }
+
+          .academy-flyer2 .page-break{
+            page-break-before: always;
+            break-before: page;
+          }
+
+          .academy-flyer2 .content.tight{
+            padding: 0.28in 0.40in 0.18in 0.74in;
+            gap: 8px;
+          }
+
+          .academy-flyer2 .content.tight .top{
+            padding-bottom: 6px;
+            gap: 14px;
+          }
+          .academy-flyer2 .content.tight .kicker{
+            font-size: 13.5px;
+            letter-spacing: .20em;
+            margin-bottom: 2px;
+          }
+          .academy-flyer2 .content.tight h1{
+            font-size: 30px !important;
+            line-height: 1.04;
+            margin: 6px 0 4px !important;
+          }
+          .academy-flyer2 .content.tight .sub{
+            font-size: 14.2px;
+            line-height: 1.32;
+            max-width: 78ch;
+            margin-top: 0;
+          }
+          .academy-flyer2 .content.tight .card{ padding: 10px 10px; }
+          .academy-flyer2 .content.tight ul{ gap: 6px; margin-top: 6px; }
+          .academy-flyer2 .content.tight li{ padding: 7px 8px; border-radius: 14px; }
+          .academy-flyer2 .content.tight .li-text{ font-size: 12.7px; line-height: 1.34; }
+          .academy-flyer2 .content.tight .subpoints{
+            font-size: 11.6px;
+            line-height: 1.28;
+            gap: 2px;
+            margin-top: 4px;
+          }
+          .academy-flyer2 .content.tight .subpoints div::before{ margin-top: 5px; }
+          .academy-flyer2 .content.tight .bar{
+            font-size: 12.3px;
+            padding: 7px 9px;
+            margin-top: 7px;
+            border-radius: 12px;
+          }
+          .academy-flyer2 .content.tight .pill{
+            font-size: 11.6px;
+            padding: 6px 10px;
+          }
+          .academy-flyer2 .content.tight .stack{ gap: 6px; margin-top: 6px; }
+          .academy-flyer2 .content.tight .mini{ padding: 7px 8px; }
+          .academy-flyer2 .content.tight .mini-title{ font-size: 12.8px; }
+          .academy-flyer2 .content.tight .mini-points{ font-size: 11.7px; line-height: 1.25; }
+          .academy-flyer2 .content.tight .contact{ padding-top: 7px; }
+          .academy-flyer2 .content.tight .contact-right{ gap: 8px; }
+          .academy-flyer2 .content.tight .citem{ font-size: 10.6px; padding: 4px 6px; }
+          .academy-flyer2 .content.tight .cicon{ width: 13px; height: 13px; flex: 0 0 13px; }
+          .academy-flyer2 .content.tight .page2-body{ margin-top: 18px; }
+
+          @media print{
+            .academy-flyer2 .sheet{
+              margin:0;
+              border-radius:0;
+              box-shadow:none;
+            }
+          }
+        `}</style>
+      </div>
+    </section>
+  );
+}
+
+function AcademyTrackOperations() {
+  return (
+    <section className="px-6 py-12 md:py-16 bg-[#eef3fb]">
+      <div className="max-w-7xl mx-auto">
+        <Link to="/academy" className="inline-flex items-center text-sm font-semibold text-black/70 hover:text-black">
+          <ArrowRight className="mr-2 rotate-180" size={18} /> Back to Academy
+        </Link>
+
+        <div className="mt-6 flex items-end justify-between gap-4 flex-wrap">
+          <div>
+            <p className="text-xs font-semibold tracking-[0.22em] uppercase text-black/60">Track 03</p>
+            <h1 className="text-3xl md:text-4xl font-black mt-2 leading-tight">
+              Apprenticeship <span className="text-[#D6A21E]">Tracts</span>
+            </h1>
+            <p className="text-black/70 mt-2 max-w-2xl">
+              Print-friendly 2-page flyer. Use “Print” to save as PDF.
+            </p>
+          </div>
+          <Button
+            type="button"
+            className="bg-[#121212] text-[#D6A21E] hover:bg-black rounded-full px-8 py-5"
+            onClick={() => window.print()}
+          >
+            Print / Save as PDF <ArrowRight className="ml-2" />
+          </Button>
+        </div>
+
+        <div className="mt-10 academy-flyer3 space-y-10">
+          <div className="overflow-x-auto pb-4">
+            <main className="sheet" role="document" aria-label="Fulcrum Academy Apprenticeship Tracts Flyer Page 1">
+              <section className="content">
+                <header className="top">
+                  <div>
+                    <div className="kicker">
+                      <span className="kdot" /> Fulcrum Academy • Overview
+                    </div>
+                    <h1>Apprenticeship Tracts</h1>
+                    <p className="sub">
+                      The Fulcrum Academy is a best-in-class professional apprenticeship designed to prepare{" "}
+                      <strong>entrepreneurs</strong>, <strong>intrapreneurs</strong>, and{" "}
+                      <strong>sales &amp; marketing professionals</strong> for high-impact, high-earning careers.
+                    </p>
+                  </div>
+
+                  <div className="meta">
+                    <div className="logo-chip" aria-label="Fulcrum logo">
+                      <img className="logo-img" src="/brand/fulcrum-wordmark.png" alt="Fulcrum" />
+                    </div>
+                    <div className="pill">Applied • Performance-Based • Mentored</div>
+                  </div>
+                </header>
+
+                <div className="stack-1">
+                  <section className="card">
+                    <div className="h2">
+                      <h2>What Is the Fulcrum Academy?</h2>
+                      <span className="tag">Not theory</span>
+                    </div>
+
+                    <p>
+                      Founded by <strong>Reece Theriot, MBA</strong>, former sales, marketing, and entrepreneurship professor at
+                      the University of Louisiana at Lafayette’s <strong>B.I. Moody III College of Business</strong>, the Academy
+                      blends real-world execution, mentorship, and applied business development.
+                    </p>
+                    <p>
+                      Reece helped create UL’s Entrepreneurship Minor curriculum and served as Head Coach of the UL Ragin’ Sales Team,
+                      which consistently competed and placed at national sales competitions.
+                    </p>
+
+                    <div className="bar">This is not theory. It is applied, performance-based learning.</div>
+                  </section>
+
+                  <section className="card">
+                    <div className="h2">
+                      <h2>What You Will Learn</h2>
+                      <span className="tag">Job-ready skills</span>
+                    </div>
+
+                    <ul>
+                      <li><span className="icon" /><span className="li-text">Understand why sales and marketing drive organizational growth</span></li>
+                      <li><span className="icon" /><span className="li-text">Speak the language of sales, marketing, and entrepreneurship</span></li>
+                      <li><span className="icon" /><span className="li-text">Build and execute proactive outreach campaigns</span></li>
+                      <li><span className="icon" /><span className="li-text">Research markets and create prospecting lists</span></li>
+                      <li><span className="icon" /><span className="li-text">Conduct professional outbound outreach</span></li>
+                      <li><span className="icon" /><span className="li-text">Use a CRM to manage relationships and opportunities</span></li>
+                      <li><span className="icon" /><span className="li-text">Identify sales and marketing opportunities locally and nationally</span></li>
+                    </ul>
+                  </section>
+                </div>
+
+                <div className="page1-mark" aria-hidden="true">
+                  <img src="/brand/fulcrum-mark.png" alt="" />
+                </div>
+
+                <footer className="contact" aria-label="Contact information">
+                  <div className="contact-right">
+                    <a className="citem" href="mailto:info@workwithfulcrum.com">
+                      <svg className="cicon" viewBox="0 0 24 24" aria-hidden="true">
+                        <path d="M4 6h16v12H4z" />
+                        <path d="M4 7l8 6 8-6" />
+                      </svg>
+                      info@workwithfulcrum.com
+                    </a>
+
+                    <a className="citem" href="tel:+13373069436">
+                      <svg className="cicon" viewBox="0 0 24 24" aria-hidden="true">
+                        <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.8 19.8 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.08 4.18 2 2 0 0 1 4.06 2h3a2 2 0 0 1 2 1.72c.12.86.3 1.7.54 2.5a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.58-1.06a2 2 0 0 1 2.11-.45c.8.24 1.64.42 2.5.54A2 2 0 0 1 22 16.92z" />
+                      </svg>
+                      337-306-9436
+                    </a>
+
+                    <a className="citem" href="https://www.workwithfulcrum.com" target="_blank" rel="noopener noreferrer">
+                      <svg className="cicon" viewBox="0 0 24 24" aria-hidden="true">
+                        <path d="M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20z" />
+                        <path d="M2 12h20" />
+                        <path d="M12 2c3 3.5 4.5 7 4.5 10S15 18.5 12 22" />
+                        <path d="M12 2C9 5.5 7.5 9 7.5 12S9 18.5 12 22" />
+                      </svg>
+                      workwithfulcrum.com
+                    </a>
+
+                    <span className="citem" style={{ cursor: "default" }}>
+                      <svg className="cicon" viewBox="0 0 24 24" aria-hidden="true">
+                        <path d="M12 21s7-4.5 7-11a7 7 0 1 0-14 0c0 6.5 7 11 7 11z" />
+                        <path d="M12 10.5a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5z" />
+                      </svg>
+                      108 Kol Dr, Broussard, LA
+                    </span>
+                  </div>
+                </footer>
+              </section>
+            </main>
+          </div>
+
+          <div className="overflow-x-auto pb-4">
+            <main className="sheet page-break" role="document" aria-label="Fulcrum Academy Apprenticeship Tracts Flyer Page 2">
+              <section className="content tight">
+                <header className="top">
+                  <div>
+                    <div className="kicker">
+                      <span className="kdot" /> Fulcrum Academy • Tracts
+                    </div>
+                    <h1>Apprenticeship Tracts</h1>
+                    <p className="sub">Each tract aligns to a specific career outcome. Choose your path — then earn advancement through results.</p>
+                  </div>
+
+                  <div className="meta">
+                    <div className="pill">Page 2 of 2</div>
+                    <div className="pill">Career Outcomes • Level Progression</div>
+                  </div>
+                </header>
+
+                <div className="page2-stack">
+                  <section className="card" aria-label="Tracts" style={{ padding: "10px 10px" }}>
+                    <div className="h2" style={{ marginBottom: 7 }}>
+                      <h2>Apprenticeship Tracts</h2>
+                      <span className="tag">3 pathways</span>
+                    </div>
+
+                    <div className="tracts">
+                      <article className="tract">
+                        <div className="tract-head">
+                          <div>
+                            <p className="tract-title">Fulcrum Tract</p>
+                            <div className="tract-path">Path to a full-time role at Fulcrum</div>
+                          </div>
+                          <div className="chiprow" aria-hidden="true">
+                            <span className="chip">6–12 mo</span>
+                            <span className="chip">Levels: 3</span>
+                          </div>
+                        </div>
+                        <div className="kvs">
+                          <div className="kv"><div className="k">Length</div><div className="v">6–12 mo</div></div>
+                          <div className="kv"><div className="k">Levels</div><div className="v">3</div></div>
+                          <div className="kv"><div className="k">Focus</div><div className="v">Outreach + marketing</div></div>
+                        </div>
+                        <div className="bestfor">
+                          <div className="bfk">Best For</div>
+                          <div className="bfv">Marketing-minded professionals, creatives, brand builders, and those who want agency experience and to stay local.</div>
+                        </div>
+                      </article>
+
+                      <article className="tract">
+                        <div className="tract-head">
+                          <div>
+                            <p className="tract-title">Client Tract</p>
+                            <div className="tract-path">Path to a full-time role at a company</div>
+                          </div>
+                          <div className="chiprow" aria-hidden="true">
+                            <span className="chip">3–6 mo</span>
+                            <span className="chip">Levels: 1–3</span>
+                          </div>
+                        </div>
+                        <div className="kvs">
+                          <div className="kv"><div className="k">Length</div><div className="v">3–6 mo</div></div>
+                          <div className="kv"><div className="k">Levels</div><div className="v">1–3</div></div>
+                          <div className="kv"><div className="k">Focus</div><div className="v">Pipeline dev</div></div>
+                        </div>
+                        <div className="bestfor">
+                          <div className="bfk">Best For</div>
+                          <div className="bfv">Those seeking stable, enterprise-level careers with one company, including relocation opportunities.</div>
+                        </div>
+                      </article>
+
+                      <article className="tract">
+                        <div className="tract-head">
+                          <div>
+                            <p className="tract-title">M&amp;A Tract (Scoutly)</p>
+                            <div className="tract-path">Path to a role in Fulcrum’s M&amp;A division</div>
+                          </div>
+                          <div className="chiprow" aria-hidden="true">
+                            <span className="chip">3–6 mo</span>
+                            <span className="chip">Levels: 2</span>
+                          </div>
+                        </div>
+                        <div className="kvs">
+                          <div className="kv"><div className="k">Length</div><div className="v">3–6 mo</div></div>
+                          <div className="kv"><div className="k">Levels</div><div className="v">2</div></div>
+                          <div className="kv"><div className="k">Focus</div><div className="v">Buyer–seller sourcing</div></div>
+                        </div>
+                        <div className="bestfor">
+                          <div className="bfk">Best For</div>
+                          <div className="bfv">Those pursuing high upside, autonomy, and entry into private equity and M&amp;A.</div>
+                        </div>
+                      </article>
+                    </div>
+                  </section>
+
+                  <section className="card" aria-label="Expectations & Outcomes" style={{ padding: "10px 10px" }}>
+                    <div className="h2" style={{ marginBottom: 7 }}>
+                      <h2>Expectations &amp; Outcomes</h2>
+                      <span className="tag">Proving ground</span>
+                    </div>
+
+                    <ul style={{ marginTop: 0 }}>
+                      <li><span className="icon" /><span className="li-text">3–8 hours per week; 12–25 hours per month</span></li>
+                      <li><span className="icon" /><span className="li-text">Weekly execution benchmarks</span></li>
+                      <li><span className="icon" /><span className="li-text">Training, coaching, and performance reviews</span></li>
+                      <li><span className="icon" /><span className="li-text">Level progression earned by results</span></li>
+                      <li><span className="icon" /><span className="li-text">Placement opportunities for top performers</span></li>
+                    </ul>
+
+                    <div className="bar" style={{ marginTop: 7 }}>This is a proving ground—not a classroom.</div>
+                  </section>
+                </div>
+
+                <footer className="contact" aria-label="Contact information">
+                  <div className="contact-right">
+                    <a className="citem" href="mailto:info@workwithfulcrum.com">
+                      <svg className="cicon" viewBox="0 0 24 24" aria-hidden="true">
+                        <path d="M4 6h16v12H4z" />
+                        <path d="M4 7l8 6 8-6" />
+                      </svg>
+                      info@workwithfulcrum.com
+                    </a>
+
+                    <a className="citem" href="tel:+13373069436">
+                      <svg className="cicon" viewBox="0 0 24 24" aria-hidden="true">
+                        <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.8 19.8 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.08 4.18 2 2 0 0 1 4.06 2h3a2 2 0 0 1 2 1.72c.12.86.3 1.7.54 2.5a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.58-1.06a2 2 0 0 1 2.11-.45c.8.24 1.64.42 2.5.54A2 2 0 0 1 22 16.92z" />
+                      </svg>
+                      337-306-9436
+                    </a>
+
+                    <a className="citem" href="https://www.workwithfulcrum.com" target="_blank" rel="noopener noreferrer">
+                      <svg className="cicon" viewBox="0 0 24 24" aria-hidden="true">
+                        <path d="M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20z" />
+                        <path d="M2 12h20" />
+                        <path d="M12 2c3 3.5 4.5 7 4.5 10S15 18.5 12 22" />
+                        <path d="M12 2C9 5.5 7.5 9 7.5 12S9 18.5 12 22" />
+                      </svg>
+                      workwithfulcrum.com
+                    </a>
+
+                    <span className="citem" style={{ cursor: "default" }}>
+                      <svg className="cicon" viewBox="0 0 24 24" aria-hidden="true">
+                        <path d="M12 21s7-4.5 7-11a7 7 0 1 0-14 0c0 6.5 7 11 7 11z" />
+                        <path d="M12 10.5a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5z" />
+                      </svg>
+                      108 Kol Dr, Broussard, LA
+                    </span>
+                  </div>
+                </footer>
+              </section>
+            </main>
+          </div>
+        </div>
+
+        <style>{`
+          .academy-flyer3{
+            --ink:#0b0f14;
+            --muted:#5b6676;
+            --paper:#ffffff;
+            --gold:#f2b705;
+            --goldSoft: rgba(242,183,5,.12);
+            --goldLine: rgba(242,183,5,.28);
+            --line:#e6edf6;
+            --shadow: 0 16px 38px rgba(11,15,20,.12);
+            --shadow2: 0 10px 22px rgba(11,15,20,.08);
+          }
+          @page { size: 8.5in 11in; margin: 0.5in; }
+          .academy-flyer3, .academy-flyer3 *{
+            box-sizing:border-box;
+            -webkit-print-color-adjust: exact !important;
+            print-color-adjust: exact !important;
+          }
+
+          .academy-flyer3 .sheet{
+            width: 8.5in;
+            height: 11in;
+            margin: 0 auto;
+            border-radius: 18px;
+            box-shadow: var(--shadow);
+            overflow: hidden;
+            position: relative;
+            background:
+              linear-gradient(120deg, rgba(242,183,5,.28) 0%, rgba(242,183,5,0) 46%) top left / 600px 600px no-repeat,
+              radial-gradient(620px 440px at 100% 0%, rgba(11,15,20,.13), transparent 64%),
+              radial-gradient(980px 620px at 70% 6%, rgba(242,183,5,.18), transparent 66%),
+              linear-gradient(180deg, #ffffff 0%, #fbfcff 100%);
+          }
+          .academy-flyer3 .sheet::before{
+            content:"";
+            position:absolute;
+            inset: 12px;
+            border-radius: 16px;
+            border: 2px solid rgba(11,15,20,.14);
+            box-shadow:
+              inset 0 0 0 1px rgba(255,255,255,.62),
+              0 1px 0 rgba(255,255,255,.35);
+            pointer-events:none;
+            z-index:0;
+          }
+
+          .academy-flyer3 .content{
+            position:relative;
+            z-index: 1;
+            height: 100%;
+            padding: 0.40in 0.50in 0.32in;
+            display:flex;
+            flex-direction:column;
+            gap: 12px;
+          }
+
+          .academy-flyer3 .top{
+            display:flex;
+            align-items:flex-start;
+            justify-content:space-between;
+            gap: 16px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid var(--line);
+            position: relative;
+          }
+          .academy-flyer3 .top::after{
+            content:"";
+            position:absolute;
+            left:0;
+            right:0;
+            bottom:-1px;
+            height: 2px;
+            border-radius: 999px;
+            background: linear-gradient(90deg, rgba(242,183,5,0), rgba(242,183,5,.35), rgba(242,183,5,0));
+            opacity: .65;
+            pointer-events:none;
+          }
+
+          .academy-flyer3 .kicker{
+            display:inline-flex;
+            align-items:center;
+            gap: 10px;
+            font-size: 12px;
+            letter-spacing: .20em;
+            text-transform: uppercase;
+            color: var(--muted);
+          }
+          .academy-flyer3 .kdot{
+            width: 10px;
+            height: 10px;
+            border-radius: 3px;
+            background: var(--gold);
+            box-shadow: 0 0 0 3px rgba(242,183,5,.16);
+            flex: 0 0 10px;
+          }
+
+          .academy-flyer3 h1{
+            margin: 8px 0 6px;
+            font-size: 30px;
+            line-height: 1.08;
+            letter-spacing: -0.4px;
+          }
+          .academy-flyer3 .sub{
+            margin:0;
+            color: var(--muted);
+            font-size: 14px;
+            line-height: 1.48;
+            max-width: 92ch;
+          }
+
+          .academy-flyer3 .meta{
+            display:flex;
+            flex-direction:column;
+            align-items:flex-end;
+            gap: 8px;
+            min-width: 250px;
+          }
+          .academy-flyer3 .pill{
+            display:inline-flex;
+            align-items:center;
+            gap:8px;
+            padding: 7px 10px;
+            border-radius: 999px;
+            border: 1px solid var(--line);
+            background: rgba(255,255,255,.92);
+            color: var(--muted);
+            font-size: 12px;
+            white-space: nowrap;
+            box-shadow: var(--shadow2);
+            backdrop-filter: blur(4px);
+          }
+
+          .academy-flyer3 .logo-chip{
+            width: 250px;
+            border: 1px solid var(--line);
+            border-radius: 16px;
+            padding: 10px 12px;
+            background: rgba(255,255,255,.92);
+            box-shadow: var(--shadow2);
+            backdrop-filter: blur(4px);
+          }
+          .academy-flyer3 .logo-img{
+            display:block;
+            width:100%;
+            height:auto;
+            opacity:.98;
+            filter: contrast(1.25) brightness(0.9);
+          }
+
+          .academy-flyer3 .card{
+            border: 1px solid var(--line);
+            background: rgba(255,255,255,.92);
+            border-radius: 18px;
+            padding: 14px 14px;
+            box-shadow: var(--shadow2);
+            backdrop-filter: blur(6px);
+            position: relative;
+          }
+          .academy-flyer3 .card::before{
+            content:"";
+            position:absolute;
+            left: 14px;
+            right: 14px;
+            top: 12px;
+            height: 3px;
+            border-radius: 999px;
+            background: linear-gradient(90deg, rgba(242,183,5,0), rgba(242,183,5,.28), rgba(242,183,5,0));
+            opacity: .45;
+            pointer-events:none;
+          }
+          .academy-flyer3 .card p{
+            margin:0;
+            font-size: 14px;
+            line-height: 1.52;
+            color: var(--ink);
+          }
+          .academy-flyer3 .card p + p{ margin-top: 8px; }
+
+          .academy-flyer3 .h2{
+            display:flex;
+            align-items:center;
+            justify-content:space-between;
+            gap: 12px;
+            margin: 0 0 10px;
+          }
+          .academy-flyer3 .h2 h2{
+            margin:0;
+            font-size: 14px;
+            letter-spacing: .18em;
+            text-transform: uppercase;
+            color: var(--ink);
+          }
+          .academy-flyer3 .tag{
+            font-size: 11.5px;
+            color: var(--muted);
+            border: 1px solid rgba(242,183,5,.22);
+            background: rgba(242,183,5,.10);
+            padding: 6px 10px;
+            border-radius: 999px;
+            box-shadow: var(--shadow2);
+            white-space: nowrap;
+            backdrop-filter: blur(4px);
+          }
+
+          .academy-flyer3 ul{
+            margin: 10px 0 0;
+            padding: 0;
+            list-style: none;
+            display:grid;
+            gap: 8px;
+          }
+          .academy-flyer3 li{
+            display:flex;
+            gap: 10px;
+            align-items:flex-start;
+            padding: 9px 10px;
+            border-radius: 16px;
+            background: rgba(246,248,252,.94);
+            border: 1px solid #e9effa;
+            backdrop-filter: blur(4px);
+          }
+          .academy-flyer3 .icon{
+            width: 18px;
+            height: 18px;
+            flex: 0 0 18px;
+            margin-top: 2px;
+            border-radius: 6px;
+            background: rgba(242,183,5,.22);
+            border: 1px solid rgba(242,183,5,.55);
+            position: relative;
+          }
+          .academy-flyer3 .icon::after{
+            content:"";
+            position:absolute;
+            left: 6px;
+            top: 3px;
+            width: 6px;
+            height: 10px;
+            border: solid var(--ink);
+            border-width: 0 2px 2px 0;
+            transform: rotate(45deg);
+            opacity: .9;
+          }
+          .academy-flyer3 .li-text{
+            font-size: 13.8px;
+            line-height: 1.42;
+            color: var(--ink);
+          }
+
+          .academy-flyer3 .bar{
+            margin-top: 10px;
+            border-radius: 14px;
+            padding: 10px 12px;
+            background: linear-gradient(90deg, rgba(242,183,5,.22), rgba(242,183,5,.06));
+            border: 1px solid rgba(242,183,5,.35);
+            font-weight: 650;
+            font-size: 13.5px;
+          }
+
+          .academy-flyer3 .stack-1{ display:grid; gap: 12px; }
+
+          .academy-flyer3 .page1-mark{
+            position:absolute;
+            left: 50%;
+            transform: translateX(-50%);
+            bottom: 96px;
+            z-index: 0;
+            pointer-events:none;
+            width: 1.22in;
+          }
+          .academy-flyer3 .page1-mark img{
+            display:block;
+            width:100%;
+            height:auto;
+            opacity: .085;
+            filter: saturate(1.05) brightness(.85) contrast(1.08);
+            mix-blend-mode: normal;
+          }
+
+          .academy-flyer3 .top, .academy-flyer3 .stack-1, .academy-flyer3 .contact{
+            position: relative;
+            z-index: 1;
+          }
+
+          .academy-flyer3 .contact{
+            margin-top: auto;
+            padding-top: 10px;
+            border-top: 1px dashed var(--line);
+            display:flex;
+            align-items:flex-start;
+            justify-content:flex-end;
+            color: var(--muted);
+          }
+          .academy-flyer3 .contact-right{
+            width: 100%;
+            display:flex;
+            justify-content: space-between;
+            align-items:center;
+            gap: 10px;
+            flex-wrap: wrap;
+          }
+          .academy-flyer3 .citem{
+            display:flex;
+            align-items:center;
+            gap: 6px;
+            padding: 5px 7px;
+            border-radius: 999px;
+            border: 1px solid var(--line);
+            background: rgba(255,255,255,.92);
+            box-shadow: var(--shadow2);
+            font-size: 11px;
+            color: var(--muted);
+            text-decoration: none;
+            white-space: nowrap;
+            flex: 1 1 160px;
+            justify-content: center;
+            text-align:center;
+            backdrop-filter: blur(4px);
+          }
+          .academy-flyer3 .cicon{
+            width: 14px;
+            height: 14px;
+            flex: 0 0 14px;
+            fill: none;
+            stroke: var(--ink);
+            stroke-width: 1.8;
+            opacity: .9;
+          }
+
+          .academy-flyer3 .page-break{ page-break-before: always; break-before: page; }
+
+          .academy-flyer3 .content.tight{
+            padding: 0.30in 0.42in 0.20in;
+            gap: 8px;
+          }
+          .academy-flyer3 .content.tight .top{ padding-bottom: 7px; }
+          .academy-flyer3 .content.tight h1{
+            font-size: 25px;
+            margin: 6px 0 3px;
+            line-height: 1.06;
+          }
+          .academy-flyer3 .content.tight .sub{
+            font-size: 12.8px;
+            line-height: 1.32;
+          }
+          .academy-flyer3 .content.tight .pill{
+            font-size: 11px;
+            padding: 6px 9px;
+          }
+          .academy-flyer3 .content.tight .card{
+            padding: 10px 10px;
+            border-radius: 16px;
+          }
+          .academy-flyer3 .content.tight .h2{ margin-bottom: 7px; }
+          .academy-flyer3 .content.tight .h2 h2{ font-size: 12.4px; }
+          .academy-flyer3 .content.tight .tag{
+            font-size: 10.8px;
+            padding: 5px 9px;
+          }
+          .academy-flyer3 .content.tight ul{
+            gap: 6px;
+            margin-top: 6px;
+          }
+          .academy-flyer3 .content.tight li{
+            padding: 7px 8px;
+            border-radius: 14px;
+          }
+          .academy-flyer3 .content.tight .li-text{
+            font-size: 12.1px;
+            line-height: 1.28;
+          }
+          .academy-flyer3 .content.tight .icon{
+            width: 16px;
+            height: 16px;
+            flex: 0 0 16px;
+            margin-top: 2px;
+            border-radius: 5px;
+          }
+          .academy-flyer3 .content.tight .icon::after{
+            left: 5px;
+            top: 2px;
+            width: 5px;
+            height: 8px;
+          }
+
+          .academy-flyer3 .page2-stack{ display:grid; gap: 8px; }
+          .academy-flyer3 .tracts{ display:grid; gap: 6px; }
+          .academy-flyer3 .tract{
+            border: 1px solid var(--line);
+            background: rgba(255,255,255,.92);
+            border-radius: 14px;
+            padding: 8px 8px;
+            box-shadow: var(--shadow2);
+            break-inside: avoid;
+            page-break-inside: avoid;
+          }
+          .academy-flyer3 .tract-head{
+            display:flex;
+            align-items:flex-start;
+            justify-content:space-between;
+            gap: 10px;
+            margin-bottom: 6px;
+          }
+          .academy-flyer3 .tract-title{
+            margin:0;
+            font-size: 13.2px;
+            line-height: 1.14;
+            font-weight: 860;
+            letter-spacing: -0.15px;
+          }
+          .academy-flyer3 .tract-path{
+            font-size: 10.9px;
+            color: var(--muted);
+            line-height: 1.22;
+            margin-top: 3px;
+          }
+          .academy-flyer3 .chiprow{
+            display:flex;
+            gap: 6px;
+            flex-wrap: wrap;
+            justify-content:flex-end;
+          }
+          .academy-flyer3 .chip{
+            font-size: 10.1px;
+            color: var(--muted);
+            border: 1px solid rgba(242,183,5,.22);
+            background: rgba(242,183,5,.08);
+            padding: 4px 7px;
+            border-radius: 999px;
+            white-space: nowrap;
+          }
+          .academy-flyer3 .kvs{
+            display:grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 6px;
+            margin-top: 5px;
+          }
+          .academy-flyer3 .kv{
+            border: 1px solid #e9effa;
+            background: rgba(246,248,252,.95);
+            border-radius: 11px;
+            padding: 5px 6px;
+          }
+          .academy-flyer3 .kv .k{
+            font-size: 9.6px;
+            letter-spacing: .18em;
+            text-transform: uppercase;
+            color: var(--muted);
+            margin-bottom: 3px;
+          }
+          .academy-flyer3 .kv .v{
+            font-size: 11.2px;
+            font-weight: 760;
+            line-height: 1.14;
+            color: var(--ink);
+          }
+          .academy-flyer3 .bestfor{
+            margin-top: 6px;
+            border: 1px dashed #dfe7f4;
+            background: rgba(255,255,255,.70);
+            border-radius: 11px;
+            padding: 6px 7px;
+          }
+          .academy-flyer3 .bestfor .bfk{
+            font-size: 10px;
+            letter-spacing: .18em;
+            text-transform: uppercase;
+            color: var(--muted);
+            margin-bottom: 4px;
+          }
+          .academy-flyer3 .bestfor .bfv{
+            font-size: 11.6px;
+            line-height: 1.24;
+            color: var(--ink);
+          }
+
+          .academy-flyer3 .content.tight .bar{
+            font-size: 11.8px;
+            padding: 7px 9px;
+            margin-top: 7px;
+            border-radius: 12px;
+          }
+          .academy-flyer3 .content.tight .contact{ padding-top: 7px; }
+          .academy-flyer3 .content.tight .contact-right{ gap: 8px; }
+          .academy-flyer3 .content.tight .citem{
+            font-size: 10.4px;
+            padding: 4px 6px;
+            flex: 1 1 150px;
+          }
+          .academy-flyer3 .content.tight .cicon{
+            width: 13px;
+            height: 13px;
+            flex: 0 0 13px;
+          }
+
+          @media print{
+            .academy-flyer3 .sheet{
+              margin:0;
+              border-radius:0;
+              box-shadow:none;
+            }
+          }
+        `}</style>
+      </div>
+    </section>
   );
 }
 
@@ -3741,6 +6866,8 @@ function Consultation() {
 
 function ConsultationForm() {
   const [submitted, setSubmitted] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
   const [form, setForm] = useState({
     name: "",
     email: "",
@@ -3767,8 +6894,29 @@ function ConsultationForm() {
 
   function onSubmit(e) {
     e.preventDefault();
-    if (!canSubmit) return;
-    setSubmitted(true);
+    if (!canSubmit || loading) return;
+    setLoading(true);
+    setError("");
+
+    (async () => {
+      try {
+        const r = await fetch("/api/consultation", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            ...form,
+            sourceUrl: typeof window !== "undefined" ? window.location.href : "",
+          }),
+        });
+        const data = await r.json().catch(() => ({}));
+        if (!r.ok) throw new Error(data?.error || "Unable to submit. Please try again.");
+        setSubmitted(true);
+      } catch (err) {
+        setError(String(err?.message || err));
+      } finally {
+        setLoading(false);
+      }
+    })();
   }
 
   if (submitted) {
@@ -3916,12 +7064,13 @@ function ConsultationForm() {
               type="submit"
               className={cx(
                 "rounded-full px-10 py-6 text-lg",
-                canSubmit
+                canSubmit && !loading
                   ? "bg-[#D6A21E] text-black hover:bg-[#B88A16]"
                   : "bg-black/10 text-black/40 cursor-not-allowed hover:bg-black/10"
               )}
+              disabled={!canSubmit || loading}
             >
-              Request my free consultation
+              {loading ? "Submitting…" : "Request my free consultation"}
             </Button>
             <Link to="/about">
               <Button className="rounded-full px-10 py-6 text-lg bg-[#121212] text-[#D6A21E] hover:bg-black">
@@ -3929,6 +7078,8 @@ function ConsultationForm() {
               </Button>
             </Link>
           </div>
+
+          {error ? <p className="text-xs text-red-700">{error}</p> : null}
 
           {!canSubmit && (
             <p className="text-xs text-black/55">
@@ -3946,37 +7097,25 @@ const apprentices = [
     name: "Keijae Eeves",
     role: "Social Media Manager",
     quote: "The Academy gave me real-world reps and confidence I couldn’t get in a classroom.",
-    img: "/apprentices/keijae.jpg",
+    img: "/apprentices/keijae.png",
   },
   {
     name: "Aaron Simon",
     role: "Project Manager",
     quote: "I learned how to manage projects under pressure and deliver consistently.",
-    img: "/apprentices/aaron.jpg",
+    img: "/apprentices/aaron.png",
   },
   {
     name: "Jacob McCullars",
     role: "Brand Ambassador",
     quote: "It pushed me out of my comfort zone and into leadership fast.",
-    img: "/apprentices/jacob.jpg",
+    img: "/apprentices/jacob.png",
   },
   {
     name: "Christian Merrick",
     role: "Project Manager",
     quote: "The coaching and structure helped me level up my execution.",
-    img: "/apprentices/christian.jpg",
-  },
-  {
-    name: "Kirstianna Bounds",
-    role: "Apprentice",
-    quote: "I finally understand how sales and marketing work together.",
-    img: "/apprentices/kirstianna.jpg",
-  },
-  {
-    name: "Emanuel Thomas",
-    role: "Brand Ambassador",
-    quote: "Best hands-on learning experience I’ve had so far.",
-    img: "/apprentices/emanuel.jpg",
+    img: "/apprentices/christian.png",
   },
 ];
 
@@ -4048,27 +7187,63 @@ function ApprenticeMarquee() {
 
 function AcademyApplication() {
   const [submitted, setSubmitted] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
   const [form, setForm] = useState({
     name: "",
     email: "",
     phone: "",
     status: "",
-    
+    resume: null,
     why: "",
   });
 
   const canSubmit = useMemo(() => {
-    return form.name.trim() && form.email.trim() && form.phone.trim() && form.why.trim();
+    return (
+      form.name.trim() &&
+      form.email.trim() &&
+      form.phone.trim() &&
+      form.why.trim() &&
+      !!form.resume
+    );
   }, [form]);
 
   function update(key) {
     return (e) => setForm((p) => ({ ...p, [key]: e.target.value }));
   }
 
+  function onResumeChange(e) {
+    const file = e.target.files?.[0] || null;
+    setForm((p) => ({ ...p, resume: file }));
+  }
+
   function onSubmit(e) {
     e.preventDefault();
-    if (!canSubmit) return;
-    setSubmitted(true);
+    if (!canSubmit || loading) return;
+    setLoading(true);
+    setError("");
+
+    (async () => {
+      try {
+        const fd = new FormData();
+        fd.append("name", form.name);
+        fd.append("email", form.email);
+        fd.append("phone", form.phone);
+        fd.append("status", form.status);
+        fd.append("why", form.why);
+        if (form.resume) fd.append("resume", form.resume);
+        fd.append("sourceUrl", typeof window !== "undefined" ? window.location.href : "");
+
+        const r = await fetch("/api/academy", { method: "POST", body: fd });
+        const data = await r.json().catch(() => ({}));
+        if (!r.ok) throw new Error(data?.error || "Unable to submit. Please try again.");
+        setSubmitted(true);
+      } catch (err) {
+        setError(String(err?.message || err));
+      } finally {
+        setLoading(false);
+      }
+    })();
   }
 
   if (submitted) {
@@ -4137,8 +7312,26 @@ function AcademyApplication() {
                 <option value="other">Other</option>
               </select>
             </Field>
-            
           </div>
+
+          <Field label="Upload resume" required>
+            <div className="rounded-2xl border border-black/10 bg-[#F3EFE6] p-5">
+              <input
+                type="file"
+                accept=".pdf,.doc,.docx,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+                onChange={onResumeChange}
+                className="block w-full text-sm file:mr-4 file:rounded-full file:border-0 file:bg-[#121212] file:text-[#D6A21E] file:px-6 file:py-3 file:font-semibold hover:file:bg-black"
+              />
+              <div className="mt-3 flex items-center justify-between gap-4 flex-wrap">
+                <p className="text-xs text-black/60">
+                  PDF or Word document.
+                </p>
+                <p className="text-xs font-semibold text-black/70">
+                  {form.resume ? form.resume.name : "No file selected"}
+                </p>
+              </div>
+            </div>
+          </Field>
 
           <Field label="Why do you want to join Fulcrum Academy?" required>
             <textarea
@@ -4154,17 +7347,22 @@ function AcademyApplication() {
             type="submit"
             className={cx(
               "w-full rounded-full py-6 text-lg",
-              canSubmit
+              canSubmit && !loading
                 ? "bg-[#D6A21E] text-black hover:bg-[#B88A16]"
                 : "bg-black/10 text-black/40 cursor-not-allowed hover:bg-black/10"
             )}
+            disabled={!canSubmit || loading}
           >
-            Submit application
+            {loading ? "Submitting…" : "Submit application"}
           </Button>
+
+          {error ? (
+            <p className="text-xs text-red-700 text-center">{error}</p>
+          ) : null}
 
           {!canSubmit && (
             <p className="text-xs text-black/55 text-center">
-              Fill out name, email, phone, and your “why” to submit.
+              Fill out name, email, phone, resume, and your “why” to submit.
             </p>
           )}
         </form>
