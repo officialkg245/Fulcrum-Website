@@ -160,6 +160,41 @@ function useHeaderReveal({ threshold = 10, topReveal = 8 } = {}) {
   return visible;
 }
 
+function useCountUp(target, { duration = 1200, start = 0 } = {}) {
+  const [value, setValue] = useState(start);
+
+  useEffect(() => {
+    let raf = 0;
+    let startTs = 0;
+
+    const step = (ts) => {
+      if (!startTs) startTs = ts;
+      const p = Math.min(1, (ts - startTs) / duration);
+      const eased = 1 - Math.pow(1 - p, 3); // easeOutCubic
+      setValue(start + (target - start) * eased);
+      if (p < 1) raf = window.requestAnimationFrame(step);
+    };
+
+    raf = window.requestAnimationFrame(step);
+    return () => {
+      if (raf) window.cancelAnimationFrame(raf);
+    };
+  }, [duration, start, target]);
+
+  return value;
+}
+
+function formatInt(n) {
+  return Math.round(n).toLocaleString();
+}
+
+function formatCurrencyCompact(n) {
+  const v = Math.max(0, n);
+  if (v >= 1e9) return `$${Math.round(v / 1e9)}B`;
+  if (v >= 1e6) return `$${Math.round(v / 1e6)}M`;
+  return `$${Math.round(v).toLocaleString()}`;
+}
+
 function LimitedTimePill({ className }) {
   return (
     <span
@@ -176,8 +211,7 @@ function LimitedTimePill({ className }) {
   );
 }
 
-function AnnouncementBar() {
-  const [open, setOpen] = useState(true);
+function AnnouncementBar({ open = true, onClose }) {
   if (!open) return null;
 
   return (
@@ -198,7 +232,7 @@ function AnnouncementBar() {
           </Link>
           <button
             type="button"
-            onClick={() => setOpen(false)}
+            onClick={onClose}
             className="text-white/60 hover:text-white text-sm px-2"
             aria-label="Dismiss"
           >
@@ -210,38 +244,13 @@ function AnnouncementBar() {
   );
 }
 
-function FloatingConsultCTA() {
-  return (
-    <div className="fixed z-[60] bottom-5 right-5 md:bottom-6 md:right-6">
-      <div className="rounded-3xl border border-black/10 bg-white/90 backdrop-blur-xl shadow-xl overflow-hidden">
-        <div className="p-4">
-          <div className="flex items-center justify-between gap-3">
-            <div>
-              <div className="flex items-center gap-2">
-                <LimitedTimePill className="bg-[#D6A21E]/15" />
-              </div>
-              <div className="mt-2 text-sm font-black text-[#121212]">Limited-time free consultation</div>
-              <div className="text-xs text-black/60">Get your next 30 days mapped.</div>
-            </div>
-            <Link to="/consultation">
-              <Button className="rounded-full bg-[#121212] text-[#D6A21E] hover:bg-black px-5">
-                Book
-              </Button>
-            </Link>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-}
-
 function Navbar() {
   return (
     <nav className="bg-[#121212] border-b border-white/10">
       <div className="max-w-7xl mx-auto flex justify-between items-center px-8 py-5">
         <Link to="/" aria-label="Fulcrum home" className="group relative">
-          {/* Premium logo plaque (image has a light background) */}
-          <div className="relative rounded-2xl bg-gradient-to-br from-[#F8F3E8] via-white to-[#F2E4C2] border border-white/10 px-4 py-2 shadow-sm overflow-hidden">
+          {/* Premium logo plaque (white mark/wordmark) */}
+          <div className="relative rounded-2xl bg-gradient-to-br from-black/65 via-[#121212] to-black/55 border border-white/10 px-4 py-2 shadow-sm overflow-hidden">
             <div className="pointer-events-none absolute inset-0">
               <div className="absolute -top-16 -right-16 w-56 h-56 bg-[#D6A21E]/18 blur-[34px] opacity-80" />
               <div className="absolute -bottom-16 -left-16 w-56 h-56 bg-black/5 blur-[40px] opacity-70" />
@@ -256,9 +265,9 @@ function Navbar() {
             </div>
 
             <img
-              src="/brand/fulcrum-wordmark.png"
+              src="/brand/fulcrum-wordmark-white.png"
               alt="Fulcrum"
-              className="relative h-7 md:h-8 w-auto"
+              className="relative h-7 md:h-8 w-auto drop-shadow-[0_10px_18px_rgba(0,0,0,0.28)]"
               loading="eager"
               draggable={false}
             />
@@ -304,10 +313,181 @@ function Navbar() {
   );
 }
 
+function SiteFooter() {
+  const { pathname } = useLocation();
+  const key = (pathname.split("?")[0].split("#")[0].split("/")[1] || "home").toLowerCase();
+
+  const quickLinksByKey = {
+    home: [
+      { to: "/services", label: "Services" },
+      { to: "/case-studies", label: "Case studies" },
+      { to: "/consultation", label: "Consultation" },
+    ],
+    about: [
+      { to: "/services", label: "Services" },
+      { to: "/academy", label: "Academy" },
+      { to: "/consultation", label: "Consultation" },
+    ],
+    services: [
+      { to: "/industries", label: "Industries" },
+      { to: "/case-studies", label: "Case studies" },
+      { to: "/consultation", label: "Consultation" },
+    ],
+    industries: [
+      { to: "/services", label: "Services" },
+      { to: "/case-studies", label: "Case studies" },
+      { to: "/blogs", label: "Blogs" },
+    ],
+    "case-studies": [
+      { to: "/industries", label: "Industries" },
+      { to: "/services", label: "Services" },
+      { to: "/blogs", label: "Blogs" },
+    ],
+    blogs: [
+      { to: "/services", label: "Services" },
+      { to: "/case-studies", label: "Case studies" },
+      { to: "/consultation", label: "Consultation" },
+    ],
+    academy: [
+      { to: "/about", label: "About" },
+      { to: "/consultation", label: "Consultation" },
+      { to: "/blogs", label: "Blogs" },
+    ],
+    consultation: [
+      { to: "/services", label: "Services" },
+      { to: "/case-studies", label: "Case studies" },
+      { to: "/academy", label: "Academy" },
+    ],
+  };
+
+  const quickLinks = quickLinksByKey[key] || quickLinksByKey.home;
+
+  return (
+    <footer className="border-t border-black/10 bg-[#F3EFE6]">
+      <div className="max-w-7xl mx-auto px-6 py-14">
+        <div className="flex flex-col md:flex-row items-start justify-between gap-12">
+          <div className="max-w-sm">
+            <div className="inline-flex items-center rounded-2xl border border-black/10 bg-white px-4 py-3 shadow-sm">
+              <img
+                src="/brand/fulcrum-wordmark.png"
+                alt="Fulcrum"
+                className="h-8 w-auto"
+                loading="lazy"
+                draggable={false}
+              />
+            </div>
+            <p className="mt-5 text-sm text-black/70 leading-relaxed">
+              Sales + marketing systems, coaching, and execution cadence — built for predictable revenue outcomes.
+            </p>
+
+            <div className="mt-6 inline-flex flex-col items-start gap-2 rounded-3xl border border-black/10 bg-white/70 px-4 py-3 shadow-sm backdrop-blur">
+              <div className="text-[11px] font-semibold uppercase tracking-[0.22em] text-black/55">
+                Contract vehicles
+              </div>
+              <div className="rounded-2xl border border-black/10 bg-white px-3 py-2 shadow-sm">
+                <img
+                  src="/badges/gsa-contract.png"
+                  alt="GSA Contract Holder — Contract # 47QRAA25D00AV"
+                  className="h-8 sm:h-9 w-auto opacity-85 grayscale contrast-125"
+                  loading="lazy"
+                  draggable={false}
+                />
+              </div>
+            </div>
+          </div>
+
+          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-8 w-full md:max-w-3xl">
+            <div>
+              <div className="text-xs font-semibold tracking-[0.22em] uppercase text-black/60">Contact</div>
+              <div className="mt-4 space-y-3 text-sm font-semibold text-black/80">
+                <a className="block hover:text-black" href="mailto:info@workwithfulcrum.com">
+                  info@workwithfulcrum.com
+                </a>
+                <a className="block hover:text-black" href="tel:+13373069436">
+                  337-306-9436
+                </a>
+              </div>
+            </div>
+
+            <div>
+              <div className="text-xs font-semibold tracking-[0.22em] uppercase text-black/60">Visit</div>
+              <div className="mt-4 text-sm text-black/70 leading-relaxed">
+                108 Kol Dr
+                <br />
+                Broussard, LA 70518
+              </div>
+            </div>
+
+            <div>
+              <div className="text-xs font-semibold tracking-[0.22em] uppercase text-black/60">Quick links</div>
+              <div className="mt-4 space-y-3 text-sm font-semibold text-black/70">
+                {quickLinks.map((l) => (
+                  <Link key={l.to} className="block hover:text-black" to={l.to}>
+                    {l.label}
+                  </Link>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div className="mt-12 pt-8 border-t border-black/10 flex flex-col md:flex-row items-center justify-between gap-4">
+          <p className="text-sm text-black/60">
+            © {new Date().getFullYear()} Fulcrum Sales &amp; Marketing. All rights reserved.
+          </p>
+          <a
+            href="https://www.workwithfulcrum.com"
+            target="_blank"
+            rel="noreferrer"
+            className="text-sm font-semibold text-black/70 hover:text-black"
+          >
+            workwithfulcrum.com <ArrowRight className="inline-block ml-1" size={14} />
+          </a>
+        </div>
+      </div>
+    </footer>
+  );
+}
+
+function ScrollToTopOnNavigate() {
+  const { pathname, search, hash } = useLocation();
+
+  useEffect(() => {
+    if ("scrollRestoration" in window.history) {
+      try {
+        window.history.scrollRestoration = "manual";
+      } catch {}
+    }
+  }, []);
+
+  useLayoutEffect(() => {
+    // Robust cross-browser reset (some browsers ignore the object form)
+    document.documentElement.scrollTop = 0;
+    document.body.scrollTop = 0;
+    window.scrollTo(0, 0);
+    // One more tick after paint to prevent any snap-back
+    const raf = window.requestAnimationFrame(() => {
+      document.documentElement.scrollTop = 0;
+      document.body.scrollTop = 0;
+      window.scrollTo(0, 0);
+    });
+    return () => window.cancelAnimationFrame(raf);
+  }, [pathname, search, hash]);
+
+  return null;
+}
+
 export default function FulcrumWebsite() {
   const headerVisible = useHeaderReveal();
   const headerRef = useRef(null);
   const [headerHeight, setHeaderHeight] = useState(0);
+  const [announcementOpen, setAnnouncementOpen] = useState(() => {
+    try {
+      return sessionStorage.getItem("fulcrum_announcement_dismissed") !== "1";
+    } catch {
+      return true;
+    }
+  });
 
   useLayoutEffect(() => {
     const el = headerRef.current;
@@ -330,9 +510,14 @@ export default function FulcrumWebsite() {
 
   return (
     <Router>
+      <ScrollToTopOnNavigate />
       <div className="min-h-screen bg-[#F3EFE6] text-[#121212]">
         {/* Header spacer to prevent layout jump */}
-        <div style={{ height: headerHeight }} aria-hidden="true" />
+        <div
+          style={{ height: headerHeight }}
+          className="transition-[height] duration-300 ease-out"
+          aria-hidden="true"
+        />
 
         <header
           ref={headerRef}
@@ -341,8 +526,16 @@ export default function FulcrumWebsite() {
             headerVisible ? "translate-y-0" : "-translate-y-full"
           )}
         >
+          <AnnouncementBar
+            open={announcementOpen}
+            onClose={() => {
+              setAnnouncementOpen(false);
+              try {
+                sessionStorage.setItem("fulcrum_announcement_dismissed", "1");
+              } catch {}
+            }}
+          />
           <Navbar />
-          <AnnouncementBar />
         </header>
 
         {/* BBB badge (site-wide) */}
@@ -362,6 +555,7 @@ export default function FulcrumWebsite() {
           <Route path="/" element={<Home />} />
           <Route path="/about" element={<About />} />
           <Route path="/services" element={<Services />} />
+          <Route path="/services/core" element={<ServicesCore />} />
           <Route path="/industries" element={<Industries />} />
           <Route path="/case-studies" element={<CaseStudies />} />
           <Route path="/blogs" element={<Blogs />} />
@@ -373,11 +567,7 @@ export default function FulcrumWebsite() {
           <Route path="/consultation" element={<Consultation />} />
         </Routes>
 
-        <FloatingConsultCTA />
-
-        <footer className="py-12 text-center text-sm text-black/60">
-          © {new Date().getFullYear()} Fulcrum Sales & Marketing. All rights reserved.
-        </footer>
+        <SiteFooter />
       </div>
     </Router>
   );
@@ -404,7 +594,7 @@ const cultureLinkedInPosts = [
     title: "Momentum in the first 30 days",
     excerpt:
       "How we create early wins without sacrificing quality — and what we measure weekly to keep it compounding.",
-    url: "", // paste LinkedIn post URL
+    url: "https://www.linkedin.com/company/fulcrum-sales-marketing/",
     image: "", // optional: paste an image path (e.g. "/culture/post-1.jpg")
   },
   {
@@ -412,7 +602,7 @@ const cultureLinkedInPosts = [
     title: "Scorecards that drive behavior",
     excerpt:
       "The simplest scorecard we’ve seen work across roles — and how to run it without turning it into bureaucracy.",
-    url: "", // paste LinkedIn post URL
+    url: "https://www.linkedin.com/company/fulcrum-sales-marketing/",
     image: "",
   },
   {
@@ -420,13 +610,76 @@ const cultureLinkedInPosts = [
     title: "Adaptive execution (no chaos)",
     excerpt:
       "What changes when your business changes — and what should stay constant so execution doesn’t drift.",
-    url: "", // paste LinkedIn post URL
+    url: "https://www.linkedin.com/company/fulcrum-sales-marketing/",
     image: "",
   },
 ];
 
 const linkedInCompanyUrl = "https://www.linkedin.com/company/33227086";
 const linkedInCompanyId = "33227086";
+
+const testimonialsData = [
+  {
+    title: "Exceeding Expectations with Professionalism",
+    quote: `The team at Fulcrum was super professional and exceeded our expectations. They completed the project ahead of schedule and with great results. Working with them was a fantastic experience!`,
+    who: "Anne Falgout",
+    meta: "Director of Communications, SLCC (Formerly Executive Director of VEDA)",
+    avatar: "/testimonials/anne.png",
+    avatarAlt: "Anne Falgout",
+    avatarPos: "50% 30%",
+    tag: "Delivery",
+  },
+  {
+    title: "Effective Lead Generation for Targeted Growth",
+    quote: `We engaged Fulcrum to help us get in front of viable prospects. We had a good pitch, but didn’t know how to reach our target audience. Fulcrum has done a terrific job finding companies that are in our sweet spot. Their knowledge of the healthcare industry, as well as software sales, was a key to early successes. The buyers on the call were the right level decision makers and actively interested in our solution. I would recommend Fulcrum to any company that is looking to grow their business and needs professional sales to augment their team.`,
+    who: "Nandip Kathari",
+    meta: "CEO of smartMD",
+    avatar: "/testimonials/nandip.png",
+    avatarAlt: "Nandip Kathari",
+    avatarPos: "50% 35%",
+    tag: "Pipeline",
+  },
+  {
+    title: "Consistent, Qualified Leads with Hands-Off Management",
+    quote: `We have been using the services of Fulcrum for over a year and are completely satisfied with the end product of what they provide. Not only do we get consistent and regular leads to pursue but the leads are qualified and interested in our pain management services. Fulcrum incentivizes the leads to attend the initial meeting and thereafter provides follow-up services for the proposal and ultimately the close. Having Fulcrum as a sales and marketing partner is like having an ultra sharp sales team but without the management of that team — Fulcrum takes care of those details.`,
+    who: "Peter Bechtel",
+    meta: "CEO of CareOne Concierge",
+    avatar: "/testimonials/peter.png",
+    avatarAlt: "Peter Bechtel",
+    avatarPos: "50% 28%",
+    tag: "Consistency",
+  },
+  {
+    title: "A Strategic Sales Partner for Business Growth",
+    quote: `Business owners are always looking for ways to generate leads. What I’ve come to learn is that generating qualified sales leads is extremely challenging if you don’t have the right resources, skills, people, and processes in place. If opportunity generation (professional sales) is not your strength, consider outsourcing that part of your business to Fulcrum’s team. Fulcrum provides companies with an elite, out-sourced sales force that bolts on to your team and drives profitability. Fulcrum’s partnership offers a wide range of inbound and outbound sales and marketing services to companies that are serious about creating win-win relationships with their target market.`,
+    who: "Skip Boudreaux, MBA",
+    meta: "CEO of Acadiana Capital",
+    avatar: "/testimonials/skip.png",
+    avatarAlt: "Skip Boudreaux",
+    avatarPos: "55% 18%",
+    tag: "Strategy",
+  },
+  {
+    title: "Expanding Business Development Effortlessly",
+    quote: `Fulcrum has put together an awesome team and expanded our Business Development bandwidth overnight! Strong work ethic, proven process and outstanding results! Glad our paths crossed months ago in Lafayette!`,
+    who: "Mike Sheff",
+    meta: "CEO of TierOne MRO",
+    avatar: "/testimonials/mike.png",
+    avatarAlt: "Mike Sheff",
+    avatarPos: "50% 30%",
+    tag: "Bandwidth",
+  },
+  {
+    title: "A Key Partner for Research Institutions and Tech Programs",
+    quote: `Fulcrum Sales and Marketing has been an incredible development partner for us here at the University of Southern Mississippi and the Gulf Blue Navigator Program. Without them, we would not have recruited such a star-studded cohort in such a short amount of time with so little headache. Fulcrum’s team has deep knowledge and expertise in the technology transfer and acceleration space and works diligently to make sure that our objectives are being met. Would highly recommend to other research institutions that are looking to expand their programming, develop community, recruit stakeholders, and or develop business relationships.`,
+    who: "Brian Ceuvas, PhD",
+    meta: "Director of Office of Innovation Management, University of Southern Mississippi",
+    avatar: "/testimonials/brian.png",
+    avatarAlt: "Brian Ceuvas",
+    avatarPos: "50% 28%",
+    tag: "Programs",
+  },
+];
 
 // Blogs (starter content — swap with real posts anytime)
 const blogPosts = [
@@ -641,6 +894,22 @@ function Home() {
     fallbackPosts: cultureLinkedInPosts,
   });
 
+  const customersServed = useCountUp(210);
+  const oppsCreated = useCountUp(5750);
+  const pipelineGenerated = useCountUp(1_000_000_000);
+  const revenueGenerated = useCountUp(186_000_000);
+
+  const featuredBlog = useMemo(() => {
+    return blogPosts.find((p) => p?.featured) || blogPosts[0];
+  }, []);
+
+  const featuredVideoUrl =
+    "https://www.linkedin.com/feed/update/urn:li:activity:7424826332301312000/?originTrackingId=4nxMDEg%2FCJjxelJZn%2BTo5w%3D%3D";
+  const featuredVideoEmbedUrl = featuredVideoUrl
+    ? featuredVideoUrl.split("?")[0].replace("https://www.linkedin.com/feed/update/", "https://www.linkedin.com/embed/feed/update/")
+    : "";
+  const linkedInPreviewUrl = linkedInCompanyUrl;
+
   return (
     <>
       {/* HERO (Luxury, centered) */}
@@ -733,25 +1002,68 @@ function Home() {
             </div>
 
             {/* Right glass card */}
-            <div className="rounded-3xl border border-white/20 bg-white/10 backdrop-blur-xl p-8 md:p-10 shadow-2xl">
-              <p className="text-sm font-semibold text-white/70">Fulcrum Advantage</p>
-              <div className="mt-6 space-y-4 text-white/80">
-                <div className="flex items-start gap-3"><span className="text-[#D6A21E]">•</span><span>Sales + marketing aligned into one system</span></div>
-                <div className="flex items-start gap-3"><span className="text-[#D6A21E]">•</span><span>Live coaching and execution cadence</span></div>
-                <div className="flex items-start gap-3"><span className="text-[#D6A21E]">•</span><span>Metrics tied directly to revenue</span></div>
+            <div className="relative rounded-3xl border border-white/20 bg-white/10 backdrop-blur-xl p-8 md:p-10 shadow-2xl overflow-hidden">
+              <div className="pointer-events-none absolute inset-0">
+                <div className="absolute -top-24 -right-24 w-[320px] h-[320px] bg-[#D6A21E]/18 rounded-[72px] blur-[70px]" />
+                <div className="absolute -bottom-28 -left-28 w-[360px] h-[360px] bg-white/8 rounded-[80px] blur-[85px]" />
+                <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-[#D6A21E]/55 to-transparent" />
+                <div className="absolute inset-0 opacity-[0.12] [background:radial-gradient(rgba(255,255,255,0.16)_1px,transparent_1px)] [background-size:26px_26px]" />
               </div>
-              <div className="mt-8 grid grid-cols-3 gap-3">
-                <div className="rounded-2xl border border-white/20 bg-white/10 p-4">
-                  <div className="text-xs font-semibold uppercase tracking-wide text-white/60">Lift</div>
-                  <div className="font-black mt-1">2–4w</div>
+
+              <div className="relative">
+                <div className="flex items-start justify-between gap-6">
+                  <div>
+                    <div className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/10 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.22em] text-white/70">
+                      <span className="h-1.5 w-1.5 rounded-full bg-[#D6A21E] shadow-[0_0_18px_rgba(214,162,30,0.55)]" />
+                      Fulcrum performance
+                    </div>
+                    <h3 className="mt-4 text-2xl md:text-3xl font-black tracking-tight text-white">
+                      Outcomes that compound.
+                    </h3>
+                    <p className="mt-3 text-sm text-white/70 max-w-[42ch]">
+                      A snapshot of what our execution has produced across customers and markets.
+                    </p>
+                  </div>
                 </div>
-                <div className="rounded-2xl border border-white/20 bg-white/10 p-4">
-                  <div className="text-xs font-semibold uppercase tracking-wide text-white/60">Focus</div>
-                  <div className="font-black mt-1">KPIs</div>
-                </div>
-                <div className="rounded-2xl border border-white/20 bg-white/10 p-4">
-                  <div className="text-xs font-semibold uppercase tracking-wide text-white/60">Model</div>
-                  <div className="font-black mt-1">Repeatable</div>
+
+                <div className="mt-7 h-px w-full bg-gradient-to-r from-transparent via-white/20 to-transparent" />
+
+                <div className="mt-7 grid grid-cols-2 gap-3">
+                  <div className="group rounded-2xl border border-white/15 bg-white/[0.08] p-4 hover:bg-white/10 transition-colors">
+                    <div className="text-[11px] font-semibold uppercase tracking-[0.22em] text-white/60">Customers served</div>
+                    <div className="mt-2 text-3xl md:text-[34px] font-black tracking-tight text-white drop-shadow-[0_14px_26px_rgba(0,0,0,0.35)]">
+                      <span className="bg-gradient-to-r from-[#D6A21E] via-[#F2D27A] to-[#D6A21E] text-transparent bg-clip-text">
+                        +{formatInt(customersServed)}
+                      </span>
+                    </div>
+                  </div>
+
+                  <div className="group rounded-2xl border border-white/15 bg-white/[0.08] p-4 hover:bg-white/10 transition-colors">
+                    <div className="text-[11px] font-semibold uppercase tracking-[0.22em] text-white/60">Sales opportunities created</div>
+                    <div className="mt-2 text-3xl md:text-[34px] font-black tracking-tight text-white drop-shadow-[0_14px_26px_rgba(0,0,0,0.35)]">
+                      <span className="bg-gradient-to-r from-[#D6A21E] via-[#F2D27A] to-[#D6A21E] text-transparent bg-clip-text">
+                        +{formatInt(oppsCreated)}
+                      </span>
+                    </div>
+                  </div>
+
+                  <div className="group rounded-2xl border border-white/15 bg-white/[0.08] p-4 hover:bg-white/10 transition-colors">
+                    <div className="text-[11px] font-semibold uppercase tracking-[0.22em] text-white/60">Pipeline generated</div>
+                    <div className="mt-2 text-3xl md:text-[34px] font-black tracking-tight text-white drop-shadow-[0_14px_26px_rgba(0,0,0,0.35)]">
+                      <span className="bg-gradient-to-r from-[#D6A21E] via-[#F2D27A] to-[#D6A21E] text-transparent bg-clip-text">
+                        {formatCurrencyCompact(pipelineGenerated)}
+                      </span>
+                    </div>
+                  </div>
+
+                  <div className="group rounded-2xl border border-white/15 bg-white/[0.08] p-4 hover:bg-white/10 transition-colors">
+                    <div className="text-[11px] font-semibold uppercase tracking-[0.22em] text-white/60">Revenue generated</div>
+                    <div className="mt-2 text-3xl md:text-[34px] font-black tracking-tight text-white drop-shadow-[0_14px_26px_rgba(0,0,0,0.35)]">
+                      <span className="bg-gradient-to-r from-[#D6A21E] via-[#F2D27A] to-[#D6A21E] text-transparent bg-clip-text">
+                        {formatCurrencyCompact(revenueGenerated)}
+                      </span>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
@@ -829,12 +1141,16 @@ function Home() {
       {/* EXPLORE OUR CULTURE (multi-section, content-ready) */}
       <section className="px-6 pb-16">
         <div className="max-w-7xl mx-auto">
-          <div className="relative overflow-hidden rounded-3xl border border-black/10 bg-[#121212] text-white">
+          <div className="relative overflow-hidden rounded-3xl border border-black/10 bg-gradient-to-br from-white via-[#FFF7E6] to-[#F3EFE6] text-[#121212] shadow-[0_30px_90px_rgba(214,162,30,0.14)]">
             {/* ambient accents */}
             <div className="pointer-events-none absolute inset-0">
-              <div className="absolute -top-32 -right-32 w-[520px] h-[520px] bg-[#D6A21E]/18 rotate-12 rounded-[88px] blur-[40px]" />
-              <div className="absolute -bottom-40 -left-40 w-[520px] h-[520px] bg-white/10 -rotate-12 rounded-[88px] blur-[60px]" />
-              <div className="absolute left-1/2 top-10 h-px w-[70%] -translate-x-1/2 bg-gradient-to-r from-transparent via-white/15 to-transparent" />
+              <div className="absolute -top-44 -right-40 w-[640px] h-[640px] bg-[#D6A21E]/16 rotate-12 rounded-[110px] blur-[70px]" />
+              <div className="absolute -bottom-52 -left-52 w-[720px] h-[720px] bg-black/5 -rotate-12 rounded-[120px] blur-[90px]" />
+              <div className="absolute inset-x-0 top-0 h-[2px] bg-gradient-to-r from-transparent via-[#D6A21E]/45 to-transparent opacity-70" />
+              <div className="absolute left-1/2 top-12 h-px w-[72%] -translate-x-1/2 bg-gradient-to-r from-transparent via-black/10 to-transparent" />
+              <div className="absolute inset-0 opacity-[0.12] [background:radial-gradient(rgba(214,162,30,0.30)_1px,transparent_1px)] [background-size:22px_22px]" />
+              <div className="absolute inset-0 opacity-[0.22] [background:radial-gradient(circle_at_18%_18%,rgba(214,162,30,0.22),transparent_56%)]" />
+              <div className="absolute inset-y-0 -left-1/3 w-[120%] rotate-[-8deg] bg-[linear-gradient(115deg,transparent,rgba(214,162,30,0.10),transparent)] opacity-70" />
             </div>
 
             <div className="relative p-10 md:p-12">
@@ -842,26 +1158,26 @@ function Home() {
                 <div className="max-w-2xl">
                   <div className="flex items-center gap-3">
                     <span className="h-2 w-2 rounded-full bg-[#D6A21E] shadow-[0_0_24px_rgba(214,162,30,0.35)]" />
-                    <p className="text-xs font-semibold tracking-[0.22em] uppercase text-white/70">
+                    <p className="text-xs font-semibold tracking-[0.22em] uppercase text-black/60">
                       Explore our culture
                     </p>
                   </div>
                   <h2 className="text-3xl md:text-5xl font-black tracking-tight mt-4">
                     High standards. <span className="text-[#D6A21E]">Higher</span> support.
                   </h2>
-                  <p className="text-white/70 mt-5 text-lg">
+                  <p className="text-black/70 mt-5 text-lg">
                     A living snapshot — updates, partnerships, and the people building the work.
                   </p>
                 </div>
 
                 <div className="flex flex-col sm:flex-row gap-3">
                   <Link to="/about">
-                    <Button className="rounded-full bg-white/10 text-white hover:bg-white/15 px-8">
+                    <Button className="rounded-full bg-[#121212] text-[#D6A21E] hover:bg-black px-8 shadow-[0_14px_34px_rgba(18,18,18,0.18)]">
                       Meet the team <ArrowRight className="ml-2" />
                     </Button>
                   </Link>
                   <Link to="/academy">
-                    <Button className="rounded-full bg-[#D6A21E] text-black hover:bg-[#B88A16] px-8">
+                    <Button className="rounded-full bg-[#D6A21E] text-black hover:bg-[#B88A16] px-8 shadow-[0_0_0_1px_rgba(214,162,30,0.28),0_18px_44px_rgba(214,162,30,0.22)]">
                       Fulcrum Academy <ArrowRight className="ml-2" />
                     </Button>
                   </Link>
@@ -869,30 +1185,30 @@ function Home() {
               </div>
 
               <div className="mt-10 grid md:grid-cols-3 gap-6">
-                <div className="rounded-3xl border border-white/10 bg-white/5 p-8">
-                  <div className="text-xs font-semibold tracking-[0.22em] uppercase text-white/60">
+                <div className="group rounded-3xl border border-black/10 bg-white/70 p-8 shadow-sm backdrop-blur hover:bg-white/80 hover:shadow-[0_20px_60px_rgba(214,162,30,0.14)] transition">
+                  <div className="text-xs font-semibold tracking-[0.22em] uppercase text-black/60">
                     Accountability
                   </div>
                   <div className="font-black text-xl mt-3">Scorecards + ownership</div>
-                  <p className="text-white/70 mt-3">
+                  <p className="text-black/70 mt-3">
                     We measure what matters weekly and execute what moves the needle.
                   </p>
                 </div>
-                <div className="rounded-3xl border border-white/10 bg-white/5 p-8">
-                  <div className="text-xs font-semibold tracking-[0.22em] uppercase text-white/60">
+                <div className="group rounded-3xl border border-black/10 bg-white/70 p-8 shadow-sm backdrop-blur hover:bg-white/80 hover:shadow-[0_20px_60px_rgba(214,162,30,0.14)] transition">
+                  <div className="text-xs font-semibold tracking-[0.22em] uppercase text-black/60">
                     Coaching
                   </div>
                   <div className="font-black text-xl mt-3">Reps + feedback loops</div>
-                  <p className="text-white/70 mt-3">
+                  <p className="text-black/70 mt-3">
                     Continuous learning built into execution — not “training once.”
                   </p>
                 </div>
-                <div className="rounded-3xl border border-white/10 bg-white/5 p-8">
-                  <div className="text-xs font-semibold tracking-[0.22em] uppercase text-white/60">
+                <div className="group rounded-3xl border border-black/10 bg-white/70 p-8 shadow-sm backdrop-blur hover:bg-white/80 hover:shadow-[0_20px_60px_rgba(214,162,30,0.14)] transition">
+                  <div className="text-xs font-semibold tracking-[0.22em] uppercase text-black/60">
                     Systems-first
                   </div>
                   <div className="font-black text-xl mt-3">Repeatable playbooks</div>
-                  <p className="text-white/70 mt-3">
+                  <p className="text-black/70 mt-3">
                     Processes that scale outcomes without relying on heroics.
                   </p>
                 </div>
@@ -905,11 +1221,15 @@ function Home() {
       {/* LATEST ON LINKEDIN */}
       <section className="px-6 pb-16">
         <div className="max-w-7xl mx-auto">
-          <div className="relative overflow-hidden rounded-3xl border border-black/10 bg-[#121212] text-white">
+          <div className="relative overflow-hidden rounded-3xl border border-black/10 bg-gradient-to-br from-white via-[#FFF7E6] to-[#F3EFE6] text-[#121212] shadow-[0_30px_90px_rgba(214,162,30,0.14)]">
             <div className="pointer-events-none absolute inset-0">
-              <div className="absolute -top-28 -right-28 w-[520px] h-[520px] bg-[#D6A21E]/16 rotate-12 rounded-[88px] blur-[50px]" />
-              <div className="absolute -bottom-36 -left-36 w-[520px] h-[520px] bg-white/10 -rotate-12 rounded-[88px] blur-[70px]" />
-              <div className="absolute left-1/2 top-10 h-px w-[70%] -translate-x-1/2 bg-gradient-to-r from-transparent via-white/12 to-transparent" />
+              <div className="absolute -top-44 -right-40 w-[640px] h-[640px] bg-[#D6A21E]/16 rotate-12 rounded-[110px] blur-[75px]" />
+              <div className="absolute -bottom-52 -left-52 w-[720px] h-[720px] bg-black/5 -rotate-12 rounded-[120px] blur-[95px]" />
+              <div className="absolute inset-x-0 top-0 h-[2px] bg-gradient-to-r from-transparent via-[#D6A21E]/45 to-transparent opacity-70" />
+              <div className="absolute left-1/2 top-12 h-px w-[72%] -translate-x-1/2 bg-gradient-to-r from-transparent via-black/10 to-transparent" />
+              <div className="absolute inset-0 opacity-[0.10] [background:radial-gradient(rgba(214,162,30,0.30)_1px,transparent_1px)] [background-size:22px_22px]" />
+              <div className="absolute inset-0 opacity-[0.18] [background:radial-gradient(circle_at_18%_18%,rgba(214,162,30,0.22),transparent_56%)]" />
+              <div className="absolute inset-y-0 -left-1/3 w-[120%] rotate-[-8deg] bg-[linear-gradient(115deg,transparent,rgba(214,162,30,0.10),transparent)] opacity-70" />
             </div>
 
             <div className="relative p-10 md:p-12">
@@ -917,21 +1237,21 @@ function Home() {
                 <div className="max-w-2xl">
                   <div className="flex items-center gap-3">
                     <span className="h-2 w-2 rounded-full bg-[#D6A21E] shadow-[0_0_24px_rgba(214,162,30,0.35)]" />
-                    <p className="text-xs font-semibold tracking-[0.22em] uppercase text-white/70">
+                    <p className="text-xs font-semibold tracking-[0.22em] uppercase text-black/60">
                       Explore our culture • Latest on LinkedIn
                     </p>
                   </div>
                   <h3 className="text-3xl md:text-4xl font-black tracking-tight mt-4">
                     Posts, wins, and what we’re learning.
                   </h3>
-                  <p className="text-white/70 mt-4">
-                    This section is ready for your newest posts. Add links and optional images when you’re ready.
+                  <p className="text-black/70 mt-4">
+                    See the full feed on LinkedIn — we’ll keep this section curated with highlights.
                   </p>
                 </div>
 
                 <div className="flex items-center gap-3">
                   <a href={linkedInCompanyUrl} target="_blank" rel="noreferrer">
-                  <Button className="rounded-full bg-white/10 text-white hover:bg-white/15 px-8">
+                  <Button className="rounded-full bg-[#121212] text-[#D6A21E] hover:bg-black px-8">
                     Follow on LinkedIn <ArrowRight className="ml-2" />
                   </Button>
                   </a>
@@ -948,59 +1268,189 @@ function Home() {
                 </div>
               </div>
 
-              <div className="mt-10 grid md:grid-cols-3 gap-6">
-                {li.status === "loading" && !li.posts?.length ? (
-                  <>
-                    <LinkedInPostSkeleton />
-                    <LinkedInPostSkeleton />
-                    <LinkedInPostSkeleton />
-                  </>
-                ) : (
-                  li.posts.slice(0, 3).map((p) => (
-                    <div
-                      key={p.url || p.title}
-                      className="rounded-3xl border border-white/10 bg-white/5 overflow-hidden"
-                    >
-                      <div className="h-40 bg-black/20 border-b border-white/10 relative overflow-hidden">
-                        {p.image ? (
-                          <img
-                            src={p.image}
-                            alt=""
-                            aria-hidden="true"
-                            className="h-full w-full object-cover"
-                            loading="lazy"
-                            draggable={false}
-                          />
-                        ) : (
-                          <div className="absolute inset-0 grid place-items-center text-white/45 text-sm font-semibold">
-                            Post image / preview
-                          </div>
-                        )}
-                      </div>
-                      <div className="p-7">
-                        <div className="text-xs font-semibold uppercase tracking-wide text-white/55">
-                          {p.date}
+              <div className="mt-10 grid lg:grid-cols-[minmax(0,1fr)_520px] gap-8 items-stretch">
+                {/* LEFT: LinkedIn preview + Featured blog */}
+                <div className="space-y-6">
+                  {/* LinkedIn company preview (URL) */}
+                  <div className="rounded-3xl border border-black/10 bg-white/70 backdrop-blur overflow-hidden shadow-sm hover:shadow-[0_24px_70px_rgba(214,162,30,0.14)] transition-shadow">
+                    <div className="p-6 border-b border-black/10 flex items-center justify-between gap-4">
+                      <div>
+                        <div className="text-xs font-semibold uppercase tracking-[0.22em] text-black/50">
+                          LinkedIn
                         </div>
-                        <div className="font-black text-xl mt-3">{p.title}</div>
-                        <p className="text-white/70 mt-3 leading-relaxed">{p.excerpt}</p>
-                        <div className="mt-5">
-                          {p.url ? (
-                            <a
-                              href={p.url}
-                              target="_blank"
-                              rel="noreferrer"
-                              className="inline-flex items-center gap-2 text-sm font-semibold text-[#D6A21E] hover:text-[#F2D27A]"
-                            >
-                              View post <ArrowRight size={16} />
-                            </a>
-                          ) : (
-                            <span className="text-xs text-white/50">Add post URL to enable link</span>
-                          )}
+                        <div className="mt-2 font-black text-lg">Preview our company page</div>
+                      </div>
+                      <a href={linkedInPreviewUrl} target="_blank" rel="noreferrer">
+                        <Button className="rounded-full bg-[#D6A21E] text-black hover:bg-[#B88A16] px-6 py-3 text-sm">
+                          Open LinkedIn <ArrowRight className="ml-1" size={18} />
+                        </Button>
+                      </a>
+                    </div>
+
+                    <a
+                      href={linkedInPreviewUrl}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="block"
+                      aria-label="Open Fulcrum LinkedIn page"
+                    >
+                      <div className="aspect-video bg-[#121212] relative overflow-hidden">
+                        <div className="pointer-events-none absolute inset-0">
+                          <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/35 to-transparent" />
+                          <div className="absolute inset-0 opacity-[0.22] [background:radial-gradient(circle_at_20%_20%,rgba(214,162,30,0.35),transparent_55%)]" />
+                        </div>
+                        <div className="absolute inset-0 grid place-items-center text-center px-8">
+                          <div>
+                            <div className="mx-auto h-14 w-14 rounded-full bg-white/10 border border-white/15 grid place-items-center">
+                              <Linkedin size={22} className="text-white/85" />
+                            </div>
+                            <div className="mt-4 text-sm font-semibold text-white/85">
+                              {linkedInPreviewUrl}
+                            </div>
+                            <div className="mt-2 text-xs text-white/55">
+                              Click to preview the feed, updates, and company profile on LinkedIn.
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </a>
+
+                    <div className="p-6">
+                      <div className="flex items-center justify-between gap-4 flex-wrap">
+                        <div className="text-sm font-semibold text-black/70">Follow for updates</div>
+                        <div className="hidden sm:block">
+                          <LinkedInFollowCompany companyId={linkedInCompanyId} />
                         </div>
                       </div>
                     </div>
-                  ))
-                )}
+                  </div>
+
+                  {/* Featured blog UNDER the URL part */}
+                  {featuredBlog ? (
+                    <Link
+                      to={`/blogs/${featuredBlog.slug}`}
+                      className="group rounded-3xl border border-black/10 bg-white/70 backdrop-blur overflow-hidden hover:bg-white/80 transition-colors shadow-sm hover:shadow-[0_24px_70px_rgba(214,162,30,0.14)]"
+                    >
+                      <div className="p-6 border-b border-black/10 flex items-center justify-between gap-4">
+                        <div>
+                          <div className="text-xs font-semibold uppercase tracking-[0.22em] text-black/50">
+                            Featured blog
+                          </div>
+                          <div className="mt-2 font-black text-lg">From the blog</div>
+                        </div>
+                        <span className="text-[11px] font-semibold bg-[#121212] text-[#D6A21E] px-3 py-1 rounded-full shadow-sm">
+                          {featuredBlog.readTime || "Read"}
+                        </span>
+                      </div>
+
+                      <div className="relative h-44 bg-black/10 border-b border-black/10 overflow-hidden">
+                        {featuredBlog.coverImage ? (
+                          <>
+                            <img
+                              src={featuredBlog.coverImage}
+                              alt=""
+                              aria-hidden="true"
+                              className="absolute inset-0 h-full w-full object-cover opacity-80 group-hover:opacity-95 transition-opacity"
+                              loading="lazy"
+                              draggable={false}
+                            />
+                            <div className="absolute inset-0 bg-gradient-to-t from-black/65 via-black/20 to-transparent" />
+                            <div className="absolute inset-0 opacity-[0.22] [background:radial-gradient(circle_at_20%_20%,rgba(214,162,30,0.35),transparent_55%)]" />
+                          </>
+                        ) : (
+                          <div className="absolute inset-0 grid place-items-center text-black/50 text-sm font-semibold">
+                            Blog cover
+                          </div>
+                        )}
+                      </div>
+
+                      <div className="p-6">
+                        <div className="text-xs font-semibold uppercase tracking-wide text-black/50">
+                          {featuredBlog.category || "Blog"}
+                        </div>
+                        <div className="mt-3 font-black text-xl leading-snug group-hover:text-[#D6A21E] transition text-black">
+                          {featuredBlog.title}
+                        </div>
+                        <p className="mt-3 text-black/70 leading-relaxed line-clamp-3">
+                          {featuredBlog.excerpt}
+                        </p>
+                        <div className="mt-5 inline-flex items-center gap-2 text-sm font-semibold text-[#D6A21E] group-hover:text-[#F2D27A]">
+                          Read article <ArrowRight size={16} />
+                        </div>
+                      </div>
+                    </Link>
+                  ) : null}
+                </div>
+
+                {/* RIGHT: Video takes the entire side */}
+                <aside className="h-full self-stretch">
+                  <div className="rounded-3xl border border-black/10 bg-white/70 backdrop-blur overflow-hidden h-full flex flex-col shadow-sm hover:shadow-[0_24px_70px_rgba(214,162,30,0.14)] transition-shadow">
+                    <div className="p-6 border-b border-black/10 flex items-center justify-between gap-4">
+                      <div>
+                        <div className="text-xs font-semibold uppercase tracking-[0.22em] text-black/50">
+                          Featured video
+                        </div>
+                        <div className="mt-2 font-black text-lg text-black">Focus (80/20) — how we think about impact</div>
+                      </div>
+                      <a href={featuredVideoUrl} target="_blank" rel="noreferrer">
+                        <Button className="rounded-full bg-[#D6A21E] text-black hover:bg-[#B88A16] px-6 py-3 text-sm">
+                          Watch on LinkedIn <ArrowRight className="ml-1" size={18} />
+                        </Button>
+                      </a>
+                    </div>
+
+                    <div className="flex-1 min-h-[320px] bg-black/30 relative overflow-hidden">
+                      {featuredVideoEmbedUrl ? (
+                        <iframe
+                          className="absolute inset-0 h-full w-full"
+                          src={featuredVideoEmbedUrl}
+                          title="Featured video"
+                          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                          allowFullScreen
+                        />
+                      ) : (
+                        <a
+                          href={featuredVideoUrl}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="absolute inset-0 grid place-items-center text-center px-6"
+                        >
+                          <div>
+                            <div className="mx-auto h-14 w-14 rounded-full bg-white/10 border border-white/15 grid place-items-center">
+                              <div className="h-0 w-0 border-y-[10px] border-y-transparent border-l-[16px] border-l-[#D6A21E] ml-1" />
+                            </div>
+                            <div className="mt-4 text-sm font-semibold text-white/80">Preview on LinkedIn</div>
+                            <div className="mt-1 text-xs text-white/55">Open the post to watch the video.</div>
+                          </div>
+                        </a>
+                      )}
+                    </div>
+
+                    <div className="p-6 border-t border-black/10 bg-[#F3EFE6]">
+                      <div className="text-[11px] font-semibold uppercase tracking-[0.22em] text-black/50">Key takeaway</div>
+                      <p className="mt-3 text-black/70 leading-relaxed">
+                        We use the 80/20 rule to narrow down to the inputs that create the highest impact — for Fulcrum and for our customers.
+                      </p>
+                      <div className="mt-5 flex items-center gap-3 flex-wrap">
+                        <a
+                          href={linkedInPreviewUrl}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="inline-flex items-center gap-2 text-sm font-semibold text-[#D6A21E] hover:text-[#F2D27A]"
+                        >
+                          See more on LinkedIn <ArrowRight size={16} />
+                        </a>
+                        <span className="text-xs text-black/30">•</span>
+                        <Link
+                          to="/blogs"
+                          className="inline-flex items-center gap-2 text-sm font-semibold text-black/70 hover:text-black"
+                        >
+                          Browse blogs <ArrowRight size={16} />
+                        </Link>
+                      </div>
+                    </div>
+                  </div>
+                </aside>
               </div>
             </div>
           </div>
@@ -1088,11 +1538,15 @@ function Home() {
       {/* PEOPLE PATHWAYS */}
       <section className="px-6 pb-28">
         <div className="max-w-7xl mx-auto">
-          <div className="relative overflow-hidden rounded-3xl border border-black/10 bg-[#121212] text-white">
+          <div className="relative overflow-hidden rounded-3xl border border-black/10 bg-gradient-to-br from-white via-[#FFF7E6] to-[#F3EFE6] text-[#121212] shadow-[0_30px_90px_rgba(214,162,30,0.14)]">
             <div className="pointer-events-none absolute inset-0">
-              <div className="absolute -top-28 -left-28 w-[420px] h-[420px] bg-[#D6A21E]/14 -rotate-12 rounded-[88px] blur-[50px]" />
-              <div className="absolute -bottom-36 -right-36 w-[520px] h-[520px] bg-white/10 rotate-12 rounded-[88px] blur-[70px]" />
-              <div className="absolute left-1/2 top-10 h-px w-[70%] -translate-x-1/2 bg-gradient-to-r from-transparent via-white/12 to-transparent" />
+              <div className="absolute -top-52 -left-44 w-[680px] h-[680px] bg-[#D6A21E]/14 -rotate-12 rounded-[120px] blur-[85px]" />
+              <div className="absolute -bottom-56 -right-52 w-[760px] h-[760px] bg-black/5 rotate-12 rounded-[130px] blur-[100px]" />
+              <div className="absolute inset-x-0 top-0 h-[2px] bg-gradient-to-r from-transparent via-[#D6A21E]/45 to-transparent opacity-70" />
+              <div className="absolute left-1/2 top-12 h-px w-[72%] -translate-x-1/2 bg-gradient-to-r from-transparent via-black/10 to-transparent" />
+              <div className="absolute inset-0 opacity-[0.10] [background:radial-gradient(rgba(214,162,30,0.30)_1px,transparent_1px)] [background-size:22px_22px]" />
+              <div className="absolute inset-0 opacity-[0.18] [background:radial-gradient(circle_at_18%_18%,rgba(214,162,30,0.22),transparent_56%)]" />
+              <div className="absolute inset-y-0 -left-1/3 w-[120%] rotate-[-8deg] bg-[linear-gradient(115deg,transparent,rgba(214,162,30,0.10),transparent)] opacity-70" />
             </div>
 
             <div className="relative p-10 md:p-12">
@@ -1100,14 +1554,14 @@ function Home() {
                 <div className="max-w-2xl">
                   <div className="flex items-center gap-3">
                     <span className="h-2 w-2 rounded-full bg-[#D6A21E] shadow-[0_0_24px_rgba(214,162,30,0.35)]" />
-                    <p className="text-xs font-semibold tracking-[0.22em] uppercase text-white/70">
+                    <p className="text-xs font-semibold tracking-[0.22em] uppercase text-black/60">
                       Explore our culture • People + pathways
                     </p>
                   </div>
                   <h3 className="text-3xl md:text-4xl font-black tracking-tight mt-4">
                     Meet leadership or join the pipeline.
                   </h3>
-                  <p className="text-white/70 mt-4">
+                  <p className="text-black/70 mt-4">
                     Two clear paths — get to know the team, or explore the Academy for growth and coaching.
                   </p>
                 </div>
@@ -1115,14 +1569,14 @@ function Home() {
 
               <div className="mt-10 grid md:grid-cols-2 gap-6">
                 <Link to="/about" className="group">
-                  <div className="rounded-3xl border border-white/10 bg-white/5 p-10 hover:bg-white/[0.07] transition">
-                    <div className="text-xs font-semibold uppercase tracking-[0.22em] text-white/60">
+                  <div className="rounded-3xl border border-black/10 bg-white/70 backdrop-blur p-10 hover:bg-white/80 transition shadow-sm hover:shadow-[0_24px_70px_rgba(214,162,30,0.14)]">
+                    <div className="text-xs font-semibold uppercase tracking-[0.22em] text-black/60">
                       Meet the team
                     </div>
                     <div className="mt-4 text-2xl font-black group-hover:text-[#D6A21E] transition">
                       The people behind the work
                     </div>
-                    <div className="mt-4 text-white/70">
+                    <div className="mt-4 text-black/70">
                       Leadership profiles, roles, and what we’re building.
                     </div>
                     <div className="mt-8 inline-flex items-center gap-2 font-semibold text-[#D6A21E]">
@@ -1132,16 +1586,16 @@ function Home() {
                 </Link>
 
                 <Link to="/academy" className="group">
-                  <div className="rounded-3xl border border-white/10 bg-white/5 text-white p-10 hover:bg-white/[0.07] transition relative overflow-hidden">
+                  <div className="rounded-3xl border border-black/10 bg-white/70 backdrop-blur text-black p-10 hover:bg-white/80 transition relative overflow-hidden shadow-sm hover:shadow-[0_24px_70px_rgba(214,162,30,0.14)]">
                     <div className="pointer-events-none absolute -top-24 -right-24 w-[260px] h-[260px] bg-[#D6A21E]/18 rotate-12 rounded-[56px]" />
                     <div className="relative">
-                      <div className="text-xs font-semibold uppercase tracking-[0.22em] text-white/60">
+                      <div className="text-xs font-semibold uppercase tracking-[0.22em] text-black/60">
                         Fulcrum Academy
                       </div>
                       <div className="mt-4 text-2xl font-black group-hover:text-[#D6A21E] transition">
                         Coaching + growth path
                       </div>
-                      <div className="mt-4 text-white/70">
+                      <div className="mt-4 text-black/70">
                         Recruiting + onboarding funnel for people who want reps and leadership.
                       </div>
                       <div className="mt-8 inline-flex items-center gap-2 font-semibold text-[#D6A21E]">
@@ -1150,6 +1604,49 @@ function Home() {
                     </div>
                   </div>
                 </Link>
+              </div>
+
+              {/* Client words (merged from Case Studies) */}
+              <div className="mt-12 pt-10 border-t border-black/10">
+                <div className="rounded-3xl bg-[#121212] text-white border border-black/10 overflow-hidden">
+                  <div className="relative p-8 md:p-10">
+                    <div className="pointer-events-none absolute inset-0">
+                      <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-[#D6A21E]/55 to-transparent" />
+                      <div className="absolute -top-28 -right-28 w-[520px] h-[520px] bg-[#D6A21E]/14 rotate-12 rounded-[96px] blur-[80px]" />
+                      <div className="absolute -bottom-32 -left-32 w-[560px] h-[560px] bg-white/8 -rotate-12 rounded-[110px] blur-[95px]" />
+                      <div className="absolute inset-0 opacity-[0.14] [background:radial-gradient(rgba(214,162,30,0.18)_1px,transparent_1px)] [background-size:28px_28px]" />
+                    </div>
+                    <div className="relative">
+                <div className="flex items-end justify-between gap-8 flex-wrap">
+                  <div className="max-w-2xl">
+                    <div className="flex items-center gap-3">
+                      <span className="h-2 w-2 rounded-full bg-[#D6A21E]" />
+                      <p className="text-xs font-semibold tracking-[0.22em] uppercase text-white/70">
+                        Client words
+                      </p>
+                    </div>
+                    <h3 className="text-2xl md:text-3xl font-black mt-4">
+                      What people say after we build the system.
+                    </h3>
+                    <p className="text-white/70 mt-3">
+                      A few words from leaders we’ve partnered with — focused on outcomes, professionalism, and repeatable growth.
+                    </p>
+                  </div>
+                  <Link to="/case-studies" className="shrink-0">
+                    <Button className="rounded-full bg-white/10 text-white hover:bg-white/15 px-8">
+                      View case studies <ArrowRight className="ml-2" />
+                    </Button>
+                  </Link>
+                </div>
+
+                <div className="mt-8 relative">
+                  <div className="pointer-events-none absolute inset-y-0 left-0 w-14 bg-gradient-to-r from-[#121212] to-transparent" />
+                  <div className="pointer-events-none absolute inset-y-0 right-0 w-14 bg-gradient-to-l from-[#121212] to-transparent" />
+                  <TestimonialMarquee items={testimonialsData} baseSpeed={26} hoverSpeed={8} />
+                </div>
+                    </div>
+                  </div>
+                </div>
               </div>
 
               <div className="mt-10 flex justify-center">
@@ -1278,53 +1775,83 @@ function About() {
 
       <section className="py-24 px-6 max-w-7xl mx-auto space-y-20">
         {/* About Intro */}
-        <div className="max-w-4xl relative">
-          {/* Louisiana culture silhouettes (background) */}
-          <div className="pointer-events-none select-none hidden sm:block absolute -right-96 -top-16 w-[720px] h-[420px] overflow-hidden">
-            <img
-              src="/shapes/louisiana-silhouette.png"
-              alt=""
-              aria-hidden="true"
-              className="absolute right-10 top-0 w-[420px] opacity-[0.05] mix-blend-multiply blur-[0.2px]"
-              style={{ filter: "grayscale(1) contrast(6)" }}
-              draggable={false}
-            />
-            <img
-              src="/shapes/crawfish.png"
-              alt=""
-              aria-hidden="true"
-              className="absolute right-[28rem] -top-14 w-[220px] rotate-[-8deg] opacity-[0.05] brightness-0 contrast-200 mix-blend-multiply blur-[0.2px]"
-              draggable={false}
-            />
+        <div className="relative overflow-hidden rounded-[2.75rem] border border-black/10 bg-[#121212] text-white shadow-[0_22px_60px_rgba(18,18,18,0.22)]">
+          <div className="pointer-events-none absolute inset-0">
+            <div className="absolute -top-28 -right-28 w-[520px] h-[520px] bg-[#D6A21E]/18 rotate-12 rounded-[96px] blur-[90px]" />
+            <div className="absolute -bottom-32 -left-32 w-[560px] h-[560px] bg-white/8 -rotate-12 rounded-[110px] blur-[110px]" />
+            <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-[#D6A21E]/55 to-transparent" />
+            <div className="absolute inset-0 opacity-[0.12] [background:radial-gradient(rgba(255,255,255,0.14)_1px,transparent_1px)] [background-size:26px_26px]" />
+            <div className="absolute inset-0 bg-[radial-gradient(circle_at_25%_15%,rgba(214,162,30,0.18),transparent_60%),radial-gradient(circle_at_85%_35%,rgba(255,255,255,0.10),transparent_62%),radial-gradient(circle_at_50%_95%,rgba(0,0,0,0.75),transparent_55%)]" />
+
+            <div className="absolute inset-0 bg-[radial-gradient(circle_at_82%_16%,rgba(214,162,30,0.20),transparent_60%)]" />
           </div>
-          <div className="relative inline-block mb-6">
-            {/* Beads: original image, pushed further right */}
-            <div className="pointer-events-none select-none hidden sm:block absolute -right-72 top-1/2 -translate-y-1/2 w-[260px] h-[220px] overflow-hidden opacity-[0.16] mix-blend-multiply blur-[0.2px]">
-              <img
-                src="/shapes/beads.png"
-                alt=""
-                aria-hidden="true"
-                className="w-full h-full object-cover object-top rotate-[6deg]"
-                style={{ filter: "grayscale(1) contrast(10)" }}
-                draggable={false}
-              />
+
+          <div className="relative p-10 md:p-14">
+            <div className="flex items-center gap-3">
+              <span className="h-2 w-2 rounded-full bg-[#D6A21E] shadow-[0_0_22px_rgba(214,162,30,0.55)]" />
+              <p className="text-xs font-semibold tracking-[0.22em] uppercase text-white/70">
+                Who we are
+              </p>
             </div>
-            <h3 className="relative z-10 text-4xl md:text-5xl font-black">Who We Are</h3>
+
+            <h3 className="mt-5 text-4xl md:text-5xl font-black tracking-tight">
+              A business development firm built for{" "}
+              <span className="bg-gradient-to-r from-[#D6A21E] via-[#F2D27A] to-[#D6A21E] text-transparent bg-clip-text">
+                execution
+              </span>
+              .
+            </h3>
+
+            <p className="mt-5 text-white/70 text-lg leading-relaxed max-w-4xl">
+              Founded nearly a decade ago, Fulcrum helps organizations grow through disciplined sales and marketing execution —
+              both <strong className="text-white">organically</strong> (winning customers) and{" "}
+              <strong className="text-white">inorganically</strong> (acquisitions).
+            </p>
+            <p className="mt-4 text-white/70 text-lg leading-relaxed max-w-4xl">
+              Whether you’re a startup, diversifying revenue, launching new products/services, or pushing for market share,
+              we build the system and the cadence that keeps results compounding.
+            </p>
+
+            <div className="mt-10 grid md:grid-cols-3 gap-4">
+              <div className="rounded-3xl border border-white/12 bg-white/[0.06] p-6 backdrop-blur-sm">
+                <div className="text-[11px] font-semibold uppercase tracking-[0.22em] text-white/60">Organic growth</div>
+                <div className="mt-3 font-black text-xl">Customer acquisition</div>
+                <p className="mt-3 text-sm text-white/70 leading-relaxed">
+                  Offers, messaging, outbound, and pipeline systems that create qualified conversations.
+                </p>
+              </div>
+              <div className="rounded-3xl border border-white/12 bg-white/[0.06] p-6 backdrop-blur-sm">
+                <div className="text-[11px] font-semibold uppercase tracking-[0.22em] text-white/60">Inorganic growth</div>
+                <div className="mt-3 font-black text-xl">Deal flow support</div>
+                <p className="mt-3 text-sm text-white/70 leading-relaxed">
+                  Structured sourcing, outreach, and follow-through so acquisitions don’t distract the business.
+                </p>
+              </div>
+              <div className="rounded-3xl border border-white/12 bg-white/[0.06] p-6 backdrop-blur-sm">
+                <div className="text-[11px] font-semibold uppercase tracking-[0.22em] text-white/60">Execution</div>
+                <div className="mt-3 font-black text-xl">Cadence + scorecards</div>
+                <p className="mt-3 text-sm text-white/70 leading-relaxed">
+                  Weekly rhythms, reporting, and accountability that keep the team aligned to revenue outcomes.
+                </p>
+              </div>
+            </div>
           </div>
-          <p className="text-lg text-black/70">
-            Founded almost 10 years ago, Fulcrum is a full-service business development firm rooted in Louisiana culture that specializes in proactively growing businesses organically (getting customers) or inorganically (acquisitions).
-            <br />
-            <br />
-            Whether you are a startup, diversifying revenue, launching new products / services, or simply desiring more market-share, Fulcrum has a service offering for you.
-          </p>
         </div>
 
         {/* Values + Mission */}
         <div className="grid md:grid-cols-2 gap-10">
-          <Card className="rounded-3xl border border-black/10 bg-white">
-            <CardContent className="p-10">
-              <h4 className="text-2xl font-black mb-4">Our Mission</h4>
-              <p className="text-black/70">
+          <Card className="relative overflow-hidden rounded-3xl border border-black/10 bg-white shadow-sm hover:shadow-md transition-shadow">
+            <div className="pointer-events-none absolute inset-0">
+              <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-[#D6A21E]/55 to-transparent" />
+              <div className="absolute -top-24 -right-24 w-[320px] h-[320px] bg-[#D6A21E]/10 rotate-12 rounded-[80px] blur-[80px]" />
+              <div className="absolute inset-0 opacity-[0.10] [background:radial-gradient(rgba(0,0,0,0.10)_1px,transparent_1px)] [background-size:26px_26px]" />
+            </div>
+            <CardContent className="relative p-10">
+              <div className="flex items-center gap-3">
+                <span className="h-2 w-2 rounded-full bg-[#D6A21E]" />
+                <h4 className="text-2xl font-black">Our Mission</h4>
+              </div>
+              <p className="text-black/70 mt-5 leading-relaxed">
                 Help our people achieve their personal, professional, and financial goals.
                 <br />
                 <br />
@@ -1333,15 +1860,30 @@ function About() {
             </CardContent>
           </Card>
 
-          <Card className="rounded-3xl border border-black/10 bg-white">
-            <CardContent className="p-10">
-              <h4 className="text-2xl font-black mb-4">What We Value</h4>
-              <ul className="space-y-3 text-black/70">
-                <li>• Love First, Eat Last</li>
-                <li>• Think Big, Act Small</li>
-                <li>• Plan for Tomorrow, Execute Today</li>
-                <li>• Always Care, Always Compete</li>
-                <li>• Beauty Is in the Eye of the Beholder</li>
+          <Card className="relative overflow-hidden rounded-3xl border border-black/10 bg-white shadow-sm hover:shadow-md transition-shadow">
+            <div className="pointer-events-none absolute inset-0">
+              <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-[#D6A21E]/55 to-transparent" />
+              <div className="absolute -bottom-28 -left-28 w-[360px] h-[360px] bg-black/5 -rotate-12 rounded-[90px] blur-[90px]" />
+              <div className="absolute inset-0 opacity-[0.08] [background:radial-gradient(rgba(0,0,0,0.10)_1px,transparent_1px)] [background-size:26px_26px]" />
+            </div>
+            <CardContent className="relative p-10">
+              <div className="flex items-center gap-3">
+                <span className="h-2 w-2 rounded-full bg-[#D6A21E]" />
+                <h4 className="text-2xl font-black">What We Value</h4>
+              </div>
+              <ul className="mt-6 space-y-3 text-black/70">
+                {[
+                  "Love First, Eat Last",
+                  "Think Big, Act Small",
+                  "Plan for Tomorrow, Execute Today",
+                  "Always Care, Always Compete",
+                  "Beauty Is in the Eye of the Beholder",
+                ].map((v) => (
+                  <li key={v} className="flex items-start gap-3">
+                    <span className="mt-[7px] h-1.5 w-1.5 rounded-full bg-[#D6A21E] shadow-[0_0_14px_rgba(214,162,30,0.35)]" />
+                    <span className="leading-relaxed">{v}</span>
+                  </li>
+                ))}
               </ul>
             </CardContent>
           </Card>
@@ -1374,7 +1916,7 @@ function About() {
           </div>
 
           <div className="relative z-10 mt-8">
-            <div className="grid md:grid-cols-3 gap-8">
+            <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-8">
               {team.map((member) => (
                 <a
                   key={member.name + member.role}
@@ -1523,28 +2065,12 @@ const team = [
     img: "/team/patrick.png",
   },
   {
-    name: "Brian Dupont",
-    role: "Director of Value & Account Manager",
-    description:
-      "Ensures client value delivery by aligning strategy with execution and optimizing performance outcomes.",
-    linkedin: "https://www.linkedin.com/in/brian-dupont-092b79129/",
-    img: "/team/brian.png",
-  },
-  {
     name: "Tristin Tauzin",
     role: "Director of Talent & Account Manager",
     description:
       "Leads recruiting, onboarding, and talent development while supporting client growth initiatives.",
     linkedin: "https://www.linkedin.com/in/tristin-tauzin-6225b8164/",
     img: "/team/tristin.png",
-  },
-  {
-    name: "Bret Blanchard",
-    role: "Director of Process & Account Manager",
-    description:
-      "Builds and refines operational processes that keep teams efficient, consistent, and scalable.",
-    linkedin: "https://www.linkedin.com/in/bret-blanchard/",
-    img: "/team/bret.png",
   },
   {
     name: "Lauren Day",
@@ -2026,8 +2552,7 @@ function BlogPost() {
   );
 }
 
-function Services() {
-  const offerings = [
+const servicesCoreServiceLines = [
     {
       icon: <Workflow />,
       title: "Sales Systems & Execution",
@@ -2108,6 +2633,62 @@ function Services() {
     },
   ];
 
+const servicesUseCases = [
+  {
+    company: "Abre",
+    industry: "Startups",
+    category: "Sales",
+    description:
+      "Venture-backed EdTech startup secures product-market fit and grows sales organization 3x — leading to its largest fundraising round.",
+    image: "/case-study-images/abre.webp",
+    imagePos: "50% 50%",
+  },
+  {
+    company: "FlyGuys",
+    industry: "Startups",
+    category: "Marketing",
+    description:
+      "Venture-backed drone startup builds proactive lead generation strategy and raises its largest round of funding.",
+    image: "/case-study-images/flyguys.png",
+    imagePos: "50% 60%",
+  },
+  {
+    company: "SCPDC",
+    industry: "Government",
+    category: "Partnerships",
+    description:
+      "Identified and recruited participants in governmental programs through structured outreach and follow-through.",
+    image: "/case-study-images/scpdc.png",
+    imagePos: "50% 45%",
+  },
+  {
+    company: "Automated Productions",
+    industry: "Small Businesses",
+    category: "Marketing",
+    description:
+      "Local fabrication shop launches new website and drives over $200k in revenue with 150%+ ROI.",
+    image: "/case-study-images/automated-productions.png",
+    imagePos: "50% 45%",
+  },
+  {
+    company: "Nightware",
+    industry: "Startups",
+    category: "Sales",
+    description: "Secured 50+ net new orders across 12+ new VA locations.",
+    image: "/case-study-images/nightware.png",
+    imagePos: "50% 50%",
+  },
+  {
+    company: "JJ’s Pharmacy",
+    industry: "Small Businesses",
+    category: "Marketing",
+    description: "New product launched and increased walk-in traffic obtained.",
+    image: "/industries/jjs-vertical.png",
+    imagePos: "50% 55%",
+  },
+];
+
+function Services() {
   const process = [
     {
       step: "01",
@@ -2128,40 +2709,6 @@ function Services() {
       step: "04",
       title: "Optimize",
       desc: "Weekly scorecards + iteration so results keep compounding.",
-    },
-  ];
-
-  const packages = [
-    {
-      name: "Launch",
-      tag: "Best for new systems",
-      bullets: [
-        "Audit + 30-day plan",
-        "Core scripts + offers",
-        "Weekly scorecard",
-        "Team coaching session",
-      ],
-    },
-    {
-      name: "Scale",
-      tag: "Best for growth",
-      bullets: [
-        "Everything in Launch",
-        "Campaign + channel buildout",
-        "Process + cadence implementation",
-        "Conversion optimization",
-      ],
-      highlight: true,
-    },
-    {
-      name: "Enterprise",
-      tag: "Best for teams",
-      bullets: [
-        "Everything in Scale",
-        "Multi-team training",
-        "Custom reporting",
-        "Partnership/field program",
-      ],
     },
   ];
 
@@ -2255,38 +2802,20 @@ function Services() {
         </div>
       </section>
 
-      {/* Offerings */}
-      <section className="py-20 px-6">
-        <div className="max-w-7xl mx-auto">
-          <div className="flex items-end justify-between gap-6 flex-wrap">
-            <div>
-              <h3 className="text-3xl md:text-4xl font-black">Core service lines</h3>
-              <p className="text-black/70 mt-3 max-w-2xl">
-                Pick one lane or combine them — we’ll build the most efficient path to growth.
-              </p>
-            </div>
-            <Link to="/consultation">
-              <Button className="bg-[#121212] text-[#D6A21E] hover:bg-black rounded-full px-8">
-                Talk to us
-              </Button>
-            </Link>
-          </div>
-
-          <div className="mt-10 grid lg:grid-cols-3 gap-8">
-            {offerings.map((s) => (
-              <ServiceBlock key={s.title} {...s} />
-            ))}
-          </div>
-        </div>
-      </section>
-
       {/* Process */}
-      <section className="py-20 px-6">
+      <section className="relative -mt-16 md:-mt-20 pb-20 px-6">
         <div className="max-w-7xl mx-auto">
-          <div className="bg-white rounded-3xl border border-black/10 p-10 md:p-12">
+          <div className="bg-white rounded-3xl border border-black/10 p-10 md:p-12 relative overflow-hidden shadow-[0_26px_70px_rgba(18,18,18,0.18)]">
+            <div className="pointer-events-none absolute inset-0">
+              <div className="absolute -top-24 -right-24 w-[420px] h-[420px] bg-[#D6A21E]/12 rotate-12 rounded-[92px] blur-[90px]" />
+              <div className="absolute -bottom-28 -left-28 w-[520px] h-[520px] bg-black/5 -rotate-12 rounded-[96px] blur-[95px]" />
+              <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-[#D6A21E]/55 to-transparent" />
+              <div className="absolute inset-0 opacity-[0.08] [background:radial-gradient(rgba(0,0,0,0.10)_1px,transparent_1px)] [background-size:26px_26px]" />
+            </div>
             <div className="flex items-end justify-between gap-6 flex-wrap">
               <div>
-                <h3 className="text-3xl md:text-4xl font-black">How we work</h3>
+                <p className="text-xs font-semibold tracking-[0.22em] uppercase text-black/60">How we work</p>
+                <h3 className="text-3xl md:text-4xl font-black mt-3">Simple process. Serious accountability.</h3>
                 <p className="text-black/70 mt-3 max-w-2xl">
                   Simple process, high accountability. No chaos. No guessing.
                 </p>
@@ -2309,30 +2838,437 @@ function Services() {
         </div>
       </section>
 
-      {/* Packages */}
+      {/* Engagement options */}
       <section className="py-20 px-6">
         <div className="max-w-7xl mx-auto">
           <div className="flex items-end justify-between gap-6 flex-wrap">
             <div>
               <h3 className="text-3xl md:text-4xl font-black">Engagement options</h3>
               <p className="text-black/70 mt-3 max-w-2xl">
-                Choose the intensity that matches your goals. We’ll recommend the best fit during the consultation.
+                Choose a lane, then we’ll tailor execution to match your goals and operating reality.
               </p>
             </div>
           </div>
 
-          <div className="mt-10 grid md:grid-cols-3 gap-8">
-            {packages.map((p) => (
-              <PackageCard key={p.name} {...p} />
-            ))}
+          <div className="mt-10 grid gap-8">
+            {/* 01 */}
+            <div className="relative overflow-hidden rounded-[2.25rem] border border-black/10 bg-white shadow-sm">
+              <div className="pointer-events-none absolute inset-0">
+                <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-[#D6A21E]/60 to-transparent" />
+                <div className="absolute -top-28 -right-28 w-[520px] h-[520px] bg-[#D6A21E]/10 rotate-12 rounded-[96px] blur-[90px]" />
+                <div className="absolute -bottom-28 -left-28 w-[520px] h-[520px] bg-black/5 -rotate-12 rounded-[96px] blur-[95px]" />
+              </div>
+              <div className="relative p-8 md:p-10">
+                <div className="flex items-start justify-between gap-6 flex-wrap">
+                  <div>
+                    <div className="inline-flex items-center gap-2 rounded-full border border-black/10 bg-[#F3EFE6] px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.22em] text-black/70">
+                      <span className="h-1.5 w-1.5 rounded-full bg-[#D6A21E]" />
+                      01
+                    </div>
+                    <h4 className="mt-4 text-2xl md:text-3xl font-black">Need new customers?</h4>
+                    <p className="mt-3 text-black/70 max-w-3xl">
+                      We proactively identify, qualify, and engage decision-makers + key influencers to generate new revenue
+                      opportunities for your company.
+                    </p>
+                  </div>
+                  <span className="mt-1 inline-flex items-center rounded-full bg-[#121212] text-[#D6A21E] px-3 py-1 text-xs font-semibold shadow-sm">
+                    Customization available
+                  </span>
+                </div>
+
+                <div className="mt-8 overflow-x-auto">
+                  <div className="min-w-[820px] rounded-3xl border border-black/10 overflow-hidden bg-white/70">
+                    <div className="grid grid-cols-[1.15fr_repeat(3,1fr)]">
+                      <div className="p-5 bg-[#F3EFE6]" />
+
+                      {[
+                        { name: "Good", highlight: false },
+                        { name: "Better", highlight: true, badge: "Most chosen" },
+                        { name: "Best", highlight: false },
+                      ].map((t) => (
+                        <div
+                          key={t.name}
+                          className={cx(
+                            "p-5 border-l border-black/10",
+                            t.highlight
+                              ? "bg-[linear-gradient(180deg,#fff_0%,#FFF6DD_55%,#F3EFE6_100%)] text-black border-l-[#D6A21E]/35 relative"
+                              : "bg-[#F3EFE6]"
+                          )}
+                        >
+                          {t.highlight ? (
+                            <div className="pointer-events-none absolute inset-0">
+                              <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-[#D6A21E]/70 to-transparent" />
+                              <div className="absolute -top-16 -right-16 w-[240px] h-[240px] bg-[#D6A21E]/14 rotate-12 rounded-[64px] blur-[70px]" />
+                              <div className="absolute inset-0 ring-1 ring-inset ring-[#D6A21E]/25 rounded-none" />
+                            </div>
+                          ) : null}
+                          <div className="flex items-center justify-between gap-3">
+                            <div className={cx("text-lg font-black", t.highlight ? "text-[#D6A21E]" : "text-black")}>
+                              {t.name}
+                            </div>
+                            {t.badge ? (
+                              <span className="text-[11px] font-semibold px-3 py-1 rounded-full border border-black/10 bg-[#121212] text-[#D6A21E] shadow-sm">
+                                {t.badge}
+                              </span>
+                            ) : null}
+                          </div>
+                          <div className={cx("mt-2 text-[11px] font-semibold uppercase tracking-[0.22em]", t.highlight ? "text-black/60" : "text-black/50")}>
+                            6 month minimum • 90-day recalibration
+                          </div>
+                        </div>
+                      ))}
+
+                      {[
+                        {
+                          label: "Onboarding",
+                          good: "$1,200",
+                          better: "$1,550",
+                          best: "$2,000",
+                        },
+                        {
+                          label: "Per month",
+                          good: "$1,500",
+                          better: "$3,250",
+                          best: "$5,500",
+                        },
+                        {
+                          label: "Per qualified opportunity",
+                          good: "$450",
+                          better: "$350",
+                          best: "$250",
+                          emphasis: true,
+                        },
+                      ].map((row) => (
+                        <React.Fragment key={row.label}>
+                          <div className="p-5 bg-white border-t border-black/10">
+                            <div className="text-[11px] font-semibold uppercase tracking-[0.22em] text-black/50">
+                              {row.label}
+                            </div>
+                          </div>
+                          <div className="p-5 bg-white border-t border-black/10 border-l border-black/10">
+                            <div className={cx("text-2xl font-black tracking-tight text-black", row.emphasis ? "text-[#121212]" : "")}>
+                              {row.good}
+                            </div>
+                          </div>
+                          <div className="p-5 bg-[linear-gradient(180deg,#fff_0%,#FFF6DD_55%,#F3EFE6_100%)] border-t border-black/10 border-l border-[#D6A21E]/35 relative">
+                            <div className="pointer-events-none absolute inset-0">
+                              <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-[#D6A21E]/55 to-transparent" />
+                              <div className="absolute inset-0 ring-1 ring-inset ring-[#D6A21E]/20" />
+                            </div>
+                            <div className={cx("relative text-2xl font-black tracking-tight text-black", row.emphasis ? "text-[#121212]" : "")}>
+                              {row.better}
+                            </div>
+                          </div>
+                          <div className="p-5 bg-white border-t border-black/10 border-l border-black/10">
+                            <div className={cx("text-2xl font-black tracking-tight text-black", row.emphasis ? "text-[#121212]" : "")}>
+                              {row.best}
+                            </div>
+                          </div>
+                        </React.Fragment>
+                      ))}
+
+                      {/* Customize row */}
+                      <div className="p-5 bg-white border-t border-black/10">
+                        <div className="text-[11px] font-semibold uppercase tracking-[0.22em] text-black/50">
+                          Customize
+                        </div>
+                      </div>
+                      <div className="p-5 bg-white border-t border-black/10 border-l border-black/10">
+                        <Link to="/consultation" className="inline-flex">
+                          <Button className="rounded-full bg-[#121212] text-[#D6A21E] hover:bg-black px-5 py-3 text-sm">
+                            Customize
+                          </Button>
+                        </Link>
+                      </div>
+                      <div className="p-5 bg-[linear-gradient(180deg,#fff_0%,#FFF6DD_55%,#F3EFE6_100%)] border-t border-black/10 border-l border-[#D6A21E]/35 relative">
+                        <div className="pointer-events-none absolute inset-0">
+                          <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-[#D6A21E]/55 to-transparent" />
+                          <div className="absolute inset-0 ring-1 ring-inset ring-[#D6A21E]/20" />
+                        </div>
+                        <Link to="/consultation" className="relative inline-flex">
+                          <Button className="rounded-full bg-[#D6A21E] text-black hover:bg-[#B88A16] px-5 py-3 text-sm shadow-[0_0_26px_rgba(214,162,30,0.25)]">
+                            Customize
+                          </Button>
+                        </Link>
+                      </div>
+                      <div className="p-5 bg-white border-t border-black/10 border-l border-black/10">
+                        <Link to="/consultation" className="inline-flex">
+                          <Button className="rounded-full bg-[#121212] text-[#D6A21E] hover:bg-black px-5 py-3 text-sm">
+                            Customize
+                          </Button>
+                        </Link>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* 02 + 03 */}
+            <div className="grid lg:grid-cols-2 gap-8">
+              <div className="relative overflow-hidden rounded-[2.25rem] border border-black/10 bg-white shadow-sm">
+                <div className="pointer-events-none absolute inset-0">
+                  <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-[#D6A21E]/60 to-transparent" />
+                  <div className="absolute -top-24 -right-24 w-[380px] h-[380px] bg-[#D6A21E]/10 rotate-12 rounded-[90px] blur-[90px]" />
+                </div>
+                <div className="relative p-8 md:p-10">
+                  <div className="flex items-start justify-between gap-6 flex-wrap">
+                    <div>
+                      <div className="inline-flex items-center gap-2 rounded-full border border-black/10 bg-[#F3EFE6] px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.22em] text-black/70">
+                        <span className="h-1.5 w-1.5 rounded-full bg-[#D6A21E]" />
+                        02
+                      </div>
+                      <h4 className="mt-4 text-2xl md:text-3xl font-black">Expand your current customer base</h4>
+                      <p className="mt-3 text-black/70">
+                        Activate existing customers for upsells, referrals, reviews, and re-engagement revenue.
+                      </p>
+                    </div>
+                    <span className="mt-1 inline-flex items-center rounded-full bg-[#121212] text-[#D6A21E] px-3 py-1 text-xs font-semibold shadow-sm">
+                      Customization available
+                    </span>
+                  </div>
+
+                  <div className="mt-7 rounded-3xl border border-black/10 bg-white/70 overflow-hidden">
+                    <div className="grid">
+                      {[
+                        { k: "Onboarding", v: "$1,500" },
+                        { k: "Per month", v: "$3,000", note: "6 month minimum • 90-day recalibration" },
+                        { k: "Per customer re-engaged", v: "$150", emphasis: true },
+                      ].map((r, idx) => (
+                        <div
+                          key={r.k}
+                          className={cx(
+                            "flex items-start justify-between gap-6 px-6 py-5",
+                            idx === 0 ? "" : "border-t border-black/10",
+                            r.emphasis ? "bg-[#F3EFE6]" : "bg-white"
+                          )}
+                        >
+                          <div>
+                            <div className="text-[11px] font-semibold uppercase tracking-[0.22em] text-black/50">{r.k}</div>
+                            {r.note ? <div className="mt-2 text-xs font-semibold text-black/55">{r.note}</div> : null}
+                          </div>
+                          <div
+                            className={cx(
+                              "text-2xl font-black tracking-tight",
+                              r.emphasis ? "text-[#121212]" : "text-black"
+                            )}
+                          >
+                            {r.v}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                    <div className="px-6 py-5 border-t border-black/10 bg-white">
+                      <Link to="/consultation" className="inline-flex">
+                        <Button className="rounded-full bg-[#121212] text-[#D6A21E] hover:bg-black px-6">
+                          Customize this engagement <ArrowRight className="ml-2" size={18} />
+                        </Button>
+                      </Link>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div className="relative overflow-hidden rounded-[2.25rem] border border-black/10 bg-white shadow-sm">
+                <div className="pointer-events-none absolute inset-0">
+                  <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-[#D6A21E]/60 to-transparent" />
+                  <div className="absolute -bottom-24 -left-24 w-[420px] h-[420px] bg-black/5 -rotate-12 rounded-[98px] blur-[95px]" />
+                </div>
+                <div className="relative p-8 md:p-10">
+                  <div className="flex items-start justify-between gap-6 flex-wrap">
+                    <div>
+                      <div className="inline-flex items-center gap-2 rounded-full border border-black/10 bg-[#F3EFE6] px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.22em] text-black/70">
+                        <span className="h-1.5 w-1.5 rounded-full bg-[#D6A21E]" />
+                        03
+                      </div>
+                      <h4 className="mt-4 text-2xl md:text-3xl font-black">Acquire or partner (proprietary outreach)</h4>
+                      <p className="mt-3 text-black/70">
+                        We source and qualify proprietary acquisition and partnership opportunities through targeted deal outreach.
+                      </p>
+                    </div>
+                    <span className="mt-1 inline-flex items-center rounded-full bg-[#121212] text-[#D6A21E] px-3 py-1 text-xs font-semibold shadow-sm">
+                      Customization available
+                    </span>
+                  </div>
+
+                  <div className="mt-7 rounded-3xl border border-black/10 bg-white/70 overflow-hidden">
+                    <div className="grid sm:grid-cols-2">
+                      {[
+                        { k: "Onboarding", v: "$1,500" },
+                        { k: "Exclusive", v: "$1,500" },
+                      ].map((r, idx) => (
+                        <div
+                          key={r.k}
+                          className={cx(
+                            "px-6 py-5 bg-white",
+                            idx === 0 ? "" : "border-t sm:border-t-0 sm:border-l border-black/10",
+                            idx === 0 ? "" : ""
+                          )}
+                        >
+                          <div className="text-[11px] font-semibold uppercase tracking-[0.22em] text-black/50">{r.k}</div>
+                          <div className="mt-2 text-3xl font-black tracking-tight text-black">{r.v}</div>
+                        </div>
+                      ))}
+                    </div>
+
+                    <div className="border-t border-black/10 bg-[#F3EFE6] px-6 py-5">
+                      <div className="text-[11px] font-semibold uppercase tracking-[0.22em] text-black/50">Success fee</div>
+                      <div className="mt-4 grid gap-3">
+                        {[
+                          { left: "2.5% flat", right: "Enterprise Value" },
+                          { left: "7.5% flat", right: "EBITDA" },
+                        ].map((r) => (
+                          <div key={r.right} className="flex items-start justify-between gap-4 rounded-2xl border border-black/10 bg-white/70 px-4 py-4">
+                            <span className="text-sm font-black text-[#121212]">{r.left}</span>
+                            <span className="text-sm font-semibold text-black/55">{r.right}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+
+                    <div className="px-6 py-5 border-t border-black/10 bg-white">
+                      <Link to="/consultation" className="inline-flex">
+                        <Button className="rounded-full bg-[#121212] text-[#D6A21E] hover:bg-black px-6">
+                          Customize this engagement <ArrowRight className="ml-2" size={18} />
+                        </Button>
+                      </Link>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* 04 */}
+            <div className="relative overflow-hidden rounded-[2.25rem] border border-black/10 bg-white shadow-sm">
+              <div className="pointer-events-none absolute inset-0">
+                <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-[#D6A21E]/60 to-transparent" />
+                <div className="absolute -top-24 -left-24 w-[420px] h-[420px] bg-[#D6A21E]/10 rotate-12 rounded-[96px] blur-[90px]" />
+              </div>
+              <div className="relative p-8 md:p-10">
+                <div className="inline-flex items-center gap-2 rounded-full border border-black/10 bg-[#F3EFE6] px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.22em] text-black/70">
+                  <span className="h-1.5 w-1.5 rounded-full bg-[#D6A21E]" />
+                  04
+                </div>
+                <h4 className="mt-4 text-2xl md:text-3xl font-black">Need actionable insights from stakeholders?</h4>
+                <p className="mt-3 text-black/70 max-w-3xl">
+                  We do this through our GSA Schedule federal contract{" "}
+                  <span className="font-semibold text-black/70">(SIN 541910 – Marketing Research &amp; Analysis)</span>.
+                </p>
+
+                <div className="mt-8 grid md:grid-cols-2 gap-4">
+                  {[
+                    { role: "Community Research & Engagement Specialist", rate: "$120.63/hr" },
+                    { role: "Community Research & Outreach Specialist", rate: "$98.66/hr" },
+                    { role: "Stakeholder Research & Development Specialist", rate: "$89.68/hr" },
+                    { role: "Member Research & Recruitment Specialist", rate: "$138.59/hr" },
+                  ].map((r) => (
+                    <div key={r.role} className="rounded-3xl border border-black/10 bg-white/70 p-6">
+                      <div className="text-sm font-black text-[#121212] leading-snug">{r.role}</div>
+                      <div className="mt-3 text-2xl font-black tracking-tight text-black">
+                        <span className="text-[#D6A21E]">{r.rate.split('/')[0]}</span>/{r.rate.split('/')[1]}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+
+                <div className="mt-8">
+                  <Link to="/consultation" className="inline-flex">
+                    <Button className="rounded-full bg-[#121212] text-[#D6A21E] hover:bg-black px-7 py-5">
+                      Customize research engagement <ArrowRight className="ml-2" size={18} />
+                    </Button>
+                  </Link>
+                </div>
+              </div>
+            </div>
           </div>
 
           <div className="mt-10 text-center">
             <Link to="/consultation">
               <Button className="bg-[#D6A21E] text-black hover:bg-[#B88A16] rounded-full px-10 py-6 text-lg">
-                Get recommended package <ArrowRight className="ml-2" />
+                Get recommended engagement <ArrowRight className="ml-2" />
               </Button>
             </Link>
+          </div>
+        </div>
+      </section>
+
+      {/* Use cases (case studies preview) */}
+      <section className="py-20 px-6">
+        <div className="max-w-7xl mx-auto">
+          <div className="flex items-end justify-between gap-6 flex-wrap">
+            <div className="max-w-2xl">
+              <p className="text-xs font-semibold tracking-[0.22em] uppercase text-black/60">Use cases</p>
+              <h3 className="text-3xl md:text-4xl font-black mt-3">Proof in real businesses.</h3>
+              <p className="text-black/70 mt-3">
+                A few examples of how Fulcrum’s systems, coaching, and execution cadence have helped teams create measurable momentum.
+              </p>
+            </div>
+
+            <div className="flex flex-col sm:flex-row gap-3">
+              <Link to="/services/core">
+                <Button className="bg-[#121212] text-[#D6A21E] hover:bg-black rounded-full px-8">
+                  Explore core services <ArrowRight className="ml-2" size={18} />
+                </Button>
+              </Link>
+              <Link to="/case-studies">
+                <Button className="bg-[#D6A21E] text-black hover:bg-[#B88A16] rounded-full px-8">
+                  View all case studies <ArrowRight className="ml-2" size={18} />
+                </Button>
+              </Link>
+            </div>
+          </div>
+
+          <div className="mt-10 grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {servicesUseCases.map((cs) => (
+              <Link key={cs.company} to="/case-studies" className="group">
+                <div className="relative overflow-hidden rounded-3xl border border-black/10 bg-white shadow-sm hover:shadow-md transition-shadow h-full">
+                  <div className="pointer-events-none absolute inset-0">
+                    <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-[#D6A21E]/55 to-transparent" />
+                    <div className="absolute -top-24 -right-24 w-[360px] h-[360px] bg-[#D6A21E]/10 rotate-12 rounded-[84px] blur-[80px]" />
+                    <div className="absolute -bottom-24 -left-24 w-[420px] h-[420px] bg-black/5 -rotate-12 rounded-[92px] blur-[90px]" />
+                  </div>
+
+                  <div className="relative">
+                    <div className="relative h-40 bg-[#F3EFE6] overflow-hidden">
+                      {cs.image ? (
+                        <>
+                          <img
+                            src={cs.image}
+                            alt=""
+                            aria-hidden="true"
+                            className="absolute inset-0 h-full w-full object-cover opacity-90 group-hover:opacity-100 transition-opacity"
+                            style={{ objectPosition: cs.imagePos || "50% 50%" }}
+                            loading="lazy"
+                            draggable={false}
+                          />
+                          <div className="absolute inset-0 bg-gradient-to-t from-black/35 via-black/10 to-transparent" />
+                        </>
+                      ) : null}
+                    </div>
+
+                    <div className="p-7">
+                      <div className="flex flex-wrap items-center gap-2">
+                        <span className="text-xs font-semibold bg-white/70 backdrop-blur-sm text-black/70 px-3 py-1 rounded-full border border-black/10">
+                          {cs.industry}
+                        </span>
+                        <span className="text-xs font-semibold bg-white/70 backdrop-blur-sm text-black/70 px-3 py-1 rounded-full border border-black/10">
+                          {cs.category}
+                        </span>
+                      </div>
+
+                      <div className="mt-4 font-black text-xl leading-snug group-hover:text-[#D6A21E] transition">
+                        {cs.company}
+                      </div>
+                      <p className="mt-3 text-black/70 leading-relaxed line-clamp-3">{cs.description}</p>
+
+                      <div className="mt-6 inline-flex items-center gap-2 text-sm font-semibold text-[#D6A21E]">
+                        See the case studies <ArrowRight size={16} />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </Link>
+            ))}
           </div>
         </div>
       </section>
@@ -2375,6 +3311,58 @@ function Services() {
                 </Button>
               </Link>
             </div>
+          </div>
+        </div>
+      </section>
+    </>
+  );
+}
+
+function ServicesCore() {
+  return (
+    <>
+      <section className="relative overflow-hidden border-b border-black/10 bg-[#F3EFE6]">
+        <div className="absolute inset-0 pointer-events-none">
+          <div className="absolute -top-24 -right-24 w-[520px] h-[520px] bg-[#D6A21E]/12 rotate-12 rounded-[72px]" />
+          <div className="absolute -bottom-28 -left-28 w-[520px] h-[520px] bg-[#121212]/6 -rotate-12 rounded-[72px]" />
+          <div className="absolute left-1/2 top-6 h-px w-[60%] -translate-x-1/2 bg-gradient-to-r from-transparent via-black/15 to-transparent" />
+          <div className="absolute inset-0 opacity-[0.10] [background:radial-gradient(rgba(0,0,0,0.10)_1px,transparent_1px)] [background-size:26px_26px]" />
+        </div>
+
+        <div className="relative max-w-7xl mx-auto px-6 py-20 md:py-24">
+          <div className="max-w-3xl">
+            <p className="inline-flex items-center gap-2 text-xs font-semibold tracking-wider uppercase text-black/70 bg-white/70 border border-black/10 px-4 py-2 rounded-full">
+              Services
+            </p>
+            <h2 className="text-5xl md:text-6xl font-black mt-6 tracking-tight">
+              Core service <span className="text-[#D6A21E]">lines</span>
+            </h2>
+            <p className="text-black/70 text-lg md:text-xl mt-6">
+              Pick one lane or combine them — we’ll build the most efficient path to growth.
+            </p>
+
+            <div className="mt-10 flex flex-col sm:flex-row gap-4">
+              <Link to="/services">
+                <Button className="bg-[#121212] text-[#D6A21E] hover:bg-black rounded-full px-10 py-6 text-lg">
+                  Back to services <ArrowRight className="ml-2" />
+                </Button>
+              </Link>
+              <Link to="/consultation">
+                <Button className="bg-[#D6A21E] text-black hover:bg-[#B88A16] rounded-full px-10 py-6 text-lg">
+                  Talk to us <ArrowRight className="ml-2" />
+                </Button>
+              </Link>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section className="py-20 px-6">
+        <div className="max-w-7xl mx-auto">
+          <div className="mt-2 grid lg:grid-cols-3 gap-8">
+            {servicesCoreServiceLines.map((s) => (
+              <ServiceBlock key={s.title} {...s} />
+            ))}
           </div>
         </div>
       </section>
@@ -2530,7 +3518,7 @@ function Industries() {
                   Coverage
                 </p>
               </div>
-              <h3 className="text-3xl md:text-4xl font-black mt-4">Industries we support</h3>
+              <h3 className="text-3xl md:text-4xl font-black mt-4">Who we serve</h3>
               <p className="text-black/70 mt-3 max-w-2xl">
                 If you have a real offer and want predictable pipeline + execution, we can help — even if you don’t fit perfectly into a box.
               </p>
@@ -3487,71 +4475,7 @@ function CaseStudies() {
     return caseStudies.filter((c) => c.industry === active);
   }, [active, caseStudies]);
 
-  const testimonials = useMemo(
-    () => [
-      {
-        title: "Exceeding Expectations with Professionalism",
-        quote: `The team at Fulcrum was super professional and exceeded our expectations. They completed the project ahead of schedule and with great results. Working with them was a fantastic experience!`,
-        who: "Anne Falgout",
-        meta: "Director of Communications, SLCC (Formerly Executive Director of VEDA)",
-        avatar: "/testimonials/anne.png",
-        avatarAlt: "Anne Falgout",
-        avatarPos: "50% 30%",
-        tag: "Delivery",
-      },
-      {
-        title: "Effective Lead Generation for Targeted Growth",
-        quote: `We engaged Fulcrum to help us get in front of viable prospects. We had a good pitch, but didn’t know how to reach our target audience. Fulcrum has done a terrific job finding companies that are in our sweet spot. Their knowledge of the healthcare industry, as well as software sales, was a key to early successes. The buyers on the call were the right level decision makers and actively interested in our solution. I would recommend Fulcrum to any company that is looking to grow their business and needs professional sales to augment their team.`,
-        who: "Nandip Kathari",
-        meta: "CEO of smartMD",
-        avatar: "/testimonials/nandip.png",
-        avatarAlt: "Nandip Kathari",
-        avatarPos: "50% 35%",
-        tag: "Pipeline",
-      },
-      {
-        title: "Consistent, Qualified Leads with Hands-Off Management",
-        quote: `We have been using the services of Fulcrum for over a year and are completely satisfied with the end product of what they provide. Not only do we get consistent and regular leads to pursue but the leads are qualified and interested in our pain management services. Fulcrum incentivizes the leads to attend the initial meeting and thereafter provides follow-up services for the proposal and ultimately the close. Having Fulcrum as a sales and marketing partner is like having an ultra sharp sales team but without the management of that team — Fulcrum takes care of those details.`,
-        who: "Peter Bechtel",
-        meta: "CEO of CareOne Concierge",
-        avatar: "/testimonials/peter.png",
-        avatarAlt: "Peter Bechtel",
-        avatarPos: "50% 28%",
-        tag: "Consistency",
-      },
-      {
-        title: "A Strategic Sales Partner for Business Growth",
-        quote: `Business owners are always looking for ways to generate leads. What I’ve come to learn is that generating qualified sales leads is extremely challenging if you don’t have the right resources, skills, people, and processes in place. If opportunity generation (professional sales) is not your strength, consider outsourcing that part of your business to Fulcrum’s team. Fulcrum provides companies with an elite, out-sourced sales force that bolts on to your team and drives profitability. Fulcrum’s partnership offers a wide range of inbound and outbound sales and marketing services to companies that are serious about creating win-win relationships with their target market.`,
-        who: "Skip Boudreaux, MBA",
-        meta: "CEO of Acadiana Capital",
-        avatar: "/testimonials/skip.png",
-        avatarAlt: "Skip Boudreaux",
-        avatarPos: "55% 18%",
-        tag: "Strategy",
-      },
-      {
-        title: "Expanding Business Development Effortlessly",
-        quote: `Fulcrum has put together an awesome team and expanded our Business Development bandwidth overnight! Strong work ethic, proven process and outstanding results! Glad our paths crossed months ago in Lafayette!`,
-        who: "Mike Sheff",
-        meta: "CEO of TierOne MRO",
-        avatar: "/testimonials/mike.png",
-        avatarAlt: "Mike Sheff",
-        avatarPos: "50% 30%",
-        tag: "Bandwidth",
-      },
-      {
-        title: "A Key Partner for Research Institutions and Tech Programs",
-        quote: `Fulcrum Sales and Marketing has been an incredible development partner for us here at the University of Southern Mississippi and the Gulf Blue Navigator Program. Without them, we would not have recruited such a star-studded cohort in such a short amount of time with so little headache. Fulcrum’s team has deep knowledge and expertise in the technology transfer and acceleration space and works diligently to make sure that our objectives are being met. Would highly recommend to other research institutions that are looking to expand their programming, develop community, recruit stakeholders, and or develop business relationships.`,
-        who: "Brian Ceuvas, PhD",
-        meta: "Director of Office of Innovation Management, University of Southern Mississippi",
-        avatar: "/testimonials/brian.png",
-        avatarAlt: "Brian Ceuvas",
-        avatarPos: "50% 28%",
-        tag: "Programs",
-      },
-    ],
-    []
-  );
+  const testimonials = testimonialsData;
 
   return (
     <>
@@ -4191,7 +5115,7 @@ function Academy() {
             </div>
           </div>
 
-          <div className="mt-14 max-w-5xl mx-auto">
+          <div className="mt-14 max-w-6xl mx-auto">
             <div className="rounded-3xl border border-black/10 bg-white/70 backdrop-blur-sm p-8 md:p-10 shadow-sm relative overflow-hidden">
               <div className="pointer-events-none absolute inset-0">
                 <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-[#D6A21E]/55 to-transparent" />
@@ -4199,8 +5123,9 @@ function Academy() {
                 <div className="absolute -bottom-28 -right-24 w-[520px] h-[520px] bg-[#D6A21E]/12 -rotate-12 rounded-[96px] blur-[90px]" />
               </div>
 
-              <div className="relative grid lg:grid-cols-[1fr_1.1fr] gap-8 items-start">
-                <div>
+              <div className="relative space-y-5">
+                {/* Who it's for */}
+                <div className="rounded-2xl border border-black/10 bg-white/75 backdrop-blur-sm p-7 md:p-8 shadow-sm">
                   <p className="text-sm font-semibold text-black/70">Who it’s for</p>
                   <div className="mt-5 space-y-3 text-black/70">
                     <div className="flex items-start gap-3"><span className="text-[#D6A21E]">•</span><span>People who want real sales experience</span></div>
@@ -4209,7 +5134,44 @@ function Academy() {
                   </div>
                 </div>
 
-                <div className="rounded-2xl border border-black/10 bg-white p-6 md:p-7 shadow-sm">
+                {/* Differentiator */}
+                <div className="rounded-2xl border border-black/10 bg-[#F3EFE6] p-7 md:p-8 shadow-sm">
+                    <div className="flex items-center gap-3">
+                      <span className="text-[11px] font-semibold uppercase tracking-[0.22em] text-black/60">
+                        Differentiator
+                      </span>
+                      <span className="h-px flex-1 bg-gradient-to-r from-black/10 via-black/5 to-transparent" />
+                    </div>
+
+                    <p className="mt-3 font-black text-xl leading-snug text-black">
+                      Most firms hire and churn. Fulcrum builds.
+                    </p>
+
+                    <p className="mt-3 text-black/70 leading-relaxed">
+                      We don’t hire random talent — we train and develop them within our system.
+                    </p>
+
+                    <p className="mt-3 text-black/70 leading-relaxed">
+                      The Academy is our internal apprenticeship program that develops entry-level talent into disciplined revenue producers
+                      through real-world business development missions.
+                    </p>
+
+                    <div className="mt-4 space-y-2 text-black/70">
+                      <div className="flex items-start gap-3">
+                        <span className="mt-[7px] h-1.5 w-1.5 rounded-full bg-[#D6A21E] shadow-[0_0_18px_rgba(214,162,30,0.45)]" />
+                        <span>Our internal engine is selectively available for hire.</span>
+                      </div>
+                      <div className="flex items-start gap-3">
+                        <span className="mt-[7px] h-1.5 w-1.5 rounded-full bg-[#D6A21E] shadow-[0_0_18px_rgba(214,162,30,0.45)]" />
+                        <span>
+                          Hundreds are vetted each year; dozens are allowed in; a handful will become Fulcrum Academy graduates.
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+
+                {/* Recruiting stack (directly under differentiator) */}
+                <div className="rounded-2xl border border-black/10 bg-white p-7 md:p-8 shadow-sm">
                   <p className="text-xs font-semibold uppercase tracking-wide text-black/50">
                     Recruiting → Onboarding → Performance
                   </p>
