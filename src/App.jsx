@@ -220,8 +220,11 @@ function AnnouncementBar({ open = true, onClose }) {
         <div className="flex items-center gap-3">
           <LimitedTimePill className="bg-[#D6A21E]/20" />
           <p className="text-sm text-white/80">
-            <span className="font-semibold text-white">Limited-time free consultation</span> is available for a limited time.
-            <span className="hidden sm:inline"> Get a 30-day action plan on the call.</span>
+            <span className="font-semibold text-white">Limited Time:</span>{" "}
+            <span className="font-semibold text-white">Service consultation</span>{" "}
+            with a{" "}
+            <span className="font-semibold text-[#D6A21E]">free ROI assessment</span>{" "}
+            on the call.
           </p>
         </div>
         <div className="flex items-center gap-3">
@@ -249,29 +252,13 @@ function Navbar() {
     <nav className="bg-[#121212] border-b border-white/10">
       <div className="max-w-7xl mx-auto flex justify-between items-center px-8 py-5">
         <Link to="/" aria-label="Fulcrum home" className="group relative">
-          {/* Premium logo plaque (white mark/wordmark) */}
-          <div className="relative rounded-2xl bg-gradient-to-br from-black/65 via-[#121212] to-black/55 border border-white/10 px-4 py-2 shadow-sm overflow-hidden">
-            <div className="pointer-events-none absolute inset-0">
-              <div className="absolute -top-16 -right-16 w-56 h-56 bg-[#D6A21E]/18 blur-[34px] opacity-80" />
-              <div className="absolute -bottom-16 -left-16 w-56 h-56 bg-black/5 blur-[40px] opacity-70" />
-              <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-[#D6A21E]/55 to-transparent" />
-              <div
-                className="absolute inset-0 opacity-[0.14]"
-                style={{
-                  backgroundImage: "radial-gradient(rgba(214,162,30,0.20) 1px, transparent 1px)",
-                  backgroundSize: "22px 22px",
-                }}
-              />
-            </div>
-
-            <img
-              src="/brand/fulcrum-wordmark-white.png"
-              alt="Fulcrum"
-              className="relative h-7 md:h-8 w-auto drop-shadow-[0_10px_18px_rgba(0,0,0,0.28)]"
-              loading="eager"
-              draggable={false}
-            />
-          </div>
+          <img
+            src="/brand/fulcrum-wordmark-white.png"
+            alt="Fulcrum"
+            className="h-7 md:h-8 w-auto drop-shadow-[0_16px_26px_rgba(0,0,0,0.55)]"
+            loading="eager"
+            draggable={false}
+          />
 
           {/* subtle grand hover glow */}
           <div className="pointer-events-none absolute -inset-6 rounded-[1.75rem] opacity-0 group-hover:opacity-100 transition-opacity duration-300 blur-[26px] [background:radial-gradient(circle_at_35%_35%,rgba(214,162,30,0.28),transparent_62%),radial-gradient(circle_at_70%_70%,rgba(255,255,255,0.10),transparent_55%)]" />
@@ -302,11 +289,44 @@ function Navbar() {
             Academy
           </Link>
           <span className="mx-3 h-6 w-px bg-gradient-to-b from-transparent via-[#D6A21E]/55 to-transparent opacity-80" />
-          <Link to="/consultation" className="pl-1">
-            <Button className="bg-[#D6A21E] text-black hover:bg-[#B88A16] rounded-full px-6">
-              Limited-Time Free Consultation
-            </Button>
-          </Link>
+          <div className="relative group pl-1">
+            <Link to="/consultation" className="inline-flex">
+              <Button className="bg-[#D6A21E] text-black hover:bg-[#B88A16] rounded-full px-6">
+                Limited-Time ROI Assessment
+              </Button>
+            </Link>
+
+            {/* Dropdown: no hover-gap (wrapper touches trigger) */}
+            <div className="absolute right-0 top-full z-[90] w-[360px] pt-2 opacity-0 invisible group-hover:opacity-100 group-hover:visible group-focus-within:opacity-100 group-focus-within:visible transition duration-200">
+              <div className="rounded-2xl border border-white/10 bg-[#121212] text-white shadow-[0_24px_90px_rgba(0,0,0,0.55)] overflow-hidden">
+                <div className="p-5 border-b border-white/10">
+                  <div className="text-[11px] font-semibold uppercase tracking-[0.22em] text-white/60">
+                    Data we need for ROI assessment
+                  </div>
+                </div>
+                <div className="p-5 space-y-3 text-sm text-white/80">
+                  {[
+                    "Initial order value",
+                    "Lifetime value of customer",
+                    "Gross profit margin (Revenue - COGS)",
+                    "Win rate (close rate)",
+                  ].map((item) => (
+                    <div key={item} className="flex items-start gap-3">
+                      <span className="mt-[7px] h-1.5 w-1.5 rounded-full bg-[#D6A21E] shadow-[0_0_18px_rgba(214,162,30,0.55)]" />
+                      <span>{item}</span>
+                    </div>
+                  ))}
+                </div>
+                <div className="p-5 pt-0">
+                  <Link to="/consultation" className="inline-flex">
+                    <Button className="rounded-full bg-white/10 text-white hover:bg-white/15 px-5">
+                      Start ROI assessment <ArrowRight className="ml-2" size={18} />
+                    </Button>
+                  </Link>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </nav>
@@ -376,9 +396,6 @@ function SiteFooter() {
                 draggable={false}
               />
             </div>
-            <p className="mt-5 text-sm text-black/70 leading-relaxed">
-              Sales + marketing systems, coaching, and execution cadence — built for predictable revenue outcomes.
-            </p>
 
             <div className="mt-6 inline-flex flex-col items-start gap-2 rounded-3xl border border-black/10 bg-white/70 px-4 py-3 shadow-sm backdrop-blur">
               <div className="text-[11px] font-semibold uppercase tracking-[0.22em] text-black/55">
@@ -575,16 +592,16 @@ export default function FulcrumWebsite() {
 
 // Brand logos (place these files in /public with these names)
 const brands = [
-  { src: "/Winrock-grey-1200x350-1-768x224.png", alt: "Winrock International" },
-  { src: "/unnamed-2-cdopy.png", alt: "Client brand" },
-  { src: "/viemed-grey-768x411.png", alt: "VieMed" },
-  { src: "/hello-world.png", alt: "Hello World" },
-  { src: "/fdnnsafa.png", alt: "Client brand" },
-  { src: "/abre_grey-removebg-preview.png", alt: "Abre" },
-  { src: "/Scoutly-grey-1200x172-1-768x110.png", alt: "Scoutly" },
-  { src: "/schoolmint-grey-1200x374-1-768x239.png", alt: "SchoolMint" },
-  { src: "/Southern-Miss-768x359.png", alt: "The University of Southern Mississippi" },
-  { src: "/skillmasters-grey-1200x345-1-768x221.png", alt: "Skillmasters" },
+  { src: "/brands/winrock.png", alt: "Winrock International" },
+  { src: "/brands/brand-unnamed.png", alt: "Client brand" },
+  { src: "/brands/viemed.png", alt: "VieMed" },
+  { src: "/brands/hello-world.png", alt: "Hello World" },
+  { src: "/brands/brand-fdnnsafa.png", alt: "Client brand" },
+  { src: "/brands/abre.png", alt: "Abre" },
+  { src: "/brands/scoutly.png", alt: "Scoutly" },
+  { src: "/brands/schoolmint.png", alt: "SchoolMint" },
+  { src: "/brands/southern-miss.png", alt: "The University of Southern Mississippi" },
+  { src: "/brands/skillmasters.png", alt: "Skillmasters" },
 ];
 
 // Homepage "Culture" section data (swap with real links/posts anytime)
@@ -961,6 +978,9 @@ function Home() {
           </svg>
         </div>
 
+        {/* Bottom bleed into page */}
+        <div className="pointer-events-none absolute inset-x-0 bottom-0 h-24 bg-gradient-to-b from-transparent to-[#F3EFE6]" />
+
         <div className="relative max-w-7xl mx-auto px-6 py-28">
           <div className="grid lg:grid-cols-3 gap-10 items-center">
             {/* Left luxury copy */}
@@ -968,7 +988,7 @@ function Home() {
               <div className="flex items-center gap-3">
                 <span className="h-2 w-2 rounded-full bg-[#D6A21E] shadow-[0_0_24px_rgba(214,162,30,0.55)]" />
                 <p className="text-xs font-semibold tracking-[0.22em] uppercase text-white/70">
-                  Sales & Marketing
+                  Create leverage with us
                 </p>
               </div>
 
@@ -978,18 +998,17 @@ function Home() {
                   Fulcrum
                 </span>
                 <span className="block mt-4 text-3xl md:text-5xl font-black tracking-tight text-white">
-                  Elite execution for predictable revenue.
+                  Creating growth opportunities should be easy
                 </span>
               </h1>
               <p className="text-white/70 text-lg md:text-xl mt-6 max-w-2xl">
-                We design sales systems, train performers, and install execution rhythms
-                that compound results — without chaos.
+                We are the only marketing and sales agency focused on your business's development.
               </p>
 
               <div className="mt-10 flex flex-col sm:flex-row gap-4">
                 <Link to="/consultation">
                   <Button className="bg-[#D6A21E] text-black hover:bg-[#B88A16] rounded-full px-12 py-6 text-lg shadow-[0_0_40px_rgba(214,162,30,0.35)]">
-                    Limited-time free consultation <ArrowRight className="ml-2" />
+                    Limited-Time ROI Assessment <ArrowRight className="ml-2" />
                   </Button>
                 </Link>
                 <Link to="/case-studies">
@@ -1076,7 +1095,7 @@ function Home() {
               <div className="flex items-end justify-between gap-6 flex-wrap">
                 <div>
                   <h2 className="text-xl md:text-2xl font-black text-white">
-                    Trusted by teams building real revenue
+                    Trusted by B2B organizations building real revenue opportunities
                   </h2>
                   <p className="text-white/70 mt-2">A few of the brands we’ve worked with.</p>
                 </div>
@@ -1092,48 +1111,64 @@ function Home() {
             </div>
           </div>
         </div>
+
+        {/* Buffer so next section can overlap without covering marquee */}
+        <div className="h-20 md:h-24" aria-hidden="true" />
       </section>
 
       {/* SERVICES PREVIEW */}
-      <section className="px-6 pt-12 pb-24">
+      <section className="relative -mt-16 md:-mt-20 pb-24 px-6">
         <div className="max-w-7xl mx-auto">
-          <div className="flex items-end justify-between gap-6 flex-wrap">
-            <div>
-              <div className="flex items-center gap-3">
-                <span className="h-2 w-2 rounded-full bg-[#D6A21E] shadow-[0_0_24px_rgba(214,162,30,0.35)]" />
-                <p className="text-xs font-semibold tracking-[0.22em] uppercase text-black/60">
-                  Services
-                </p>
-              </div>
-              <h2 className="text-3xl md:text-5xl font-black tracking-tight mt-3">
-                What we <span className="text-[#D6A21E]">do</span>
-              </h2>
-              <div className="mt-4 h-px w-56 bg-gradient-to-r from-[#D6A21E] via-black/20 to-transparent" />
-              <p className="text-black/70 mt-3 max-w-2xl">
-                Fulcrum helps organizations of all types create momentum quickly. We help you compound that momentum over time through continuous learning, clear scorecards, and adaptive execution as your business changes.
-              </p>
+          <div className="bg-white rounded-3xl border border-black/10 p-10 md:p-12 relative overflow-hidden shadow-[0_26px_70px_rgba(18,18,18,0.18)]">
+            <div className="pointer-events-none absolute inset-0">
+              <div className="absolute -top-24 -right-24 w-[420px] h-[420px] bg-[#D6A21E]/12 rotate-12 rounded-[92px] blur-[90px]" />
+              <div className="absolute -bottom-28 -left-28 w-[520px] h-[520px] bg-black/5 -rotate-12 rounded-[96px] blur-[95px]" />
+              <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-[#D6A21E]/55 to-transparent" />
+              <div className="absolute inset-0 opacity-[0.08] [background:radial-gradient(rgba(0,0,0,0.10)_1px,transparent_1px)] [background-size:26px_26px]" />
             </div>
-            <Link to="/services">
-              <Button className="bg-[#121212] text-[#D6A21E] hover:bg-black rounded-full px-8">Explore services</Button>
-            </Link>
-          </div>
 
-          <div className="mt-10 grid lg:grid-cols-3 gap-8">
-            <PreviewCard
-              icon={<TrendingUp />}
-              title="Business development"
-              desc="Building predictable revenue through sales systems, partnerships, and execution." 
-            />
-            <PreviewCard
-              icon={<Briefcase />}
-              title="Corporate development"
-              desc="Optimizing strategy, operations, and growth initiatives to scale organizations." 
-            />
-            <PreviewCard
-              icon={<Users />}
-              title="People development"
-              desc="Training, coaching, and leadership pipelines that turn talent into performers." 
-            />
+            <div className="relative">
+              <div className="flex items-end justify-between gap-6 flex-wrap">
+                <div>
+                  <div className="flex items-center gap-3">
+                    <span className="h-2 w-2 rounded-full bg-[#D6A21E] shadow-[0_0_24px_rgba(214,162,30,0.35)]" />
+                    <p className="text-xs font-semibold tracking-[0.22em] uppercase text-black/60">
+                      Services
+                    </p>
+                  </div>
+                  <h2 className="text-3xl md:text-5xl font-black tracking-tight mt-3">
+                    What we <span className="text-[#D6A21E]">do</span>
+                  </h2>
+                  <div className="mt-4 h-px w-56 bg-gradient-to-r from-[#D6A21E] via-black/20 to-transparent" />
+                  <p className="text-black/70 mt-3 max-w-2xl">
+                    Fulcrum helps organizations of all types create momentum quickly. We help you compound that momentum over time through continuous learning, clear scorecards, and adaptive execution as your business changes.
+                  </p>
+                </div>
+                <Link to="/services">
+                  <Button className="bg-[#121212] text-[#D6A21E] hover:bg-black rounded-full px-8">
+                    Explore services <ArrowRight className="ml-2" size={18} />
+                  </Button>
+                </Link>
+              </div>
+
+              <div className="mt-10 grid lg:grid-cols-3 gap-8">
+                <PreviewCard
+                  icon={<TrendingUp />}
+                  title="Business development"
+                  desc="Building your revenue pipeline through marketing and outreach"
+                />
+                <PreviewCard
+                  icon={<Briefcase />}
+                  title="Corporate development"
+                  desc="Sourcing inorganic growth by finding strategic merger and acquisition partnerships"
+                />
+                <PreviewCard
+                  icon={<Users />}
+                  title="People development"
+                  desc="Building your team members' competencies and skills by transferring our systems, tools, and best practices into yours."
+                />
+              </div>
+            </div>
           </div>
         </div>
       </section>
@@ -1163,10 +1198,10 @@ function Home() {
                     </p>
                   </div>
                   <h2 className="text-3xl md:text-5xl font-black tracking-tight mt-4">
-                    High standards. <span className="text-[#D6A21E]">Higher</span> support.
+                    We are <span className="text-[#D6A21E]">Creators of Value</span>.
                   </h2>
                   <p className="text-black/70 mt-5 text-lg">
-                    A living snapshot — updates, partnerships, and the people building the work.
+                    Get to know our team and culture
                   </p>
                 </div>
 
@@ -1189,7 +1224,7 @@ function Home() {
                   <div className="text-xs font-semibold tracking-[0.22em] uppercase text-black/60">
                     Accountability
                   </div>
-                  <div className="font-black text-xl mt-3">Scorecards + ownership</div>
+                  <div className="font-black text-xl mt-3">Pursuing what matters</div>
                   <p className="text-black/70 mt-3">
                     We measure what matters weekly and execute what moves the needle.
                   </p>
@@ -1198,7 +1233,7 @@ function Home() {
                   <div className="text-xs font-semibold tracking-[0.22em] uppercase text-black/60">
                     Coaching
                   </div>
-                  <div className="font-black text-xl mt-3">Reps + feedback loops</div>
+                  <div className="font-black text-xl mt-3">Repetitive feedback loops</div>
                   <p className="text-black/70 mt-3">
                     Continuous learning built into execution — not “training once.”
                   </p>
@@ -1207,7 +1242,7 @@ function Home() {
                   <div className="text-xs font-semibold tracking-[0.22em] uppercase text-black/60">
                     Systems-first
                   </div>
-                  <div className="font-black text-xl mt-3">Repeatable playbooks</div>
+                  <div className="font-black text-xl mt-3">Activities that build assets</div>
                   <p className="text-black/70 mt-3">
                     Processes that scale outcomes without relying on heroics.
                   </p>
@@ -1751,7 +1786,7 @@ function About() {
               About Fulcrum
             </p>
             <h2 className="text-5xl md:text-6xl font-black mt-6 tracking-tight">
-              Built for <span className="text-[#D6A21E]">performance</span>.
+              Built for <span className="text-[#D6A21E]">performance</span>. Tuned for alignment
             </h2>
             <p className="text-black/70 text-lg md:text-xl mt-6">
               We build sales + marketing systems, train people to run them, and keep execution tight with accountability.
@@ -1760,7 +1795,7 @@ function About() {
             <div className="mt-10 flex flex-col sm:flex-row gap-4">
               <Link to="/consultation">
                 <Button className="bg-[#121212] text-[#D6A21E] hover:bg-black rounded-full px-10 py-6 text-lg">
-                  Book a free consult <ArrowRight className="ml-2" />
+                  Customize your campaign <ArrowRight className="ml-2" />
                 </Button>
               </Link>
               <a href="#contact">
@@ -1773,7 +1808,7 @@ function About() {
         </div>
       </section>
 
-      <section className="py-24 px-6 max-w-7xl mx-auto space-y-20">
+      <section className="relative -mt-16 md:-mt-20 pt-0 pb-24 px-6 max-w-7xl mx-auto space-y-20">
         {/* About Intro */}
         <div className="relative overflow-hidden rounded-[2.75rem] border border-black/10 bg-[#121212] text-white shadow-[0_22px_60px_rgba(18,18,18,0.22)]">
           <div className="pointer-events-none absolute inset-0">
@@ -1822,7 +1857,7 @@ function About() {
               </div>
               <div className="rounded-3xl border border-white/12 bg-white/[0.06] p-6 backdrop-blur-sm">
                 <div className="text-[11px] font-semibold uppercase tracking-[0.22em] text-white/60">Inorganic growth</div>
-                <div className="mt-3 font-black text-xl">Deal flow support</div>
+                <div className="mt-3 font-black text-xl">M&amp;A deal flow</div>
                 <p className="mt-3 text-sm text-white/70 leading-relaxed">
                   Structured sourcing, outreach, and follow-through so acquisitions don’t distract the business.
                 </p>
@@ -1852,10 +1887,7 @@ function About() {
                 <h4 className="text-2xl font-black">Our Mission</h4>
               </div>
               <p className="text-black/70 mt-5 leading-relaxed">
-                Help our people achieve their personal, professional, and financial goals.
-                <br />
-                <br />
-                We’re here to build lives we’re proud of — together.
+                Fulcrum helps organizations proactively uncover and activate untapped revenue opportunities.
               </p>
             </CardContent>
           </Card>
@@ -1904,7 +1936,7 @@ function About() {
             </div>
             <div className="max-w-3xl">
               <h3 className="text-4xl md:text-5xl font-black tracking-tight mt-5">
-                Meet the <span className="text-[#D6A21E]">Team</span>
+                Meet the <span className="text-[#D6A21E]">Leadership Team</span>
               </h3>
               <div className="mt-4 h-px w-48 bg-gradient-to-r from-[#D6A21E] via-black/20 to-transparent" />
               
@@ -2057,20 +2089,20 @@ const team = [
     img: "/team/reece.png",
   },
   {
-    name: "Patrick Hundley",
-    role: "Director of Systems & Account Manager",
-    description:
-      "Designs and manages internal systems and client operations to ensure consistency, performance, and accountability across accounts.",
-    linkedin: "https://www.linkedin.com/in/patrick-hundley-78a38313b/",
-    img: "/team/patrick.png",
-  },
-  {
     name: "Tristin Tauzin",
-    role: "Director of Talent & Account Manager",
+    role: "Chief Operating Officer",
     description:
       "Leads recruiting, onboarding, and talent development while supporting client growth initiatives.",
     linkedin: "https://www.linkedin.com/in/tristin-tauzin-6225b8164/",
     img: "/team/tristin.png",
+  },
+  {
+    name: "Patrick Hundley",
+    role: "Head of Systems and Integration",
+    description:
+      "Designs and manages internal systems and client operations to ensure consistency, performance, and accountability across accounts.",
+    linkedin: "https://www.linkedin.com/in/patrick-hundley-78a38313b/",
+    img: "/team/patrick.png",
   },
   {
     name: "Lauren Day",
@@ -2221,26 +2253,36 @@ function Blogs() {
         </div>
       </section>
 
-      <section className="px-6 py-16">
+      <section className="relative -mt-16 md:-mt-20 pb-16 px-6">
         <div className="max-w-7xl mx-auto">
-          <div className="flex items-end justify-between gap-6 flex-wrap">
-            <div>
-              <p className="text-xs font-semibold tracking-[0.22em] uppercase text-black/60">Featured</p>
-              <h3 className="text-3xl md:text-4xl font-black mt-3">The latest from the team.</h3>
+          <div className="bg-white rounded-3xl border border-black/10 p-10 md:p-12 shadow-[0_26px_70px_rgba(18,18,18,0.12)] relative overflow-hidden">
+            <div className="pointer-events-none absolute inset-0">
+              <div className="absolute -top-24 -right-24 w-[420px] h-[420px] bg-[#D6A21E]/10 rotate-12 rounded-[92px] blur-[90px]" />
+              <div className="absolute -bottom-28 -left-28 w-[520px] h-[520px] bg-black/5 -rotate-12 rounded-[96px] blur-[95px]" />
+              <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-[#D6A21E]/55 to-transparent" />
+              <div className="absolute inset-0 opacity-[0.08] [background:radial-gradient(rgba(0,0,0,0.10)_1px,transparent_1px)] [background-size:26px_26px]" />
             </div>
-            <span className="text-xs font-semibold bg-[#121212] text-[#D6A21E] px-3 py-1 rounded-full shadow-sm">
-              Updated regularly
-            </span>
-          </div>
+            <div className="relative">
+              <div className="flex items-end justify-between gap-6 flex-wrap">
+                <div>
+                  <p className="text-xs font-semibold tracking-[0.22em] uppercase text-black/60">Featured</p>
+                  <h3 className="text-3xl md:text-4xl font-black mt-3">The latest from the team.</h3>
+                </div>
+                <span className="text-xs font-semibold bg-[#121212] text-[#D6A21E] px-3 py-1 rounded-full shadow-sm">
+                  Updated regularly
+                </span>
+              </div>
 
-          <div className="mt-10">
-            <BlogCard post={featured} />
-          </div>
+              <div className="mt-10">
+                <BlogCard post={featured} />
+              </div>
 
-          <div className="mt-10 grid md:grid-cols-2 gap-8">
-            {rest.map((p) => (
-              <BlogCard key={p.slug} post={p} compact />
-            ))}
+              <div className="mt-10 grid md:grid-cols-2 gap-8">
+                {rest.map((p) => (
+                  <BlogCard key={p.slug} post={p} compact />
+                ))}
+              </div>
+            </div>
           </div>
         </div>
       </section>
@@ -2384,7 +2426,7 @@ function BlogPost() {
         </div>
       </section>
 
-      <section className="px-6 py-16">
+      <section className="relative -mt-16 md:-mt-20 pb-16 px-6">
         <div className="max-w-7xl mx-auto">
           <div className="grid lg:grid-cols-[minmax(0,1fr)_360px] gap-10 items-start">
             <Card className="rounded-3xl border border-black/10 bg-white">
@@ -2693,7 +2735,7 @@ function Services() {
     {
       step: "01",
       title: "Audit",
-      desc: "We review your pipeline, messaging, and execution to find leverage points.",
+      desc: "We visit about your current situation, goals, needs, and market approach so that we can understand how to achieve an ROI for your business.",
     },
     {
       step: "02",
@@ -2703,7 +2745,7 @@ function Services() {
     {
       step: "03",
       title: "Execute",
-      desc: "We launch fast, train the team, and run the cadence with you.",
+      desc: "We get it done so that results can be created.",
     },
     {
       step: "04",
@@ -2737,17 +2779,22 @@ function Services() {
     <>
       {/* Services Hero */}
       <section className="relative bg-[#121212] text-white overflow-hidden">
-        {/* Photo background (bleeds + theme overlays) */}
+        {/* Abstract premium background (no photo) */}
         <div className="absolute inset-0 pointer-events-none">
-          <img
-            src="/hero/services-hero.png"
-            alt=""
-            className="h-full w-full object-cover object-center scale-[1.04] filter saturate-[0.80] contrast-[1.10] brightness-[0.55] blur-[0.25px]"
-            loading="eager"
-            decoding="async"
-          />
-          <div className="absolute inset-0 bg-gradient-to-b from-black/80 via-black/65 to-[#F3EFE6]" />
-          <div className="absolute inset-0 opacity-[0.55] mix-blend-screen [background-image:radial-gradient(900px_520px_at_18%_12%,rgba(214,162,30,0.28),transparent_58%),radial-gradient(760px_520px_at_86%_26%,rgba(255,255,255,0.10),transparent_62%)]" />
+          {/* base */}
+          <div className="absolute inset-0 bg-[radial-gradient(1000px_640px_at_20%_12%,rgba(214,162,30,0.22),transparent_60%),radial-gradient(820px_620px_at_82%_24%,rgba(255,255,255,0.08),transparent_62%),radial-gradient(900px_700px_at_50%_110%,rgba(0,0,0,0.65),transparent_55%)]" />
+          <div className="absolute inset-0 bg-gradient-to-b from-black/85 via-black/70 to-[#F3EFE6]" />
+
+          {/* luxe beams */}
+          <div className="absolute inset-y-[-40%] -left-1/3 w-[120%] rotate-[-10deg] bg-[linear-gradient(115deg,transparent,rgba(214,162,30,0.10),transparent)] opacity-70" />
+          <div className="absolute inset-y-[-35%] -right-1/3 w-[120%] rotate-[12deg] bg-[linear-gradient(115deg,transparent,rgba(255,255,255,0.06),transparent)] opacity-60" />
+
+          {/* texture */}
+          <div className="absolute inset-0 opacity-[0.16] [background:radial-gradient(rgba(214,162,30,0.20)_1px,transparent_1px)] [background-size:24px_24px]" />
+          <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-[#D6A21E]/45 to-transparent opacity-80" />
+          <div className="absolute left-1/2 top-10 h-px w-[68%] -translate-x-1/2 bg-gradient-to-r from-transparent via-white/14 to-transparent" />
+
+          {/* bottom bleed */}
           <div className="absolute inset-x-0 bottom-0 h-24 bg-gradient-to-b from-transparent to-[#F3EFE6]" />
         </div>
 
@@ -2780,10 +2827,10 @@ function Services() {
               Services
             </p>
             <h2 className="text-5xl md:text-6xl font-black mt-6 tracking-tight">
-              Services that turn activity into <span className="text-[#D6A21E]">revenue</span>.
+              Services that turn activity into <span className="text-[#D6A21E]">potential</span>.
             </h2>
             <p className="text-white/70 text-lg md:text-xl mt-6">
-              Strategy is useless without execution. We build the system, train the people, and run the cadence.
+              Strategy without execution is dead. We customize and deploy the system, manage the people, and optimize for your benefit.
             </p>
 
             <div className="mt-10 flex flex-col sm:flex-row gap-4">
@@ -2815,7 +2862,7 @@ function Services() {
             <div className="flex items-end justify-between gap-6 flex-wrap">
               <div>
                 <p className="text-xs font-semibold tracking-[0.22em] uppercase text-black/60">How we work</p>
-                <h3 className="text-3xl md:text-4xl font-black mt-3">Simple process. Serious accountability.</h3>
+                  <h3 className="text-3xl md:text-4xl font-black mt-3">Simple process. Focused effort. Clear results</h3>
                 <p className="text-black/70 mt-3 max-w-2xl">
                   Simple process, high accountability. No chaos. No guessing.
                 </p>
@@ -2878,64 +2925,37 @@ function Services() {
 
                 <div className="mt-8 overflow-x-auto">
                   <div className="min-w-[820px] rounded-3xl border border-black/10 overflow-hidden bg-white/70">
-                    <div className="grid grid-cols-[1.15fr_repeat(3,1fr)]">
+                    <div className="grid grid-cols-[1.15fr_1.85fr]">
                       <div className="p-5 bg-[#F3EFE6]" />
-
-                      {[
-                        { name: "Good", highlight: false },
-                        { name: "Better", highlight: true, badge: "Most chosen" },
-                        { name: "Best", highlight: false },
-                      ].map((t) => (
-                        <div
-                          key={t.name}
-                          className={cx(
-                            "p-5 border-l border-black/10",
-                            t.highlight
-                              ? "bg-[linear-gradient(180deg,#fff_0%,#FFF6DD_55%,#F3EFE6_100%)] text-black border-l-[#D6A21E]/35 relative"
-                              : "bg-[#F3EFE6]"
-                          )}
-                        >
-                          {t.highlight ? (
-                            <div className="pointer-events-none absolute inset-0">
-                              <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-[#D6A21E]/70 to-transparent" />
-                              <div className="absolute -top-16 -right-16 w-[240px] h-[240px] bg-[#D6A21E]/14 rotate-12 rounded-[64px] blur-[70px]" />
-                              <div className="absolute inset-0 ring-1 ring-inset ring-[#D6A21E]/25 rounded-none" />
-                            </div>
-                          ) : null}
-                          <div className="flex items-center justify-between gap-3">
-                            <div className={cx("text-lg font-black", t.highlight ? "text-[#D6A21E]" : "text-black")}>
-                              {t.name}
-                            </div>
-                            {t.badge ? (
-                              <span className="text-[11px] font-semibold px-3 py-1 rounded-full border border-black/10 bg-[#121212] text-[#D6A21E] shadow-sm">
-                                {t.badge}
-                              </span>
-                            ) : null}
-                          </div>
-                          <div className={cx("mt-2 text-[11px] font-semibold uppercase tracking-[0.22em]", t.highlight ? "text-black/60" : "text-black/50")}>
-                            6 month minimum • 90-day recalibration
-                          </div>
+                      <div className="p-5 bg-[linear-gradient(180deg,#fff_0%,#FFF6DD_55%,#F3EFE6_100%)] border-l border-[#D6A21E]/35 relative">
+                        <div className="pointer-events-none absolute inset-0">
+                          <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-[#D6A21E]/70 to-transparent" />
+                          <div className="absolute -top-16 -right-16 w-[240px] h-[240px] bg-[#D6A21E]/14 rotate-12 rounded-[64px] blur-[70px]" />
+                          <div className="absolute inset-0 ring-1 ring-inset ring-[#D6A21E]/20 rounded-none" />
                         </div>
-                      ))}
+                        <div className="relative flex items-center justify-between gap-3">
+                          <div className="text-lg font-black text-[#D6A21E]">Typical ranges</div>
+                          <span className="text-[11px] font-semibold px-3 py-1 rounded-full border border-black/10 bg-[#121212] text-[#D6A21E] shadow-sm">
+                            ROI-aligned
+                          </span>
+                        </div>
+                      </div>
 
                       {[
                         {
-                          label: "Onboarding",
-                          good: "$1,200",
-                          better: "$1,550",
-                          best: "$2,000",
+                          label: "Onboarding (one-time)",
+                          value: "$750 – $2,000",
+                          note: "Depends on scope + systems needed",
                         },
                         {
-                          label: "Per month",
-                          good: "$1,500",
-                          better: "$3,250",
-                          best: "$5,500",
+                          label: "Marketing budget (monthly)",
+                          value: "$1,500 – $15,000",
+                          note: "We tailor channels + spend to targets",
                         },
                         {
-                          label: "Per qualified opportunity",
-                          good: "$450",
-                          better: "$350",
-                          best: "$250",
+                          label: "Alignment incentives",
+                          value: "Based on your ROI",
+                          note: "Incentives tied to performance and outcomes",
                           emphasis: true,
                         },
                       ].map((row) => (
@@ -2944,24 +2964,14 @@ function Services() {
                             <div className="text-[11px] font-semibold uppercase tracking-[0.22em] text-black/50">
                               {row.label}
                             </div>
-                          </div>
-                          <div className="p-5 bg-white border-t border-black/10 border-l border-black/10">
-                            <div className={cx("text-2xl font-black tracking-tight text-black", row.emphasis ? "text-[#121212]" : "")}>
-                              {row.good}
-                            </div>
+                            {row.note ? <div className="mt-2 text-xs font-semibold text-black/55">{row.note}</div> : null}
                           </div>
                           <div className="p-5 bg-[linear-gradient(180deg,#fff_0%,#FFF6DD_55%,#F3EFE6_100%)] border-t border-black/10 border-l border-[#D6A21E]/35 relative">
                             <div className="pointer-events-none absolute inset-0">
-                              <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-[#D6A21E]/55 to-transparent" />
-                              <div className="absolute inset-0 ring-1 ring-inset ring-[#D6A21E]/20" />
+                              <div className="absolute inset-0 ring-1 ring-inset ring-[#D6A21E]/15" />
                             </div>
-                            <div className={cx("relative text-2xl font-black tracking-tight text-black", row.emphasis ? "text-[#121212]" : "")}>
-                              {row.better}
-                            </div>
-                          </div>
-                          <div className="p-5 bg-white border-t border-black/10 border-l border-black/10">
-                            <div className={cx("text-2xl font-black tracking-tight text-black", row.emphasis ? "text-[#121212]" : "")}>
-                              {row.best}
+                            <div className={cx("relative text-2xl font-black tracking-tight", row.emphasis ? "text-[#121212]" : "text-black")}>
+                              {row.value}
                             </div>
                           </div>
                         </React.Fragment>
@@ -2969,31 +2979,14 @@ function Services() {
 
                       {/* Customize row */}
                       <div className="p-5 bg-white border-t border-black/10">
-                        <div className="text-[11px] font-semibold uppercase tracking-[0.22em] text-black/50">
-                          Customize
-                        </div>
-                      </div>
-                      <div className="p-5 bg-white border-t border-black/10 border-l border-black/10">
-                        <Link to="/consultation" className="inline-flex">
-                          <Button className="rounded-full bg-[#121212] text-[#D6A21E] hover:bg-black px-5 py-3 text-sm">
-                            Customize
-                          </Button>
-                        </Link>
+                        <div className="text-[11px] font-semibold uppercase tracking-[0.22em] text-black/50">Customize</div>
                       </div>
                       <div className="p-5 bg-[linear-gradient(180deg,#fff_0%,#FFF6DD_55%,#F3EFE6_100%)] border-t border-black/10 border-l border-[#D6A21E]/35 relative">
                         <div className="pointer-events-none absolute inset-0">
-                          <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-[#D6A21E]/55 to-transparent" />
-                          <div className="absolute inset-0 ring-1 ring-inset ring-[#D6A21E]/20" />
+                          <div className="absolute inset-0 ring-1 ring-inset ring-[#D6A21E]/15" />
                         </div>
                         <Link to="/consultation" className="relative inline-flex">
-                          <Button className="rounded-full bg-[#D6A21E] text-black hover:bg-[#B88A16] px-5 py-3 text-sm shadow-[0_0_26px_rgba(214,162,30,0.25)]">
-                            Customize
-                          </Button>
-                        </Link>
-                      </div>
-                      <div className="p-5 bg-white border-t border-black/10 border-l border-black/10">
-                        <Link to="/consultation" className="inline-flex">
-                          <Button className="rounded-full bg-[#121212] text-[#D6A21E] hover:bg-black px-5 py-3 text-sm">
+                          <Button className="rounded-full bg-[#D6A21E] text-black hover:bg-[#B88A16] px-6 py-3 text-sm shadow-[0_0_26px_rgba(214,162,30,0.25)]">
                             Customize
                           </Button>
                         </Link>
@@ -3138,48 +3131,6 @@ function Services() {
               </div>
             </div>
 
-            {/* 04 */}
-            <div className="relative overflow-hidden rounded-[2.25rem] border border-black/10 bg-white shadow-sm">
-              <div className="pointer-events-none absolute inset-0">
-                <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-[#D6A21E]/60 to-transparent" />
-                <div className="absolute -top-24 -left-24 w-[420px] h-[420px] bg-[#D6A21E]/10 rotate-12 rounded-[96px] blur-[90px]" />
-              </div>
-              <div className="relative p-8 md:p-10">
-                <div className="inline-flex items-center gap-2 rounded-full border border-black/10 bg-[#F3EFE6] px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.22em] text-black/70">
-                  <span className="h-1.5 w-1.5 rounded-full bg-[#D6A21E]" />
-                  04
-                </div>
-                <h4 className="mt-4 text-2xl md:text-3xl font-black">Need actionable insights from stakeholders?</h4>
-                <p className="mt-3 text-black/70 max-w-3xl">
-                  We do this through our GSA Schedule federal contract{" "}
-                  <span className="font-semibold text-black/70">(SIN 541910 – Marketing Research &amp; Analysis)</span>.
-                </p>
-
-                <div className="mt-8 grid md:grid-cols-2 gap-4">
-                  {[
-                    { role: "Community Research & Engagement Specialist", rate: "$120.63/hr" },
-                    { role: "Community Research & Outreach Specialist", rate: "$98.66/hr" },
-                    { role: "Stakeholder Research & Development Specialist", rate: "$89.68/hr" },
-                    { role: "Member Research & Recruitment Specialist", rate: "$138.59/hr" },
-                  ].map((r) => (
-                    <div key={r.role} className="rounded-3xl border border-black/10 bg-white/70 p-6">
-                      <div className="text-sm font-black text-[#121212] leading-snug">{r.role}</div>
-                      <div className="mt-3 text-2xl font-black tracking-tight text-black">
-                        <span className="text-[#D6A21E]">{r.rate.split('/')[0]}</span>/{r.rate.split('/')[1]}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-
-                <div className="mt-8">
-                  <Link to="/consultation" className="inline-flex">
-                    <Button className="rounded-full bg-[#121212] text-[#D6A21E] hover:bg-black px-7 py-5">
-                      Customize research engagement <ArrowRight className="ml-2" size={18} />
-                    </Button>
-                  </Link>
-                </div>
-              </div>
-            </div>
           </div>
 
           <div className="mt-10 text-center">
@@ -3357,12 +3308,20 @@ function ServicesCore() {
         </div>
       </section>
 
-      <section className="py-20 px-6">
+      <section className="relative -mt-16 md:-mt-20 pb-20 px-6">
         <div className="max-w-7xl mx-auto">
-          <div className="mt-2 grid lg:grid-cols-3 gap-8">
-            {servicesCoreServiceLines.map((s) => (
-              <ServiceBlock key={s.title} {...s} />
-            ))}
+          <div className="bg-white rounded-3xl border border-black/10 p-10 md:p-12 relative overflow-hidden shadow-[0_26px_70px_rgba(18,18,18,0.16)]">
+            <div className="pointer-events-none absolute inset-0">
+              <div className="absolute -top-24 -right-24 w-[420px] h-[420px] bg-[#D6A21E]/12 rotate-12 rounded-[92px] blur-[90px]" />
+              <div className="absolute -bottom-28 -left-28 w-[520px] h-[520px] bg-black/5 -rotate-12 rounded-[96px] blur-[95px]" />
+              <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-[#D6A21E]/55 to-transparent" />
+              <div className="absolute inset-0 opacity-[0.08] [background:radial-gradient(rgba(0,0,0,0.10)_1px,transparent_1px)] [background-size:26px_26px]" />
+            </div>
+            <div className="relative grid lg:grid-cols-3 gap-8">
+              {servicesCoreServiceLines.map((s) => (
+                <ServiceBlock key={s.title} {...s} />
+              ))}
+            </div>
           </div>
         </div>
       </section>
@@ -3405,6 +3364,16 @@ function Industries() {
       desc: "Stakeholder-first communication and structured execution for initiatives that require alignment and visibility.",
       bullets: ["Stakeholder mapping + outreach", "Program rollout planning", "Visibility + reporting"],
       caseCategory: "Partnerships",
+      gsa: {
+        label: "GSA research rates",
+        sin: "SIN 541910 – Marketing Research & Analysis",
+        rates: [
+          { role: "Community Research & Engagement Specialist", rate: "$120.63/hr" },
+          { role: "Community Research & Outreach Specialist", rate: "$98.66/hr" },
+          { role: "Stakeholder Research & Development Specialist", rate: "$89.68/hr" },
+          { role: "Member Research & Recruitment Specialist", rate: "$138.59/hr" },
+        ],
+      },
       exampleImage: "/industries/ull-vertical.png",
       exampleAlt: "UL Lafayette",
     },
@@ -3442,15 +3411,9 @@ function Industries() {
       {/* Industries Hero */}
       <section className="relative bg-[#121212] text-white overflow-hidden">
         <div className="absolute inset-0 pointer-events-none">
-          {/* Photo background (bleeds + theme overlays) */}
-          <img
-            src="/hero/industries-hero.png"
-            alt=""
-            className="absolute inset-0 h-full w-full object-cover object-center scale-[1.04] filter saturate-[0.78] contrast-[1.10] brightness-[0.55] blur-[0.25px]"
-            loading="eager"
-            decoding="async"
-          />
-          <div className="absolute inset-0 bg-gradient-to-b from-black/80 via-black/65 to-black/70" />
+          {/* Abstract premium background (no photo) */}
+          <div className="absolute inset-0 bg-[radial-gradient(980px_620px_at_22%_12%,rgba(214,162,30,0.20),transparent_60%),radial-gradient(760px_560px_at_80%_30%,rgba(255,255,255,0.08),transparent_62%),radial-gradient(900px_700px_at_50%_110%,rgba(0,0,0,0.70),transparent_55%)]" />
+          <div className="absolute inset-0 bg-gradient-to-b from-black/85 via-black/70 to-black/72" />
 
           {/* depth + vignette */}
           <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_10%,rgba(214,162,30,0.22),transparent_55%),radial-gradient(circle_at_80%_30%,rgba(255,255,255,0.10),transparent_55%),radial-gradient(circle_at_50%_90%,rgba(0,0,0,0.65),transparent_55%)]" />
@@ -3508,26 +3471,34 @@ function Industries() {
       </section>
 
       {/* Industry blocks */}
-      <section className="py-20 px-6">
+      <section className="relative -mt-16 md:-mt-20 pb-20 px-6">
         <div className="max-w-7xl mx-auto">
-          <div className="flex items-end justify-between gap-6 flex-wrap">
-            <div>
-              <div className="flex items-center gap-3">
-                <span className="h-2 w-2 rounded-full bg-[#D6A21E]" />
-                <p className="text-xs font-semibold tracking-[0.22em] uppercase text-black/60">
-                  Coverage
+          <div className="bg-white rounded-3xl border border-black/10 p-10 md:p-12 relative overflow-hidden shadow-[0_26px_70px_rgba(18,18,18,0.16)]">
+            <div className="pointer-events-none absolute inset-0">
+              <div className="absolute -top-24 -right-24 w-[420px] h-[420px] bg-[#D6A21E]/12 rotate-12 rounded-[92px] blur-[90px]" />
+              <div className="absolute -bottom-28 -left-28 w-[520px] h-[520px] bg-black/5 -rotate-12 rounded-[96px] blur-[95px]" />
+              <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-[#D6A21E]/55 to-transparent" />
+              <div className="absolute inset-0 opacity-[0.08] [background:radial-gradient(rgba(0,0,0,0.10)_1px,transparent_1px)] [background-size:26px_26px]" />
+            </div>
+            <div className="relative flex items-end justify-between gap-6 flex-wrap">
+              <div>
+                <div className="flex items-center gap-3">
+                  <span className="h-2 w-2 rounded-full bg-[#D6A21E]" />
+                  <p className="text-xs font-semibold tracking-[0.22em] uppercase text-black/60">
+                    Coverage
+                  </p>
+                </div>
+                <h3 className="text-3xl md:text-4xl font-black mt-4">Who we serve</h3>
+                <p className="text-black/70 mt-3 max-w-2xl">
+                  If you have a real offer and want predictable pipeline + execution, we can help — even if you don’t fit perfectly into a box.
                 </p>
               </div>
-              <h3 className="text-3xl md:text-4xl font-black mt-4">Who we serve</h3>
-              <p className="text-black/70 mt-3 max-w-2xl">
-                If you have a real offer and want predictable pipeline + execution, we can help — even if you don’t fit perfectly into a box.
-              </p>
+              <Link to="/services">
+                <Button className="bg-[#121212] text-[#D6A21E] hover:bg-black rounded-full px-8">
+                  Explore services <ArrowRight className="ml-2" />
+                </Button>
+              </Link>
             </div>
-            <Link to="/services">
-              <Button className="bg-[#121212] text-[#D6A21E] hover:bg-black rounded-full px-8">
-                Explore services <ArrowRight className="ml-2" />
-              </Button>
-            </Link>
           </div>
 
           <div className="mt-10 space-y-6">
@@ -3734,6 +3705,43 @@ function Industries() {
                                 </li>
                               ))}
                             </ul>
+                              {i.gsa ? (
+                                <div className="mt-6 pt-6 border-t border-black/10">
+                                  <div className="relative group">
+                                    <button
+                                      type="button"
+                                      className="w-full inline-flex items-center justify-center gap-2 rounded-full bg-[#F3EFE6] text-[#121212] hover:bg-[#EFE6D6] border border-black/10 px-6 py-3 text-sm font-semibold transition"
+                                      aria-label="View GSA research rates"
+                                    >
+                                      {i.gsa.label} <ArrowRight size={16} />
+                                    </button>
+
+                                    {/* hover / focus popover */}
+                                    <div className="absolute left-1/2 -translate-x-1/2 top-full z-[30] w-[320px] pt-2 opacity-0 invisible group-hover:opacity-100 group-hover:visible group-focus-within:opacity-100 group-focus-within:visible transition duration-200">
+                                      <div className="rounded-2xl border border-black/10 bg-white shadow-[0_24px_70px_rgba(18,18,18,0.12)] overflow-hidden">
+                                        <div className="p-4 border-b border-black/10 bg-[#F3EFE6]">
+                                          <div className="text-[11px] font-semibold uppercase tracking-[0.22em] text-black/60">
+                                            {i.gsa.sin}
+                                          </div>
+                                        </div>
+                                        <div className="p-4 space-y-3">
+                                          {i.gsa.rates.map((r) => (
+                                            <div key={r.role} className="flex items-start justify-between gap-4">
+                                              <div className="text-xs font-semibold text-black/70 leading-snug">
+                                                {r.role}
+                                              </div>
+                                              <div className="text-xs font-black text-[#121212] whitespace-nowrap">
+                                                <span className="text-[#D6A21E]">{r.rate.split("/")[0]}</span>/
+                                                {r.rate.split("/")[1]}
+                                              </div>
+                                            </div>
+                                          ))}
+                                        </div>
+                                      </div>
+                                    </div>
+                                  </div>
+                                </div>
+                              ) : null}
                             <div className="mt-7 flex flex-col gap-3">
                               <Link to="/consultation">
                                 <Button className="w-full rounded-full bg-[#121212] text-[#D6A21E] hover:bg-black px-6">
@@ -4562,13 +4570,20 @@ function CaseStudies() {
         </div>
       </section>
 
-      {/* Proof strip */}
-      <section className="px-6 py-12">
+      {/* Proof strip (bleeds into hero) */}
+      <section className="relative -mt-16 md:-mt-20 pb-12 px-6">
         <div className="max-w-7xl mx-auto">
-          <div className="grid md:grid-cols-3 gap-6">
-            <ProofCard title="System-first" desc="We don’t do random tactics. We build a repeatable machine." />
-            <ProofCard title="Coaching + cadence" desc="Training, scorecards, and accountability that sticks." />
-            <ProofCard title="Measured outcomes" desc="Clear KPIs so you can see what’s working fast." />
+          <div className="bg-white rounded-3xl border border-black/10 p-8 md:p-10 shadow-[0_26px_70px_rgba(18,18,18,0.12)] relative overflow-hidden">
+            <div className="pointer-events-none absolute inset-0">
+              <div className="absolute -top-24 -right-24 w-[420px] h-[420px] bg-[#D6A21E]/10 rotate-12 rounded-[92px] blur-[90px]" />
+              <div className="absolute -bottom-28 -left-28 w-[520px] h-[520px] bg-black/5 -rotate-12 rounded-[96px] blur-[95px]" />
+              <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-[#D6A21E]/55 to-transparent" />
+            </div>
+            <div className="relative grid md:grid-cols-3 gap-6">
+              <ProofCard title="System-first" desc="We don’t do random tactics. We build a repeatable machine." />
+              <ProofCard title="Coaching + cadence" desc="Training, scorecards, and accountability that sticks." />
+              <ProofCard title="Measured outcomes" desc="Clear KPIs so you can see what’s working fast." />
+            </div>
           </div>
         </div>
       </section>
@@ -5201,73 +5216,84 @@ function Academy() {
       </section>
 
       {/* Notable apprentices (auto-moving) */}
-      <section className="px-6 py-12 -mt-10 relative z-10">
+      <section className="relative -mt-16 md:-mt-20 pb-12 px-6">
         <div className="max-w-7xl mx-auto">
-          <div className="flex items-end justify-between gap-6 flex-wrap">
-            <div>
-              <p className="text-xs font-semibold tracking-[0.22em] uppercase text-black/60">Notable apprentices</p>
-              <h3 className="text-3xl md:text-4xl font-black mt-3">
-                Proof of the <span className="text-[#D6A21E]">pipeline</span>.
-              </h3>
-              <p className="text-black/70 mt-3 max-w-2xl">
-                A few faces from the Academy who showed up, put in reps, and leveled up.
-              </p>
+          <div className="bg-white rounded-3xl border border-black/10 p-10 md:p-12 shadow-[0_26px_70px_rgba(18,18,18,0.12)] relative overflow-hidden">
+            <div className="pointer-events-none absolute inset-0">
+              <div className="absolute -top-24 -right-24 w-[420px] h-[420px] bg-[#D6A21E]/10 rotate-12 rounded-[92px] blur-[90px]" />
+              <div className="absolute -bottom-28 -left-28 w-[520px] h-[520px] bg-black/5 -rotate-12 rounded-[96px] blur-[95px]" />
+              <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-[#D6A21E]/55 to-transparent" />
+              <div className="absolute inset-0 opacity-[0.08] [background:radial-gradient(rgba(0,0,0,0.10)_1px,transparent_1px)] [background-size:26px_26px]" />
             </div>
-            <a href="#apply">
-              <Button className="bg-[#121212] text-[#D6A21E] hover:bg-black rounded-full px-8">
-                Apply now <ArrowRight className="ml-2" />
-              </Button>
-            </a>
-          </div>
-        </div>
 
-        <div className="max-w-7xl mx-auto mt-10">
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-5">
-            {apprentices.map((a) => (
-              <div key={a.name + a.role} className="group">
-                <div className="relative rounded-3xl border border-black/10 group-hover:border-[#D6A21E]/25 shadow-sm hover:shadow-lg transition-shadow">
-                  {/* gold hover glow (outside card) */}
-                  <div className="pointer-events-none absolute -inset-3 rounded-[2.25rem] bg-[#D6A21E]/25 blur-[20px] opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-                  <div className="pointer-events-none absolute -inset-[1px] rounded-3xl ring-1 ring-[#D6A21E]/0 group-hover:ring-[#D6A21E]/25 transition duration-300" />
+            <div className="relative">
+              <div className="flex items-end justify-between gap-6 flex-wrap">
+                <div>
+                  <p className="text-xs font-semibold tracking-[0.22em] uppercase text-black/60">Notable apprentices</p>
+                  <h3 className="text-3xl md:text-4xl font-black mt-3">
+                    Proof of the <span className="text-[#D6A21E]">pipeline</span>.
+                  </h3>
+                  <p className="text-black/70 mt-3 max-w-2xl">
+                    A few faces from the Academy who showed up, put in reps, and leveled up.
+                  </p>
+                </div>
+                <a href="#apply">
+                  <Button className="bg-[#121212] text-[#D6A21E] hover:bg-black rounded-full px-8">
+                    Apply now <ArrowRight className="ml-2" />
+                  </Button>
+                </a>
+              </div>
 
-                  <div className="aspect-[4/5] bg-black/5 relative overflow-hidden rounded-3xl">
-                    {a.img ? (
-                      <img
-                        src={a.img}
-                        alt={a.name}
-                        className="h-full w-full object-cover object-[50%_20%] transition-transform duration-500 ease-out group-hover:scale-[1.05]"
-                        loading="lazy"
-                        draggable={false}
-                        onError={(e) => {
-                          e.currentTarget.style.display = "none";
-                          const fb = e.currentTarget.parentElement?.querySelector("[data-fallback]");
-                          if (fb) fb.style.display = "grid";
-                        }}
-                      />
-                    ) : null}
-                    <div
-                      data-fallback
-                      style={{ display: a.img ? "none" : "grid" }}
-                      className="absolute inset-0 grid place-items-center text-black/40"
-                    >
-                      Photo Slot
+              <div className="mt-10">
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-5">
+                  {apprentices.map((a) => (
+                    <div key={a.name + a.role} className="group">
+                      <div className="relative rounded-3xl border border-black/10 group-hover:border-[#D6A21E]/25 shadow-sm hover:shadow-lg transition-shadow">
+                        {/* gold hover glow (outside card) */}
+                        <div className="pointer-events-none absolute -inset-3 rounded-[2.25rem] bg-[#D6A21E]/25 blur-[20px] opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                        <div className="pointer-events-none absolute -inset-[1px] rounded-3xl ring-1 ring-[#D6A21E]/0 group-hover:ring-[#D6A21E]/25 transition duration-300" />
+
+                        <div className="aspect-[4/5] bg-black/5 relative overflow-hidden rounded-3xl">
+                          {a.img ? (
+                            <img
+                              src={a.img}
+                              alt={a.name}
+                              className="h-full w-full object-cover object-[50%_20%] transition-transform duration-500 ease-out group-hover:scale-[1.05]"
+                              loading="lazy"
+                              draggable={false}
+                              onError={(e) => {
+                                e.currentTarget.style.display = "none";
+                                const fb = e.currentTarget.parentElement?.querySelector("[data-fallback]");
+                                if (fb) fb.style.display = "grid";
+                              }}
+                            />
+                          ) : null}
+                          <div
+                            data-fallback
+                            style={{ display: a.img ? "none" : "grid" }}
+                            className="absolute inset-0 grid place-items-center text-black/40"
+                          >
+                            Photo Slot
+                          </div>
+                          {/* readability gradient */}
+                          <div className="absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-black/75 via-black/30 to-transparent" />
+                          {/* blur only behind text */}
+                          <div className="absolute inset-x-0 bottom-0 p-3 bg-black/35 backdrop-blur-sm text-center">
+                            <h4 className="font-black text-base text-white group-hover:text-[#D6A21E] transition">
+                              {a.name}
+                            </h4>
+                            <p className="text-xs text-white/80 mt-1">{a.role}</p>
+                            <p className="text-[11px] text-white/70 mt-2 italic leading-relaxed line-clamp-1 hidden sm:block">
+                              “{a.quote}”
+                            </p>
+                          </div>
+                        </div>
+                      </div>
                     </div>
-                    {/* readability gradient */}
-                    <div className="absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-black/75 via-black/30 to-transparent" />
-                    {/* blur only behind text */}
-                    <div className="absolute inset-x-0 bottom-0 p-3 bg-black/35 backdrop-blur-sm text-center">
-                      <h4 className="font-black text-base text-white group-hover:text-[#D6A21E] transition">
-                        {a.name}
-                      </h4>
-                      <p className="text-xs text-white/80 mt-1">{a.role}</p>
-                      <p className="text-[11px] text-white/70 mt-2 italic leading-relaxed line-clamp-1 hidden sm:block">
-                        “{a.quote}”
-                      </p>
-                    </div>
-                  </div>
+                  ))}
                 </div>
               </div>
-            ))}
+            </div>
           </div>
         </div>
       </section>
