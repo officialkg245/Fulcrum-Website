@@ -444,7 +444,7 @@ function Navbar() {
       >
         <div
           className={cx(
-            "absolute inset-0 bg-black/85 backdrop-blur-[2px] transition-opacity duration-200",
+            "absolute inset-0 bg-black/80 supports-[backdrop-filter]:bg-black/55 backdrop-blur-xl backdrop-saturate-50 transition-opacity duration-200",
             mobileOpen ? "opacity-100" : "opacity-0"
           )}
           onClick={() => setMobileOpen(false)}
