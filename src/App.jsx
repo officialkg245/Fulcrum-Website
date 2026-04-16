@@ -444,7 +444,7 @@ function Navbar() {
       >
         <div
           className={cx(
-            "absolute inset-0 bg-black/80 supports-[backdrop-filter]:bg-black/55 backdrop-blur-xl backdrop-saturate-50 transition-opacity duration-200",
+            "absolute inset-0 bg-black/70 supports-[backdrop-filter]:bg-black/45 backdrop-blur-lg backdrop-saturate-50 transition-opacity duration-200",
             mobileOpen ? "opacity-100" : "opacity-0"
           )}
           onClick={() => setMobileOpen(false)}
@@ -475,25 +475,27 @@ function Navbar() {
           </div>
 
           <div className="p-5">
-            <div className="grid gap-2 text-sm font-semibold">
-              {[
-                { to: "/about", label: "About & Contact" },
-                { to: "/services", label: "Services" },
-                { to: "/industries", label: "Industries" },
-                { to: "/case-studies", label: "Case Studies" },
-                { to: "/academy", label: "Academy" },
-                { to: "/blogs", label: "Blogs" },
-              ].map((l) => (
-                <Link
-                  key={l.to}
-                  to={l.to}
-                  onClick={() => setMobileOpen(false)}
-                  className="flex items-center justify-between rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-white/90 hover:bg-white/10 transition"
-                >
-                  <span>{l.label}</span>
-                  <ArrowRight size={18} className="text-[#D6A21E]" />
-                </Link>
-              ))}
+            <div className="rounded-3xl border border-white/10 bg-black/30 p-2 backdrop-blur-sm shadow-[0_18px_60px_rgba(0,0,0,0.35)]">
+              <div className="grid gap-2 text-sm font-semibold">
+                {[
+                  { to: "/about", label: "About & Contact" },
+                  { to: "/services", label: "Services" },
+                  { to: "/industries", label: "Industries" },
+                  { to: "/case-studies", label: "Case Studies" },
+                  { to: "/academy", label: "Academy" },
+                  { to: "/blogs", label: "Blogs" },
+                ].map((l) => (
+                  <Link
+                    key={l.to}
+                    to={l.to}
+                    onClick={() => setMobileOpen(false)}
+                    className="flex items-center justify-between rounded-2xl border border-white/10 bg-white/10 px-4 py-3 text-white hover:bg-white/15 transition"
+                  >
+                    <span>{l.label}</span>
+                    <ArrowRight size={18} className="text-[#D6A21E]" />
+                  </Link>
+                ))}
+              </div>
             </div>
 
             <div className="mt-6 rounded-2xl border border-white/10 bg-white/5 p-4">
