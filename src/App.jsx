@@ -444,7 +444,7 @@ function Navbar() {
       >
         <div
           className={cx(
-            "absolute inset-0 bg-black/60 transition-opacity duration-200",
+            "absolute inset-0 bg-black/85 backdrop-blur-[2px] transition-opacity duration-200",
             mobileOpen ? "opacity-100" : "opacity-0"
           )}
           onClick={() => setMobileOpen(false)}
@@ -4807,7 +4807,7 @@ function TestimonialCard({ t }) {
     .join("");
 
   return (
-    <div className="group relative w-[460px] md:w-[720px] max-w-[90vw] rounded-[2rem] border border-white/10 bg-gradient-to-br from-white/[0.08] via-white/[0.04] to-[#D6A21E]/[0.12] backdrop-blur-sm p-8 md:p-10 shadow-[0_12px_34px_rgba(0,0,0,0.30)] overflow-hidden transition-shadow hover:shadow-[0_18px_52px_rgba(0,0,0,0.38)]">
+    <div className="group relative w-[320px] sm:w-[460px] md:w-[560px] lg:w-[720px] max-w-[90vw] rounded-[2rem] border border-white/10 bg-gradient-to-br from-white/[0.08] via-white/[0.04] to-[#D6A21E]/[0.12] backdrop-blur-sm p-5 sm:p-8 md:p-10 shadow-[0_12px_34px_rgba(0,0,0,0.30)] overflow-hidden transition-shadow hover:shadow-[0_18px_52px_rgba(0,0,0,0.38)]">
       {/* premium accents */}
       <div className="pointer-events-none absolute inset-0">
         <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-[#D6A21E]/60 to-transparent" />
@@ -4831,7 +4831,7 @@ function TestimonialCard({ t }) {
       <div className="relative">
         <div className="flex items-start justify-between gap-6">
           <div className="flex items-center gap-4 min-w-0">
-            <div className="relative h-16 w-16 rounded-full border border-white/15 bg-gradient-to-br from-white/12 via-white/6 to-transparent overflow-hidden shrink-0">
+            <div className="relative h-12 w-12 sm:h-16 sm:w-16 rounded-full border border-white/15 bg-gradient-to-br from-white/12 via-white/6 to-transparent overflow-hidden shrink-0">
               {t.avatar ? (
                 <img
                   src={t.avatar}
@@ -4841,7 +4841,7 @@ function TestimonialCard({ t }) {
                   loading="lazy"
                 />
               ) : (
-                <div className="absolute inset-0 grid place-items-center text-[#D6A21E] font-black text-lg">
+                <div className="absolute inset-0 grid place-items-center text-[#D6A21E] font-black text-base sm:text-lg">
                   {initials || "F"}
                 </div>
               )}
@@ -4857,18 +4857,18 @@ function TestimonialCard({ t }) {
             </div>
           </div>
 
-          <span className="shrink-0 text-xs font-semibold bg-[#D6A21E]/15 text-[#F6E4A6] px-3 py-1 rounded-full border border-[#D6A21E]/25">
+          <span className="shrink-0 text-[11px] sm:text-xs font-semibold bg-[#D6A21E]/15 text-[#F6E4A6] px-3 py-1 rounded-full border border-[#D6A21E]/25">
             {t.tag}
           </span>
         </div>
 
         <div className="mt-7 h-px w-full bg-gradient-to-r from-transparent via-white/12 to-transparent" />
 
-        <h4 className="mt-6 text-lg md:text-2xl font-black text-white leading-snug">
+        <h4 className="mt-5 sm:mt-6 text-base sm:text-lg md:text-2xl font-black text-white leading-snug">
           {t.title}
         </h4>
 
-        <blockquote className="mt-4 text-white/85 text-lg md:text-xl leading-relaxed">
+        <blockquote className="mt-3 sm:mt-4 text-white/85 text-base sm:text-lg md:text-xl leading-relaxed">
           “{t.quote}”
         </blockquote>
       </div>
