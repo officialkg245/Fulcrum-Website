@@ -17,6 +17,8 @@ import {
   Target,
   GraduationCap,
   Briefcase,
+  Menu,
+  X,
   Phone,
   Calendar,
   CheckCircle2,
@@ -67,6 +69,73 @@ function Button({ className = "", variant = "solid", children, href, ...props })
     >
       {children}
     </Comp>
+  );
+}
+
+function TransparentWordmark({ className = "", alt = "Fulcrum" }) {
+  const [src, setSrc] = useState(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    const img = new Image();
+    img.decoding = "async";
+    img.src = "/brand/fulcrum-wordmark-white.png";
+
+    img.onload = () => {
+      try {
+        const canvas = document.createElement("canvas");
+        canvas.width = img.naturalWidth || img.width;
+        canvas.height = img.naturalHeight || img.height;
+        const ctx = canvas.getContext("2d");
+        if (!ctx) return;
+
+        ctx.drawImage(img, 0, 0);
+        const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+        const data = imageData.data;
+
+        // Remove near-black background while preserving antialiased edges
+        const hard = 10; // fully transparent below this
+        const soft = 42; // fade up to this
+        for (let i = 0; i < data.length; i += 4) {
+          const r = data[i];
+          const g = data[i + 1];
+          const b = data[i + 2];
+          const a = data[i + 3];
+          const lum = (r + g + b) / 3;
+          if (lum <= hard) {
+            data[i + 3] = 0;
+          } else if (lum < soft) {
+            const t = (lum - hard) / (soft - hard);
+            data[i + 3] = Math.round(a * t);
+          }
+        }
+
+        ctx.putImageData(imageData, 0, 0);
+        const url = canvas.toDataURL("image/png");
+        if (!cancelled) setSrc(url);
+      } catch {
+        // If canvas fails (rare), fall back to original asset
+        if (!cancelled) setSrc("/brand/fulcrum-wordmark-white.png");
+      }
+    };
+
+    img.onerror = () => {
+      if (!cancelled) setSrc("/brand/fulcrum-wordmark-white.png");
+    };
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  return (
+    <img
+      src={src || "/brand/fulcrum-wordmark-white.png"}
+      alt={alt}
+      className={className}
+      loading="eager"
+      draggable={false}
+    />
   );
 }
 
@@ -248,23 +317,40 @@ function AnnouncementBar({ open = true, onClose }) {
 }
 
 function Navbar() {
+  const location = useLocation();
+  const [mobileOpen, setMobileOpen] = useState(false);
+
+  useEffect(() => {
+    setMobileOpen(false);
+  }, [location.pathname]);
+
+  useEffect(() => {
+    document.body.style.overflow = mobileOpen ? "hidden" : "";
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, [mobileOpen]);
+
   return (
     <nav className="bg-[#121212] border-b border-white/10">
-      <div className="max-w-7xl mx-auto flex justify-between items-center px-8 py-5">
+      <div className="max-w-7xl mx-auto flex justify-between items-center px-5 sm:px-8 py-4 sm:py-5">
         <Link to="/" aria-label="Fulcrum home" className="group relative">
-          <img
-            src="/brand/fulcrum-wordmark-white.png"
-            alt="Fulcrum"
-            className="h-7 md:h-8 w-auto drop-shadow-[0_16px_26px_rgba(0,0,0,0.55)]"
-            loading="eager"
-            draggable={false}
+          {/* hover glow that radiates from the mark (no box) */}
+          <div
+            className="pointer-events-none absolute -inset-10 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-300 blur-[28px]"
+            style={{
+              background:
+                "radial-gradient(circle at 35% 35%, rgba(214,162,30,0.30), transparent 62%), radial-gradient(circle at 70% 70%, rgba(255,255,255,0.12), transparent 55%)",
+              maskImage: "radial-gradient(circle, rgba(0,0,0,1) 45%, rgba(0,0,0,0) 78%)",
+              WebkitMaskImage:
+                "radial-gradient(circle, rgba(0,0,0,1) 45%, rgba(0,0,0,0) 78%)",
+            }}
           />
-
-          {/* subtle grand hover glow */}
-          <div className="pointer-events-none absolute -inset-6 rounded-[1.75rem] opacity-0 group-hover:opacity-100 transition-opacity duration-300 blur-[26px] [background:radial-gradient(circle_at_35%_35%,rgba(214,162,30,0.28),transparent_62%),radial-gradient(circle_at_70%_70%,rgba(255,255,255,0.10),transparent_55%)]" />
+          <TransparentWordmark className="relative z-10 h-7 md:h-8 w-auto drop-shadow-[0_16px_26px_rgba(0,0,0,0.55)] transition-transform duration-300 ease-out will-change-transform origin-left group-hover:scale-[1.06]" />
         </Link>
 
-        <div className="flex items-center text-sm font-semibold text-white">
+        {/* Desktop nav */}
+        <div className="hidden lg:flex items-center text-sm font-semibold text-white">
           <Link className="px-3 py-2 hover:text-[#D6A21E]" to="/about">
             About & Contact
           </Link>
@@ -281,12 +367,12 @@ function Navbar() {
             Case Studies
           </Link>
           <span className="mx-2 h-5 w-px bg-gradient-to-b from-transparent via-[#D6A21E]/55 to-transparent opacity-80" />
-          <Link className="px-3 py-2 hover:text-[#D6A21E]" to="/blogs">
-            Blogs
-          </Link>
-          <span className="mx-2 h-5 w-px bg-gradient-to-b from-transparent via-[#D6A21E]/55 to-transparent opacity-80" />
           <Link className="px-3 py-2 hover:text-[#D6A21E]" to="/academy">
             Academy
+          </Link>
+          <span className="mx-2 h-5 w-px bg-gradient-to-b from-transparent via-[#D6A21E]/55 to-transparent opacity-80" />
+          <Link className="px-3 py-2 hover:text-[#D6A21E]" to="/blogs">
+            Blogs
           </Link>
           <span className="mx-3 h-6 w-px bg-gradient-to-b from-transparent via-[#D6A21E]/55 to-transparent opacity-80" />
           <div className="relative group pl-1">
@@ -324,6 +410,115 @@ function Navbar() {
                     </Button>
                   </Link>
                 </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Mobile / Tablet nav */}
+        <div className="flex lg:hidden items-center gap-2">
+          <Link to="/consultation" className="hidden sm:inline-flex">
+            <Button className="h-10 bg-[#D6A21E] text-black hover:bg-[#B88A16] rounded-full px-4">
+              ROI Assessment
+            </Button>
+          </Link>
+          <button
+            type="button"
+            onClick={() => setMobileOpen(true)}
+            className="h-10 w-10 inline-flex items-center justify-center rounded-full border border-white/10 bg-white/5 text-white hover:bg-white/10 transition"
+            aria-label="Open menu"
+            aria-expanded={mobileOpen}
+          >
+            <Menu size={20} />
+          </button>
+        </div>
+      </div>
+
+      {/* Mobile slide-over menu */}
+      <div
+        className={cx(
+          "lg:hidden fixed inset-0 z-[140] transition",
+          mobileOpen ? "pointer-events-auto" : "pointer-events-none"
+        )}
+        aria-hidden={!mobileOpen}
+      >
+        <div
+          className={cx(
+            "absolute inset-0 bg-black/60 transition-opacity duration-200",
+            mobileOpen ? "opacity-100" : "opacity-0"
+          )}
+          onClick={() => setMobileOpen(false)}
+        />
+        <div
+          className={cx(
+            "absolute right-0 top-0 h-full w-[86%] max-w-[420px] bg-[#121212] border-l border-white/10 shadow-[0_24px_90px_rgba(0,0,0,0.6)] transition-transform duration-200",
+            mobileOpen ? "translate-x-0" : "translate-x-full"
+          )}
+        >
+          <div className="p-5 border-b border-white/10 flex items-center justify-between">
+            <Link
+              to="/"
+              className="relative group"
+              aria-label="Fulcrum home"
+              onClick={() => setMobileOpen(false)}
+            >
+              <TransparentWordmark className="h-7 w-auto drop-shadow-[0_16px_26px_rgba(0,0,0,0.55)]" />
+            </Link>
+            <button
+              type="button"
+              onClick={() => setMobileOpen(false)}
+              className="h-10 w-10 inline-flex items-center justify-center rounded-full border border-white/10 bg-white/5 text-white hover:bg-white/10 transition"
+              aria-label="Close menu"
+            >
+              <X size={20} />
+            </button>
+          </div>
+
+          <div className="p-5">
+            <div className="grid gap-2 text-sm font-semibold">
+              {[
+                { to: "/about", label: "About & Contact" },
+                { to: "/services", label: "Services" },
+                { to: "/industries", label: "Industries" },
+                { to: "/case-studies", label: "Case Studies" },
+                { to: "/academy", label: "Academy" },
+                { to: "/blogs", label: "Blogs" },
+              ].map((l) => (
+                <Link
+                  key={l.to}
+                  to={l.to}
+                  onClick={() => setMobileOpen(false)}
+                  className="flex items-center justify-between rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-white/90 hover:bg-white/10 transition"
+                >
+                  <span>{l.label}</span>
+                  <ArrowRight size={18} className="text-[#D6A21E]" />
+                </Link>
+              ))}
+            </div>
+
+            <div className="mt-6 rounded-2xl border border-white/10 bg-white/5 p-4">
+              <div className="text-[11px] font-semibold uppercase tracking-[0.22em] text-white/60">
+                Limited-time ROI assessment
+              </div>
+              <div className="mt-3 space-y-2 text-sm text-white/80">
+                {[
+                  "Initial order value",
+                  "Lifetime value of customer",
+                  "Gross profit margin",
+                  "Win rate (close rate)",
+                ].map((item) => (
+                  <div key={item} className="flex items-start gap-3">
+                    <span className="mt-[7px] h-1.5 w-1.5 rounded-full bg-[#D6A21E] shadow-[0_0_18px_rgba(214,162,30,0.55)]" />
+                    <span>{item}</span>
+                  </div>
+                ))}
+              </div>
+              <div className="mt-4">
+                <Link to="/consultation" onClick={() => setMobileOpen(false)} className="inline-flex w-full">
+                  <Button className="w-full rounded-full bg-[#D6A21E] text-black hover:bg-[#B88A16] px-6 py-3">
+                    Start ROI assessment <ArrowRight className="ml-2" size={18} />
+                  </Button>
+                </Link>
               </div>
             </div>
           </div>
@@ -455,7 +650,7 @@ function SiteFooter() {
           <a
             href="https://www.workwithfulcrum.com"
             target="_blank"
-            rel="noreferrer"
+            rel="noopener noreferrer"
             className="text-sm font-semibold text-black/70 hover:text-black"
           >
             workwithfulcrum.com <ArrowRight className="inline-block ml-1" size={14} />
@@ -981,38 +1176,31 @@ function Home() {
         {/* Bottom bleed into page */}
         <div className="pointer-events-none absolute inset-x-0 bottom-0 h-24 bg-gradient-to-b from-transparent to-[#F3EFE6]" />
 
-        <div className="relative max-w-7xl mx-auto px-6 py-28">
+        <div className="relative max-w-7xl mx-auto px-6 py-20 sm:py-24 lg:py-28">
           <div className="grid lg:grid-cols-3 gap-10 items-center">
             {/* Left luxury copy */}
             <div className="lg:col-span-2">
-              <div className="flex items-center gap-3">
-                <span className="h-2 w-2 rounded-full bg-[#D6A21E] shadow-[0_0_24px_rgba(214,162,30,0.55)]" />
-                <p className="text-xs font-semibold tracking-[0.22em] uppercase text-white/70">
-                  Create leverage with us
-                </p>
-              </div>
-
               {/* Brand wordmark */}
               <h1 className="mt-5 leading-none">
-                <span className="block text-6xl md:text-7xl font-black tracking-tight bg-gradient-to-r from-[#D6A21E] via-[#F2D27A] to-[#D6A21E] text-transparent bg-clip-text">
+                <span className="block text-5xl sm:text-6xl md:text-7xl font-black tracking-tight bg-gradient-to-r from-[#D6A21E] via-[#F2D27A] to-[#D6A21E] text-transparent bg-clip-text">
                   Fulcrum
                 </span>
-                <span className="block mt-4 text-3xl md:text-5xl font-black tracking-tight text-white">
+                <span className="block mt-4 text-2xl sm:text-3xl md:text-5xl font-black tracking-tight text-white">
                   Creating growth opportunities should be easy
                 </span>
               </h1>
               <p className="text-white/70 text-lg md:text-xl mt-6 max-w-2xl">
-                We are the only marketing and sales agency focused on your business's development.
+                There should be a firm that helps companies grow their revenues with services that are performance-driven and aligned to customer ROI. Enter FULCRUM.
               </p>
 
               <div className="mt-10 flex flex-col sm:flex-row gap-4">
                 <Link to="/consultation">
-                  <Button className="bg-[#D6A21E] text-black hover:bg-[#B88A16] rounded-full px-12 py-6 text-lg shadow-[0_0_40px_rgba(214,162,30,0.35)]">
+                  <Button className="bg-[#D6A21E] text-black hover:bg-[#B88A16] rounded-full px-8 sm:px-12 py-5 sm:py-6 text-lg shadow-[0_0_40px_rgba(214,162,30,0.35)]">
                     Limited-Time ROI Assessment <ArrowRight className="ml-2" />
                   </Button>
                 </Link>
                 <Link to="/case-studies">
-                  <Button className="bg-white/10 text-white hover:bg-white/20 rounded-full px-12 py-6 text-lg">
+                  <Button className="bg-white/10 text-white hover:bg-white/20 rounded-full px-8 sm:px-12 py-5 sm:py-6 text-lg">
                     View results
                   </Button>
                 </Link>
@@ -1039,9 +1227,6 @@ function Home() {
                     <h3 className="mt-4 text-2xl md:text-3xl font-black tracking-tight text-white">
                       Outcomes that compound.
                     </h3>
-                    <p className="mt-3 text-sm text-white/70 max-w-[42ch]">
-                      A snapshot of what our execution has produced across customers and markets.
-                    </p>
                   </div>
                 </div>
 
@@ -1097,7 +1282,6 @@ function Home() {
                   <h2 className="text-xl md:text-2xl font-black text-white">
                     Trusted by B2B organizations building real revenue opportunities
                   </h2>
-                  <p className="text-white/70 mt-2">A few of the brands we’ve worked with.</p>
                 </div>
                 <Link to="/case-studies">
                   <Button className="bg-[#D6A21E] text-black hover:bg-[#B88A16] rounded-full px-6">
@@ -1208,7 +1392,7 @@ function Home() {
                 <div className="flex flex-col sm:flex-row gap-3">
                   <Link to="/about">
                     <Button className="rounded-full bg-[#121212] text-[#D6A21E] hover:bg-black px-8 shadow-[0_14px_34px_rgba(18,18,18,0.18)]">
-                      Meet the team <ArrowRight className="ml-2" />
+                      Meet Leadership <ArrowRight className="ml-2" />
                     </Button>
                   </Link>
                   <Link to="/academy">
@@ -1231,7 +1415,7 @@ function Home() {
                 </div>
                 <div className="group rounded-3xl border border-black/10 bg-white/70 p-8 shadow-sm backdrop-blur hover:bg-white/80 hover:shadow-[0_20px_60px_rgba(214,162,30,0.14)] transition">
                   <div className="text-xs font-semibold tracking-[0.22em] uppercase text-black/60">
-                    Coaching
+                    Alignment
                   </div>
                   <div className="font-black text-xl mt-3">Repetitive feedback loops</div>
                   <p className="text-black/70 mt-3">
@@ -1240,12 +1424,118 @@ function Home() {
                 </div>
                 <div className="group rounded-3xl border border-black/10 bg-white/70 p-8 shadow-sm backdrop-blur hover:bg-white/80 hover:shadow-[0_20px_60px_rgba(214,162,30,0.14)] transition">
                   <div className="text-xs font-semibold tracking-[0.22em] uppercase text-black/60">
-                    Systems-first
+                    Action
                   </div>
                   <div className="font-black text-xl mt-3">Activities that build assets</div>
                   <p className="text-black/70 mt-3">
                     Processes that scale outcomes without relying on heroics.
                   </p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* PARTNERSHIPS */}
+      <section className="px-6 pb-16">
+        <div className="max-w-7xl mx-auto">
+          <div className="relative overflow-hidden rounded-3xl border border-black/10 bg-[#121212] text-white">
+            <div className="pointer-events-none absolute inset-0">
+              <div className="absolute -top-28 -left-28 w-[420px] h-[420px] bg-[#D6A21E]/14 -rotate-12 rounded-[88px] blur-[50px]" />
+              <div className="absolute -bottom-36 -right-36 w-[520px] h-[520px] bg-white/10 rotate-12 rounded-[88px] blur-[70px]" />
+            </div>
+
+            <div className="relative p-10 md:p-12">
+              <div className="flex items-end justify-between gap-8 flex-wrap">
+                <div className="max-w-2xl">
+                  <div className="flex items-center gap-3">
+                    <span className="h-2 w-2 rounded-full bg-[#D6A21E]" />
+                    <p className="text-xs font-semibold tracking-[0.22em] uppercase text-white/70">
+                      Client outcomes
+                    </p>
+                  </div>
+                  <h3 className="text-3xl md:text-4xl font-black tracking-tight mt-4">
+                    Work that creates measurable momentum.
+                  </h3>
+                </div>
+
+                <Link to="/about">
+                  <Button className="rounded-full bg-white/10 text-white hover:bg-white/15 px-8">
+                    See more <ArrowRight className="ml-2" />
+                  </Button>
+                </Link>
+              </div>
+
+              <div className="mt-10 grid md:grid-cols-3 gap-6">
+                {culturePartnerships.map((p) => (
+                  <div
+                    key={p.name}
+                    className="group rounded-3xl border border-white/10 bg-white/5 overflow-hidden shadow-sm hover:shadow-lg transition"
+                  >
+                    <div className="relative aspect-[16/10] overflow-hidden bg-black/20">
+                      {p.photo ? (
+                        <img
+                          src={p.photo}
+                          alt={p.name}
+                          className="h-full w-full object-cover transition-transform duration-700 ease-out group-hover:scale-[1.05]"
+                          style={{ objectPosition: p.photoPos || "50% 50%" }}
+                          loading="lazy"
+                          draggable={false}
+                          onError={(e) => {
+                            e.currentTarget.style.display = "none";
+                            const fb =
+                              e.currentTarget.parentElement?.querySelector("[data-fallback]");
+                            if (fb) fb.style.display = "grid";
+                          }}
+                        />
+                      ) : null}
+                      <div
+                        data-fallback
+                        style={{ display: p.photo ? "none" : "grid" }}
+                        className="absolute inset-0 grid place-items-center text-white/45 text-sm font-semibold"
+                      >
+                        Partnership photo
+                      </div>
+                    </div>
+                    <div className="p-7 md:p-8">
+                      <div className="flex items-center gap-3">
+                        <div className="font-black text-xl text-white">{p.name}</div>
+                      </div>
+                      <p className="text-white/75 mt-4 leading-relaxed">{p.desc}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              {/* Client words (testimonials marquee) */}
+              <div className="mt-12 pt-10 border-t border-white/10">
+                <div className="flex items-end justify-between gap-8 flex-wrap">
+                  <div className="max-w-2xl">
+                    <div className="flex items-center gap-3">
+                      <span className="h-2 w-2 rounded-full bg-[#D6A21E]" />
+                      <p className="text-xs font-semibold tracking-[0.22em] uppercase text-white/70">
+                        Client words
+                      </p>
+                    </div>
+                    <h3 className="text-2xl md:text-3xl font-black mt-4">
+                      What people say after we build the system.
+                    </h3>
+                    <p className="text-white/70 mt-3">
+                      A few words from leaders we’ve partnered with — focused on outcomes, professionalism, and repeatable growth.
+                    </p>
+                  </div>
+                  <Link to="/case-studies" className="shrink-0">
+                    <Button className="rounded-full bg-white/10 text-white hover:bg-white/15 px-8">
+                      View case studies <ArrowRight className="ml-2" />
+                    </Button>
+                  </Link>
+                </div>
+
+                <div className="mt-8 relative">
+                  <div className="pointer-events-none absolute inset-y-0 left-0 w-14 bg-gradient-to-r from-[#121212] to-transparent" />
+                  <div className="pointer-events-none absolute inset-y-0 right-0 w-14 bg-gradient-to-l from-[#121212] to-transparent" />
+                  <TestimonialMarquee items={testimonialsData} baseSpeed={26} hoverSpeed={8} />
                 </div>
               </div>
             </div>
@@ -1285,13 +1575,17 @@ function Home() {
                 </div>
 
                 <div className="flex items-center gap-3">
-                  <a href={linkedInCompanyUrl} target="_blank" rel="noreferrer">
-                  <Button className="rounded-full bg-[#121212] text-[#D6A21E] hover:bg-black px-8">
-                    Follow on LinkedIn <ArrowRight className="ml-2" />
-                  </Button>
+                  <a href={linkedInCompanyUrl} target="_blank" rel="noopener noreferrer">
+                    <Button className="rounded-full bg-[#121212] text-[#D6A21E] hover:bg-black px-8">
+                      Follow on LinkedIn <ArrowRight className="ml-2" />
+                    </Button>
                   </a>
                   {li.needsAuth ? (
-                    <a href={li.authUrl || "/api/linkedin/auth"}>
+                    <a
+                      href={li.authUrl || "/api/linkedin/auth"}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
                       <Button className="rounded-full bg-[#D6A21E] text-black hover:bg-[#B88A16] px-8">
                         Connect LinkedIn <ArrowRight className="ml-2" />
                       </Button>
@@ -1315,7 +1609,7 @@ function Home() {
                         </div>
                         <div className="mt-2 font-black text-lg">Preview our company page</div>
                       </div>
-                      <a href={linkedInPreviewUrl} target="_blank" rel="noreferrer">
+                      <a href={linkedInPreviewUrl} target="_blank" rel="noopener noreferrer">
                         <Button className="rounded-full bg-[#D6A21E] text-black hover:bg-[#B88A16] px-6 py-3 text-sm">
                           Open LinkedIn <ArrowRight className="ml-1" size={18} />
                         </Button>
@@ -1325,7 +1619,7 @@ function Home() {
                     <a
                       href={linkedInPreviewUrl}
                       target="_blank"
-                      rel="noreferrer"
+                      rel="noopener noreferrer"
                       className="block"
                       aria-label="Open Fulcrum LinkedIn page"
                     >
@@ -1425,9 +1719,11 @@ function Home() {
                         <div className="text-xs font-semibold uppercase tracking-[0.22em] text-black/50">
                           Featured video
                         </div>
-                        <div className="mt-2 font-black text-lg text-black">Focus (80/20) — how we think about impact</div>
+                        <div className="mt-2 font-black text-lg text-black">
+                          Focus (80/20) — how we think about impact
+                        </div>
                       </div>
-                      <a href={featuredVideoUrl} target="_blank" rel="noreferrer">
+                      <a href={featuredVideoUrl} target="_blank" rel="noopener noreferrer">
                         <Button className="rounded-full bg-[#D6A21E] text-black hover:bg-[#B88A16] px-6 py-3 text-sm">
                           Watch on LinkedIn <ArrowRight className="ml-1" size={18} />
                         </Button>
@@ -1447,7 +1743,7 @@ function Home() {
                         <a
                           href={featuredVideoUrl}
                           target="_blank"
-                          rel="noreferrer"
+                          rel="noopener noreferrer"
                           className="absolute inset-0 grid place-items-center text-center px-6"
                         >
                           <div>
@@ -1462,15 +1758,18 @@ function Home() {
                     </div>
 
                     <div className="p-6 border-t border-black/10 bg-[#F3EFE6]">
-                      <div className="text-[11px] font-semibold uppercase tracking-[0.22em] text-black/50">Key takeaway</div>
+                      <div className="text-[11px] font-semibold uppercase tracking-[0.22em] text-black/50">
+                        Key takeaway
+                      </div>
                       <p className="mt-3 text-black/70 leading-relaxed">
-                        We use the 80/20 rule to narrow down to the inputs that create the highest impact — for Fulcrum and for our customers.
+                        We use the 80/20 rule to narrow down to the inputs that create the highest impact — for
+                        Fulcrum and for our customers.
                       </p>
                       <div className="mt-5 flex items-center gap-3 flex-wrap">
                         <a
                           href={linkedInPreviewUrl}
                           target="_blank"
-                          rel="noreferrer"
+                          rel="noopener noreferrer"
                           className="inline-flex items-center gap-2 text-sm font-semibold text-[#D6A21E] hover:text-[#F2D27A]"
                         >
                           See more on LinkedIn <ArrowRight size={16} />
@@ -1486,210 +1785,6 @@ function Home() {
                     </div>
                   </div>
                 </aside>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* PARTNERSHIPS */}
-      <section className="px-6 pb-16">
-        <div className="max-w-7xl mx-auto">
-          <div className="relative overflow-hidden rounded-3xl border border-black/10 bg-[#121212] text-white">
-            <div className="pointer-events-none absolute inset-0">
-              <div className="absolute -top-28 -left-28 w-[420px] h-[420px] bg-[#D6A21E]/14 -rotate-12 rounded-[88px] blur-[50px]" />
-              <div className="absolute -bottom-36 -right-36 w-[520px] h-[520px] bg-white/10 rotate-12 rounded-[88px] blur-[70px]" />
-            </div>
-
-            <div className="relative p-10 md:p-12">
-              <div className="flex items-end justify-between gap-8 flex-wrap">
-                <div className="max-w-2xl">
-                  <div className="flex items-center gap-3">
-                    <span className="h-2 w-2 rounded-full bg-[#D6A21E]" />
-                    <p className="text-xs font-semibold tracking-[0.22em] uppercase text-white/70">
-                      Client outcomes
-                    </p>
-                  </div>
-                  <h3 className="text-3xl md:text-4xl font-black tracking-tight mt-4">
-                    Work that creates measurable momentum.
-                  </h3>
-                  <p className="text-white/70 mt-4">
-                    A few examples of the results we’ve helped clients capture — with systems, coaching, and execution.
-                  </p>
-                </div>
-
-                <Link to="/about">
-                  <Button className="rounded-full bg-white/10 text-white hover:bg-white/15 px-8">
-                    See more <ArrowRight className="ml-2" />
-                  </Button>
-                </Link>
-              </div>
-
-              <div className="mt-10 grid md:grid-cols-3 gap-6">
-                {culturePartnerships.map((p) => (
-                  <div
-                    key={p.name}
-                    className="group rounded-3xl border border-white/10 bg-white/5 overflow-hidden shadow-sm hover:shadow-lg transition"
-                  >
-                    <div className="relative aspect-[16/10] overflow-hidden bg-black/20">
-                      {p.photo ? (
-                        <img
-                          src={p.photo}
-                          alt={p.name}
-                          className="h-full w-full object-cover transition-transform duration-700 ease-out group-hover:scale-[1.05]"
-                          style={{ objectPosition: p.photoPos || "50% 50%" }}
-                          loading="lazy"
-                          draggable={false}
-                          onError={(e) => {
-                            e.currentTarget.style.display = "none";
-                            const fb =
-                              e.currentTarget.parentElement?.querySelector("[data-fallback]");
-                            if (fb) fb.style.display = "grid";
-                          }}
-                        />
-                      ) : null}
-                      <div
-                        data-fallback
-                        style={{ display: p.photo ? "none" : "grid" }}
-                        className="absolute inset-0 grid place-items-center text-white/45 text-sm font-semibold"
-                      >
-                        Partnership photo
-                      </div>
-                    </div>
-                    <div className="p-7 md:p-8">
-                      <div className="flex items-center gap-3">
-                        <div className="font-black text-xl text-white">{p.name}</div>
-                      </div>
-                      <p className="text-white/75 mt-4 leading-relaxed">{p.desc}</p>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* PEOPLE PATHWAYS */}
-      <section className="px-6 pb-28">
-        <div className="max-w-7xl mx-auto">
-          <div className="relative overflow-hidden rounded-3xl border border-black/10 bg-gradient-to-br from-white via-[#FFF7E6] to-[#F3EFE6] text-[#121212] shadow-[0_30px_90px_rgba(214,162,30,0.14)]">
-            <div className="pointer-events-none absolute inset-0">
-              <div className="absolute -top-52 -left-44 w-[680px] h-[680px] bg-[#D6A21E]/14 -rotate-12 rounded-[120px] blur-[85px]" />
-              <div className="absolute -bottom-56 -right-52 w-[760px] h-[760px] bg-black/5 rotate-12 rounded-[130px] blur-[100px]" />
-              <div className="absolute inset-x-0 top-0 h-[2px] bg-gradient-to-r from-transparent via-[#D6A21E]/45 to-transparent opacity-70" />
-              <div className="absolute left-1/2 top-12 h-px w-[72%] -translate-x-1/2 bg-gradient-to-r from-transparent via-black/10 to-transparent" />
-              <div className="absolute inset-0 opacity-[0.10] [background:radial-gradient(rgba(214,162,30,0.30)_1px,transparent_1px)] [background-size:22px_22px]" />
-              <div className="absolute inset-0 opacity-[0.18] [background:radial-gradient(circle_at_18%_18%,rgba(214,162,30,0.22),transparent_56%)]" />
-              <div className="absolute inset-y-0 -left-1/3 w-[120%] rotate-[-8deg] bg-[linear-gradient(115deg,transparent,rgba(214,162,30,0.10),transparent)] opacity-70" />
-            </div>
-
-            <div className="relative p-10 md:p-12">
-              <div className="flex items-end justify-between gap-8 flex-wrap">
-                <div className="max-w-2xl">
-                  <div className="flex items-center gap-3">
-                    <span className="h-2 w-2 rounded-full bg-[#D6A21E] shadow-[0_0_24px_rgba(214,162,30,0.35)]" />
-                    <p className="text-xs font-semibold tracking-[0.22em] uppercase text-black/60">
-                      Explore our culture • People + pathways
-                    </p>
-                  </div>
-                  <h3 className="text-3xl md:text-4xl font-black tracking-tight mt-4">
-                    Meet leadership or join the pipeline.
-                  </h3>
-                  <p className="text-black/70 mt-4">
-                    Two clear paths — get to know the team, or explore the Academy for growth and coaching.
-                  </p>
-                </div>
-              </div>
-
-              <div className="mt-10 grid md:grid-cols-2 gap-6">
-                <Link to="/about" className="group">
-                  <div className="rounded-3xl border border-black/10 bg-white/70 backdrop-blur p-10 hover:bg-white/80 transition shadow-sm hover:shadow-[0_24px_70px_rgba(214,162,30,0.14)]">
-                    <div className="text-xs font-semibold uppercase tracking-[0.22em] text-black/60">
-                      Meet the team
-                    </div>
-                    <div className="mt-4 text-2xl font-black group-hover:text-[#D6A21E] transition">
-                      The people behind the work
-                    </div>
-                    <div className="mt-4 text-black/70">
-                      Leadership profiles, roles, and what we’re building.
-                    </div>
-                    <div className="mt-8 inline-flex items-center gap-2 font-semibold text-[#D6A21E]">
-                      Explore <ArrowRight size={18} />
-                    </div>
-                  </div>
-                </Link>
-
-                <Link to="/academy" className="group">
-                  <div className="rounded-3xl border border-black/10 bg-white/70 backdrop-blur text-black p-10 hover:bg-white/80 transition relative overflow-hidden shadow-sm hover:shadow-[0_24px_70px_rgba(214,162,30,0.14)]">
-                    <div className="pointer-events-none absolute -top-24 -right-24 w-[260px] h-[260px] bg-[#D6A21E]/18 rotate-12 rounded-[56px]" />
-                    <div className="relative">
-                      <div className="text-xs font-semibold uppercase tracking-[0.22em] text-black/60">
-                        Fulcrum Academy
-                      </div>
-                      <div className="mt-4 text-2xl font-black group-hover:text-[#D6A21E] transition">
-                        Coaching + growth path
-                      </div>
-                      <div className="mt-4 text-black/70">
-                        Recruiting + onboarding funnel for people who want reps and leadership.
-                      </div>
-                      <div className="mt-8 inline-flex items-center gap-2 font-semibold text-[#D6A21E]">
-                        Explore <ArrowRight size={18} />
-                      </div>
-                    </div>
-                  </div>
-                </Link>
-              </div>
-
-              {/* Client words (merged from Case Studies) */}
-              <div className="mt-12 pt-10 border-t border-black/10">
-                <div className="rounded-3xl bg-[#121212] text-white border border-black/10 overflow-hidden">
-                  <div className="relative p-8 md:p-10">
-                    <div className="pointer-events-none absolute inset-0">
-                      <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-[#D6A21E]/55 to-transparent" />
-                      <div className="absolute -top-28 -right-28 w-[520px] h-[520px] bg-[#D6A21E]/14 rotate-12 rounded-[96px] blur-[80px]" />
-                      <div className="absolute -bottom-32 -left-32 w-[560px] h-[560px] bg-white/8 -rotate-12 rounded-[110px] blur-[95px]" />
-                      <div className="absolute inset-0 opacity-[0.14] [background:radial-gradient(rgba(214,162,30,0.18)_1px,transparent_1px)] [background-size:28px_28px]" />
-                    </div>
-                    <div className="relative">
-                <div className="flex items-end justify-between gap-8 flex-wrap">
-                  <div className="max-w-2xl">
-                    <div className="flex items-center gap-3">
-                      <span className="h-2 w-2 rounded-full bg-[#D6A21E]" />
-                      <p className="text-xs font-semibold tracking-[0.22em] uppercase text-white/70">
-                        Client words
-                      </p>
-                    </div>
-                    <h3 className="text-2xl md:text-3xl font-black mt-4">
-                      What people say after we build the system.
-                    </h3>
-                    <p className="text-white/70 mt-3">
-                      A few words from leaders we’ve partnered with — focused on outcomes, professionalism, and repeatable growth.
-                    </p>
-                  </div>
-                  <Link to="/case-studies" className="shrink-0">
-                    <Button className="rounded-full bg-white/10 text-white hover:bg-white/15 px-8">
-                      View case studies <ArrowRight className="ml-2" />
-                    </Button>
-                  </Link>
-                </div>
-
-                <div className="mt-8 relative">
-                  <div className="pointer-events-none absolute inset-y-0 left-0 w-14 bg-gradient-to-r from-[#121212] to-transparent" />
-                  <div className="pointer-events-none absolute inset-y-0 right-0 w-14 bg-gradient-to-l from-[#121212] to-transparent" />
-                  <TestimonialMarquee items={testimonialsData} baseSpeed={26} hoverSpeed={8} />
-                </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              <div className="mt-10 flex justify-center">
-                <Link to="/consultation">
-                  <Button className="rounded-full bg-[#D6A21E] text-black hover:bg-[#B88A16] px-10 py-6 text-lg">
-                    Book a consultation <ArrowRight className="ml-2" />
-                  </Button>
-                </Link>
               </div>
             </div>
           </div>
@@ -1954,7 +2049,7 @@ function About() {
                   key={member.name + member.role}
                   href={member.linkedin}
                   target="_blank"
-                  rel="noreferrer"
+                  rel="noopener noreferrer"
                   className="group"
                 >
                   <div className="relative overflow-hidden rounded-3xl border border-black/10 shadow-md hover:shadow-xl transition">
@@ -2065,7 +2160,7 @@ function About() {
               <a
                 href="https://www.google.com/maps/search/?api=1&query=108%20Kol%20Dr.%20Broussard%2C%20LA%2070518"
                 target="_blank"
-                rel="noreferrer"
+                rel="noopener noreferrer"
               >
                 <Button className="bg-[#121212] text-[#D6A21E] hover:bg-black rounded-full px-6">
                   Get Directions <ArrowRight className="ml-2" />
@@ -2243,7 +2338,7 @@ function Blogs() {
                   Book a consultation <ArrowRight className="ml-2" />
                 </Button>
               </Link>
-              <a href={linkedInCompanyUrl} target="_blank" rel="noreferrer">
+              <a href={linkedInCompanyUrl} target="_blank" rel="noopener noreferrer">
                 <Button className="bg-white/80 text-black hover:bg-white border border-black/10 rounded-full px-10 py-6 text-lg shadow-sm hover:shadow transition">
                   Follow on LinkedIn
                 </Button>
@@ -2731,26 +2826,36 @@ const servicesUseCases = [
 ];
 
 function Services() {
-  const process = [
+  const action = [
     {
-      step: "01",
+      letter: "A",
       title: "Audit",
-      desc: "We visit about your current situation, goals, needs, and market approach so that we can understand how to achieve an ROI for your business.",
+      desc: "Audit your current situation so that we can align on objectives and goals.",
     },
     {
-      step: "02",
-      title: "Plan",
-      desc: "We build a simple, repeatable plan with clear metrics and ownership.",
+      letter: "C",
+      title: "Create the Plan",
+      desc: "Construct a simple, clear plan with well-defined metrics and accountability.",
     },
     {
-      step: "03",
-      title: "Execute",
-      desc: "We get it done so that results can be created.",
+      letter: "T",
+      title: "Tailor the Plan",
+      desc: "Tailor the plan around your desired targets, team, resources, and approach.",
     },
     {
-      step: "04",
-      title: "Optimize",
-      desc: "Weekly scorecards + iteration so results keep compounding.",
+      letter: "I",
+      title: "Initiate the Plan",
+      desc: "Initiate activities to begin gathering intelligence.",
+    },
+    {
+      letter: "O",
+      title: "Optimize the Plan",
+      desc: "Observe qualitative and quantitative results to optimize execution.",
+    },
+    {
+      letter: "N",
+      title: "Normalize what Works",
+      desc: "Turn what works into repeatable systems, playbooks, and habits that can scale.",
     },
   ];
 
@@ -2836,7 +2941,7 @@ function Services() {
             <div className="mt-10 flex flex-col sm:flex-row gap-4">
               <Link to="/consultation">
                 <Button className="bg-[#D6A21E] text-black hover:bg-[#B88A16] rounded-full px-10 py-6 text-lg">
-                  Get a Free Plan <ArrowRight className="ml-2" />
+                  Get in Touch <ArrowRight className="ml-2" />
                 </Button>
               </Link>
               <Link to="/case-studies">
@@ -2862,22 +2967,19 @@ function Services() {
             <div className="flex items-end justify-between gap-6 flex-wrap">
               <div>
                 <p className="text-xs font-semibold tracking-[0.22em] uppercase text-black/60">How we work</p>
-                  <h3 className="text-3xl md:text-4xl font-black mt-3">Simple process. Focused effort. Clear results</h3>
-                <p className="text-black/70 mt-3 max-w-2xl">
-                  Simple process, high accountability. No chaos. No guessing.
-                </p>
+                <h3 className="text-3xl md:text-4xl font-black mt-3">A.C.T.I.O.N.</h3>
               </div>
               <span className="text-xs font-semibold bg-[#121212] text-[#D6A21E] px-3 py-1 rounded-full">
                 Fulcrum Method
               </span>
             </div>
 
-            <div className="mt-10 grid md:grid-cols-4 gap-6">
-              {process.map((p) => (
-                <div key={p.step} className="rounded-3xl border border-black/10 bg-[#F3EFE6] p-8">
-                  <div className="text-[#D6A21E] font-black text-3xl">{p.step}</div>
+            <div className="mt-10 grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {action.map((p) => (
+                <div key={p.letter} className="rounded-3xl border border-black/10 bg-[#F3EFE6] p-8">
+                  <div className="text-[#D6A21E] font-black text-3xl">{p.letter}</div>
                   <div className="font-black text-xl mt-3">{p.title}</div>
-                  <p className="text-black/70 mt-3 text-sm">{p.desc}</p>
+                  <p className="text-black/70 mt-3 text-sm leading-relaxed">{p.desc}</p>
                 </div>
               ))}
             </div>
@@ -3123,6 +3225,123 @@ function Services() {
                       <Link to="/consultation" className="inline-flex">
                         <Button className="rounded-full bg-[#121212] text-[#D6A21E] hover:bg-black px-6">
                           Customize this engagement <ArrowRight className="ml-2" size={18} />
+                        </Button>
+                      </Link>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Scoutly (M&A) — original premium panel design */}
+            <div className="w-full">
+              <div className="w-full max-w-5xl mx-auto">
+                <div className="relative overflow-hidden rounded-[2.5rem] border border-black/10 bg-white/65 backdrop-blur-sm shadow-sm px-8 py-10 md:px-12 md:py-12 text-center">
+                  {/* premium panel accents */}
+                  <div className="pointer-events-none absolute inset-0">
+                    <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-[#D6A21E]/55 to-transparent" />
+                    <div className="absolute -top-24 -left-24 w-[420px] h-[420px] bg-[#121212]/8 rotate-12 rounded-[96px] blur-[70px]" />
+                    <div className="absolute -bottom-28 -right-28 w-[520px] h-[520px] bg-[#D6A21E]/12 -rotate-12 rounded-[96px] blur-[80px]" />
+                    <div
+                      className="absolute inset-0 opacity-[0.10]"
+                      style={{
+                        backgroundImage: "radial-gradient(rgba(0,0,0,0.14) 1px, transparent 1px)",
+                        backgroundSize: "26px 26px",
+                      }}
+                    />
+                    {/* Scoutly watermark */}
+                    <img
+                      src="/industries/scoutly-logo.png"
+                      alt=""
+                      aria-hidden="true"
+                      className="absolute left-1/2 top-1/2 w-[720px] max-w-[140%] -translate-x-1/2 -translate-y-1/2 opacity-[0.06]"
+                      loading="lazy"
+                      draggable={false}
+                    />
+                  </div>
+
+                  <div className="relative">
+                    <div className="flex items-center justify-center gap-3">
+                      <div className="h-12 w-12 rounded-2xl bg-[#121212] text-[#D6A21E] grid place-items-center shadow-sm">
+                        <Briefcase />
+                      </div>
+                      <span className="text-xs font-semibold bg-white/70 backdrop-blur-sm text-black/70 px-3 py-1 rounded-full border border-black/10">
+                        Scoutly
+                      </span>
+                    </div>
+
+                    <a
+                      href="https://scoutly.agency/"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="mt-7 inline-flex items-center gap-3 rounded-full bg-[#121212] px-5 py-3 shadow-sm hover:bg-black transition"
+                    >
+                      <img
+                        src="/industries/scoutly-logo.png"
+                        alt="Scoutly"
+                        className="h-7 md:h-8 w-auto"
+                        loading="lazy"
+                        draggable={false}
+                      />
+                      <span className="h-5 w-px bg-white/15" />
+                      <span className="text-xs font-semibold tracking-wider uppercase text-white/80">
+                        M&amp;A services
+                      </span>
+                    </a>
+
+                    <h4 className="text-4xl md:text-5xl font-black mt-7 tracking-tight">
+                      Looking to sell or buy a business?
+                    </h4>
+                    <p className="text-black/70 mt-5 text-lg md:text-xl leading-relaxed">
+                      Scoutly is our M&amp;A company — built for owners who want clarity, confidentiality, and a disciplined plan to move forward.
+                    </p>
+
+                    <div className="mt-6 flex flex-wrap items-center justify-center gap-2">
+                      {["Confidential by default", "No-cost discovery call", "Vetted buyer network"].map((pill) => (
+                        <span
+                          key={pill}
+                          className="text-xs font-semibold px-3 py-1.5 rounded-full bg-white/70 border border-black/10 text-black/70"
+                        >
+                          {pill}
+                        </span>
+                      ))}
+                    </div>
+
+                    <div className="mt-8 grid gap-3 md:grid-cols-3">
+                      {[
+                        "Target list + outreach system",
+                        "Deal flow cadence",
+                        "Post-close execution plan",
+                      ].map((b) => (
+                        <div
+                          key={b}
+                          className="group rounded-2xl border border-black/10 bg-white/70 backdrop-blur-sm px-5 py-4 text-left shadow-sm hover:shadow transition"
+                        >
+                          <p className="text-xs font-semibold uppercase tracking-wide text-black/50">Focus</p>
+                          <p className="mt-2 font-semibold text-black/80">{b}</p>
+                          <div className="mt-3 h-px w-full bg-gradient-to-r from-transparent via-black/10 to-transparent" />
+                          <p className="mt-3 text-xs text-black/55 leading-relaxed">
+                            Built to keep momentum high while protecting confidentiality.
+                          </p>
+                        </div>
+                      ))}
+                    </div>
+
+                    <div className="mt-9 flex flex-col sm:flex-row items-center justify-center gap-3">
+                      <Button
+                        href="https://scoutly.agency/"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="w-full sm:w-auto rounded-full bg-[#121212] text-[#D6A21E] hover:bg-black px-10 py-6 text-lg"
+                      >
+                        Visit Scoutly <ArrowRight className="ml-2" size={18} />
+                      </Button>
+                      <Link to="/consultation">
+                        <Button
+                          variant="outline"
+                          className="w-full sm:w-auto rounded-full bg-white text-[#121212] hover:bg-white/90 border border-black/10 px-10 py-6 text-lg"
+                        >
+                          Talk to Fulcrum <ArrowRight className="ml-2" size={18} />
                         </Button>
                       </Link>
                     </div>
@@ -3395,15 +3614,6 @@ function Industries() {
       exampleImage: "/industries/cardiovascular-institute-vertical.png",
       exampleAlt: "Cardiovascular Institute",
     },
-    {
-      icon: <Briefcase />,
-      title: "M&A Services",
-      desc: "Support sourcing, outreach, and post-close execution so acquisitions compound instead of distract.",
-      bullets: ["Target list + outreach system", "Deal flow cadence", "Post-close execution plan"],
-      caseCategory: "Sales",
-      isScoutly: true,
-      linkTo: "https://scoutly.agency/",
-    },
   ];
 
   return (
@@ -3451,7 +3661,7 @@ function Industries() {
               Who we serve — and how we drive <span className="text-[#D6A21E]">momentum</span>.
             </h2>
             <p className="text-white/70 text-lg md:text-xl mt-6">
-              We work with organizations that want disciplined execution: clean offers, consistent outreach, and scorecards tied to revenue outcomes.
+              Our best customers are those organizations that want to invest in their growth and want us to invest into their growth with them.
             </p>
 
             <div className="mt-10 flex flex-col sm:flex-row gap-4">
@@ -3473,35 +3683,7 @@ function Industries() {
       {/* Industry blocks */}
       <section className="relative -mt-16 md:-mt-20 pb-20 px-6">
         <div className="max-w-7xl mx-auto">
-          <div className="bg-white rounded-3xl border border-black/10 p-10 md:p-12 relative overflow-hidden shadow-[0_26px_70px_rgba(18,18,18,0.16)]">
-            <div className="pointer-events-none absolute inset-0">
-              <div className="absolute -top-24 -right-24 w-[420px] h-[420px] bg-[#D6A21E]/12 rotate-12 rounded-[92px] blur-[90px]" />
-              <div className="absolute -bottom-28 -left-28 w-[520px] h-[520px] bg-black/5 -rotate-12 rounded-[96px] blur-[95px]" />
-              <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-[#D6A21E]/55 to-transparent" />
-              <div className="absolute inset-0 opacity-[0.08] [background:radial-gradient(rgba(0,0,0,0.10)_1px,transparent_1px)] [background-size:26px_26px]" />
-            </div>
-            <div className="relative flex items-end justify-between gap-6 flex-wrap">
-              <div>
-                <div className="flex items-center gap-3">
-                  <span className="h-2 w-2 rounded-full bg-[#D6A21E]" />
-                  <p className="text-xs font-semibold tracking-[0.22em] uppercase text-black/60">
-                    Coverage
-                  </p>
-                </div>
-                <h3 className="text-3xl md:text-4xl font-black mt-4">Who we serve</h3>
-                <p className="text-black/70 mt-3 max-w-2xl">
-                  If you have a real offer and want predictable pipeline + execution, we can help — even if you don’t fit perfectly into a box.
-                </p>
-              </div>
-              <Link to="/services">
-                <Button className="bg-[#121212] text-[#D6A21E] hover:bg-black rounded-full px-8">
-                  Explore services <ArrowRight className="ml-2" />
-                </Button>
-              </Link>
-            </div>
-          </div>
-
-          <div className="mt-10 space-y-6">
+          <div className="space-y-6">
             {industries.map((i, idx) => (
               <div
                 key={i.title}
@@ -3513,31 +3695,29 @@ function Industries() {
                     idx % 2 === 0 ? "bg-white" : "bg-[#F3EFE6]"
                   )}
                 >
-                    {/* Example image rail (edge-to-edge, top-to-bottom) */}
-                    {!i.isScoutly ? (
-                      <div className="hidden lg:block absolute inset-y-0 right-0 w-[300px] xl:w-[380px] border-l border-black/10 z-[1] overflow-hidden">
-                        {i.exampleImage ? (
-                          <>
-                            <img
-                              src={i.exampleImage}
-                              alt={i.exampleAlt || `${i.title} example`}
-                              className="absolute inset-0 w-full h-full object-cover"
-                              loading="lazy"
-                            />
-                            {/* premium overlay so photos blend with the strip */}
-                            <div className="absolute inset-0 bg-gradient-to-b from-white/15 via-transparent to-black/10" />
-                            <div className="absolute inset-0 bg-gradient-to-l from-transparent via-white/10 to-white/45" />
-                            <div className="absolute inset-0 opacity-[0.14] [background:radial-gradient(circle_at_20%_20%,rgba(214,162,30,0.35),transparent_55%)]" />
-                          </>
-                        ) : (
-                          <>
-                            <div className="absolute inset-0 bg-gradient-to-br from-white/60 via-white/20 to-transparent" />
-                            <div className="absolute inset-0 opacity-[0.22] [background:radial-gradient(circle_at_20%_20%,rgba(214,162,30,0.25),transparent_55%),radial-gradient(circle_at_70%_40%,rgba(0,0,0,0.12),transparent_55%),radial-gradient(circle_at_40%_90%,rgba(214,162,30,0.18),transparent_60%)]" />
-                            <div className="absolute inset-0 bg-[linear-gradient(to_bottom,rgba(255,255,255,0.55),transparent_35%,rgba(0,0,0,0.05))]" />
-                          </>
-                        )}
-                      </div>
-                    ) : null}
+                  {/* Example image rail (edge-to-edge, top-to-bottom) */}
+                  <div className="hidden lg:block absolute inset-y-0 right-0 w-[300px] xl:w-[380px] border-l border-black/10 z-[1] overflow-hidden">
+                    {i.exampleImage ? (
+                      <>
+                        <img
+                          src={i.exampleImage}
+                          alt={i.exampleAlt || `${i.title} example`}
+                          className="absolute inset-0 w-full h-full object-cover"
+                          loading="lazy"
+                        />
+                        {/* premium overlay so photos blend with the strip */}
+                        <div className="absolute inset-0 bg-gradient-to-b from-white/15 via-transparent to-black/10" />
+                        <div className="absolute inset-0 bg-gradient-to-l from-transparent via-white/10 to-white/45" />
+                        <div className="absolute inset-0 opacity-[0.14] [background:radial-gradient(circle_at_20%_20%,rgba(214,162,30,0.35),transparent_55%)]" />
+                      </>
+                    ) : (
+                      <>
+                        <div className="absolute inset-0 bg-gradient-to-br from-white/60 via-white/20 to-transparent" />
+                        <div className="absolute inset-0 opacity-[0.22] [background:radial-gradient(circle_at_20%_20%,rgba(214,162,30,0.25),transparent_55%),radial-gradient(circle_at_70%_40%,rgba(0,0,0,0.12),transparent_55%),radial-gradient(circle_at_40%_90%,rgba(214,162,30,0.18),transparent_60%)]" />
+                        <div className="absolute inset-0 bg-[linear-gradient(to_bottom,rgba(255,255,255,0.55),transparent_35%,rgba(0,0,0,0.05))]" />
+                      </>
+                    )}
+                  </div>
 
                   {/* premium accents */}
                     <div className="pointer-events-none absolute inset-0 z-0">
@@ -3555,131 +3735,9 @@ function Industries() {
                     />
                   </div>
 
-                  <div
-                    className={cx(
-                      "relative z-[2] max-w-7xl mx-auto px-6 py-10 md:py-12",
-                      !i.isScoutly ? "lg:pr-[340px] xl:pr-[420px]" : ""
-                    )}
-                  >
-                    <div className={cx("flex flex-col gap-10", i.isScoutly ? "items-center" : "lg:flex-row items-start")}>
-                      {i.isScoutly ? (
-                        <>
-                          <div className="w-full max-w-5xl">
-                            <div className="relative overflow-hidden rounded-[2.5rem] border border-black/10 bg-white/65 backdrop-blur-sm shadow-sm px-8 py-10 md:px-12 md:py-12 text-center">
-                              {/* premium panel accents */}
-                              <div className="pointer-events-none absolute inset-0">
-                                <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-[#D6A21E]/55 to-transparent" />
-                                <div className="absolute -top-24 -left-24 w-[420px] h-[420px] bg-[#121212]/8 rotate-12 rounded-[96px] blur-[70px]" />
-                                <div className="absolute -bottom-28 -right-28 w-[520px] h-[520px] bg-[#D6A21E]/12 -rotate-12 rounded-[96px] blur-[80px]" />
-                                <div
-                                  className="absolute inset-0 opacity-[0.10]"
-                                  style={{
-                                    backgroundImage:
-                                      "radial-gradient(rgba(0,0,0,0.14) 1px, transparent 1px)",
-                                    backgroundSize: "26px 26px",
-                                  }}
-                                />
-                                {/* Scoutly watermark */}
-                                <img
-                                  src="/industries/scoutly-logo.png"
-                                  alt=""
-                                  aria-hidden="true"
-                                  className="absolute left-1/2 top-1/2 w-[720px] max-w-[140%] -translate-x-1/2 -translate-y-1/2 opacity-[0.06]"
-                                />
-                              </div>
-
-                              <div className="relative">
-                                <div className="flex items-center justify-center gap-3">
-                                  <div className="h-12 w-12 rounded-2xl bg-[#121212] text-[#D6A21E] grid place-items-center shadow-sm">
-                                    {i.icon}
-                                  </div>
-                                  <span className="text-xs font-semibold bg-white/70 backdrop-blur-sm text-black/70 px-3 py-1 rounded-full border border-black/10">
-                                    Scoutly
-                                  </span>
-                                </div>
-
-                                <a
-                                  href={i.linkTo || "https://scoutly.agency/"}
-                                  target="_blank"
-                                  rel="noreferrer"
-                                  className="mt-7 inline-flex items-center gap-3 rounded-full bg-[#121212] px-5 py-3 shadow-sm hover:bg-black transition"
-                                >
-                                  <img
-                                    src="/industries/scoutly-logo.png"
-                                    alt="Scoutly"
-                                    className="h-7 md:h-8 w-auto"
-                                    loading="lazy"
-                                  />
-                                  <span className="h-5 w-px bg-white/15" />
-                                  <span className="text-xs font-semibold tracking-wider uppercase text-white/80">
-                                    M&amp;A services
-                                  </span>
-                                </a>
-
-                                <h4 className="text-4xl md:text-5xl font-black mt-7 tracking-tight">
-                                  Looking to sell or buy a business?
-                                </h4>
-                                <p className="text-black/70 mt-5 text-lg md:text-xl leading-relaxed">
-                                  Scoutly is our M&amp;A company — built for owners who want clarity, confidentiality, and a
-                                  disciplined plan to move forward.
-                                </p>
-
-                                <div className="mt-6 flex flex-wrap items-center justify-center gap-2">
-                                  {["Confidential by default", "No-cost discovery call", "Vetted buyer network"].map(
-                                    (pill) => (
-                                      <span
-                                        key={pill}
-                                        className="text-xs font-semibold px-3 py-1.5 rounded-full bg-white/70 border border-black/10 text-black/70"
-                                      >
-                                        {pill}
-                                      </span>
-                                    )
-                                  )}
-                                </div>
-
-                                <div className="mt-8 grid gap-3 md:grid-cols-3">
-                                  {i.bullets.map((b) => (
-                                    <div
-                                      key={b}
-                                      className="group rounded-2xl border border-black/10 bg-white/70 backdrop-blur-sm px-5 py-4 text-left shadow-sm hover:shadow transition"
-                                    >
-                                      <p className="text-xs font-semibold uppercase tracking-wide text-black/50">
-                                        Focus
-                                      </p>
-                                      <p className="mt-2 font-semibold text-black/80">{b}</p>
-                                      <div className="mt-3 h-px w-full bg-gradient-to-r from-transparent via-black/10 to-transparent" />
-                                      <p className="mt-3 text-xs text-black/55 leading-relaxed">
-                                        Built to keep momentum high while protecting confidentiality.
-                                      </p>
-                                    </div>
-                                  ))}
-                                </div>
-
-                                <div className="mt-9 flex flex-col sm:flex-row items-center justify-center gap-3">
-                                  <Button
-                                    href={i.linkTo || "https://scoutly.agency/"}
-                                    target="_blank"
-                                    rel="noreferrer"
-                                    className="w-full sm:w-auto rounded-full bg-[#121212] text-[#D6A21E] hover:bg-black px-10 py-6 text-lg"
-                                  >
-                                    Visit Scoutly <ArrowRight className="ml-2" size={18} />
-                                  </Button>
-                                  <Link to="/consultation">
-                                    <Button
-                                      variant="outline"
-                                      className="w-full sm:w-auto rounded-full bg-white text-[#121212] hover:bg-white/90 border border-black/10 px-10 py-6 text-lg"
-                                    >
-                                      Talk to Fulcrum <ArrowRight className="ml-2" size={18} />
-                                    </Button>
-                                  </Link>
-                                </div>
-                              </div>
-                            </div>
-                          </div>
-                        </>
-                      ) : (
-                        <>
-                          <div className="max-w-2xl lg:flex-1">
+                  <div className="relative z-[2] max-w-7xl mx-auto px-6 py-10 md:py-12 lg:pr-[340px] xl:pr-[420px]">
+                    <div className="flex flex-col gap-10 lg:flex-row items-start">
+                      <div className="max-w-2xl lg:flex-1">
                             <div className="flex items-start justify-between gap-6">
                               <div className="h-12 w-12 rounded-2xl bg-[#121212] text-[#D6A21E] grid place-items-center shadow-sm">
                                 {i.icon}
@@ -3693,7 +3751,12 @@ function Industries() {
                             <p className="text-black/70 mt-4 text-lg leading-relaxed">{i.desc}</p>
                           </div>
 
-                          <div className="w-full lg:w-[340px] xl:w-[360px] lg:shrink-0 rounded-3xl border border-black/10 bg-white/75 backdrop-blur-sm p-8 shadow-sm">
+                      <div
+                        className={cx(
+                          "w-full lg:shrink-0 rounded-3xl border border-black/10 bg-white/75 backdrop-blur-sm p-8 shadow-sm",
+                          i.gsa ? "lg:w-[440px] xl:w-[480px]" : "lg:w-[340px] xl:w-[360px]"
+                        )}
+                      >
                             <p className="text-xs font-semibold uppercase tracking-wide text-black/50">
                               Typical focus
                             </p>
@@ -3740,6 +3803,19 @@ function Industries() {
                                       </div>
                                     </div>
                                   </div>
+
+                                  <div className="mt-3">
+                                    <Button
+                                      href="/downloads/Fulcrum-Capabilities-Statement.pdf"
+                                      target="_blank"
+                                      rel="noopener noreferrer"
+                                      download
+                                      variant="outline"
+                                      className="w-full rounded-full bg-white text-[#121212] hover:bg-white/90 border border-black/10 px-6"
+                                    >
+                                      Download capabilities statement <ArrowRight className="ml-2" size={18} />
+                                    </Button>
+                                  </div>
                                 </div>
                               ) : null}
                             <div className="mt-7 flex flex-col gap-3">
@@ -3758,8 +3834,6 @@ function Industries() {
                               </Link>
                             </div>
                           </div>
-                        </>
-                      )}
                     </div>
                   </div>
                 </div>
@@ -4449,7 +4523,6 @@ function CaseStudies() {
       "Government",
       "Small Businesses",
       "Healthcare & Medical",
-      "M&A Services",
     ];
     const set = new Set(caseStudies.map((c) => c.industry).filter(Boolean));
     // Always show Nonprofits (even if not populated yet)
