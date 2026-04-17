@@ -444,7 +444,7 @@ function Navbar() {
       >
         <div
           className={cx(
-            "absolute inset-0 bg-black/70 supports-[backdrop-filter]:bg-black/45 backdrop-blur-lg backdrop-saturate-50 transition-opacity duration-200",
+            "absolute inset-0 bg-black/85 supports-[backdrop-filter]:bg-black/65 backdrop-blur-xl backdrop-saturate-50 transition-opacity duration-200",
             mobileOpen ? "opacity-100" : "opacity-0"
           )}
           onClick={() => setMobileOpen(false)}
@@ -475,7 +475,7 @@ function Navbar() {
           </div>
 
           <div className="p-5">
-            <div className="rounded-3xl border border-white/10 bg-black/30 p-2 backdrop-blur-sm shadow-[0_18px_60px_rgba(0,0,0,0.35)]">
+            <div className="rounded-[2rem] border border-white/10 bg-black/35 supports-[backdrop-filter]:bg-black/30 backdrop-blur-md shadow-[0_18px_70px_rgba(0,0,0,0.45)] p-3">
               <div className="grid gap-2 text-sm font-semibold">
                 {[
                   { to: "/about", label: "About & Contact" },
@@ -496,31 +496,31 @@ function Navbar() {
                   </Link>
                 ))}
               </div>
-            </div>
 
-            <div className="mt-6 rounded-2xl border border-white/10 bg-white/5 p-4">
-              <div className="text-[11px] font-semibold uppercase tracking-[0.22em] text-white/60">
-                Limited-time ROI assessment
-              </div>
-              <div className="mt-3 space-y-2 text-sm text-white/80">
-                {[
-                  "Initial order value",
-                  "Lifetime value of customer",
-                  "Gross profit margin",
-                  "Win rate (close rate)",
-                ].map((item) => (
-                  <div key={item} className="flex items-start gap-3">
-                    <span className="mt-[7px] h-1.5 w-1.5 rounded-full bg-[#D6A21E] shadow-[0_0_18px_rgba(214,162,30,0.55)]" />
-                    <span>{item}</span>
-                  </div>
-                ))}
-              </div>
-              <div className="mt-4">
-                <Link to="/consultation" onClick={() => setMobileOpen(false)} className="inline-flex w-full">
-                  <Button className="w-full rounded-full bg-[#D6A21E] text-black hover:bg-[#B88A16] px-6 py-3">
-                    Start ROI assessment <ArrowRight className="ml-2" size={18} />
-                  </Button>
-                </Link>
+              <div className="mt-4 rounded-2xl border border-white/10 bg-white/10 p-4">
+                <div className="text-[11px] font-semibold uppercase tracking-[0.22em] text-white/65">
+                  Limited-time ROI assessment
+                </div>
+                <div className="mt-3 space-y-2 text-sm text-white/80">
+                  {[
+                    "Initial order value",
+                    "Lifetime value of customer",
+                    "Gross profit margin",
+                    "Win rate (close rate)",
+                  ].map((item) => (
+                    <div key={item} className="flex items-start gap-3">
+                      <span className="mt-[7px] h-1.5 w-1.5 rounded-full bg-[#D6A21E] shadow-[0_0_18px_rgba(214,162,30,0.55)]" />
+                      <span>{item}</span>
+                    </div>
+                  ))}
+                </div>
+                <div className="mt-4">
+                  <Link to="/consultation" onClick={() => setMobileOpen(false)} className="inline-flex w-full">
+                    <Button className="w-full rounded-full bg-[#D6A21E] text-black hover:bg-[#B88A16] px-6 py-3">
+                      Start ROI assessment <ArrowRight className="ml-2" size={18} />
+                    </Button>
+                  </Link>
+                </div>
               </div>
             </div>
           </div>
