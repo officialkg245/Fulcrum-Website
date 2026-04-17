@@ -452,11 +452,11 @@ function Navbar() {
         />
         <div
           className={cx(
-            "absolute right-0 top-0 h-full w-[86%] max-w-[420px] bg-[#121212] border-l border-white/10 shadow-[0_24px_90px_rgba(0,0,0,0.6)] transition-transform duration-200",
+            "absolute right-0 top-0 h-full w-[86%] max-w-[420px] bg-[#121212] border-l border-white/10 shadow-[0_24px_90px_rgba(0,0,0,0.6)] transition-transform duration-200 flex flex-col",
             mobileOpen ? "translate-x-0" : "translate-x-full"
           )}
         >
-          <div className="p-5 border-b border-white/10 flex items-center justify-between">
+          <div className="p-4 border-b border-white/10 flex items-center justify-between">
             <Link
               to="/"
               className="relative group"
@@ -475,9 +475,9 @@ function Navbar() {
             </button>
           </div>
 
-          <div className="p-5">
+          <div className="p-4 pb-[max(1rem,env(safe-area-inset-bottom))]">
             <div className="rounded-[2rem] border border-white/10 bg-black/35 supports-[backdrop-filter]:bg-black/30 backdrop-blur-md shadow-[0_18px_70px_rgba(0,0,0,0.45)] p-3">
-              <div className="grid gap-2 text-sm font-semibold">
+              <div className="grid grid-cols-1 gap-2 text-[13px] font-semibold">
                 {[
                   { to: "/about", label: "About & Contact" },
                   { to: "/services", label: "Services" },
@@ -490,94 +490,70 @@ function Navbar() {
                     key={l.to}
                     to={l.to}
                     onClick={() => setMobileOpen(false)}
-                    className="flex items-center justify-between rounded-2xl border border-white/10 bg-white/10 px-4 py-3 text-white hover:bg-white/15 transition"
+                    className="rounded-2xl border border-white/10 bg-white/10 px-3 py-2.5 text-white hover:bg-white/15 transition"
                   >
-                    <span>{l.label}</span>
-                    <ArrowRight size={18} className="text-[#D6A21E]" />
+                    {l.label}
                   </Link>
                 ))}
               </div>
 
-              <div className="mt-4 rounded-3xl border border-white/10 bg-gradient-to-br from-black/35 via-black/25 to-[#D6A21E]/10 supports-[backdrop-filter]:bg-black/20 backdrop-blur-md p-4 shadow-[0_18px_60px_rgba(0,0,0,0.35)]">
-                <div className="flex items-center justify-between gap-4">
-                  <div>
-                    <div className="text-[11px] font-semibold uppercase tracking-[0.22em] text-white/65">
-                      Contact
-                    </div>
-                    <div className="mt-1 text-sm font-semibold text-white/90">
-                      Quick ways to reach us
-                    </div>
-                  </div>
+              <div className="mt-4 rounded-3xl border border-white/10 bg-gradient-to-br from-black/35 via-black/25 to-[#D6A21E]/10 supports-[backdrop-filter]:bg-black/20 backdrop-blur-md p-3 shadow-[0_18px_60px_rgba(0,0,0,0.35)]">
+                <div className="text-[11px] font-semibold uppercase tracking-[0.22em] text-white/65">
+                  Contact
                 </div>
 
-                <div className="mt-4 grid gap-3">
+                <div className="mt-3 grid grid-cols-3 gap-2">
                   <a
                     href="mailto:info@workwithfulcrum.com"
-                    className="group flex items-center gap-3 rounded-2xl border border-white/10 bg-white/10 px-3 py-3 hover:bg-white/15 transition"
+                    className="group rounded-2xl border border-white/10 bg-white/10 px-3 py-3 hover:bg-white/15 transition"
                   >
-                    <div className="h-10 w-10 rounded-2xl bg-black/35 border border-white/10 grid place-items-center text-[#D6A21E] shrink-0">
-                      <Mail size={18} />
-                    </div>
-                    <div className="min-w-0 flex-1">
-                      <div className="text-[11px] font-semibold uppercase tracking-[0.22em] text-white/60">
-                        Email
+                    <div className="flex flex-col items-center text-center">
+                      <div className="h-9 w-9 rounded-2xl bg-black/35 border border-white/10 grid place-items-center text-[#D6A21E]">
+                        <Mail size={16} />
                       </div>
-                      <div className="mt-1 text-sm font-semibold text-white truncate">
-                        info@workwithfulcrum.com
-                      </div>
+                      <div className="mt-2 text-[11px] font-semibold text-white/85">Email</div>
                     </div>
-                    <ArrowRight size={18} className="text-[#D6A21E] shrink-0 opacity-90 group-hover:opacity-100" />
                   </a>
 
                   <a
                     href="tel:+13373069436"
-                    className="group flex items-center gap-3 rounded-2xl border border-white/10 bg-white/10 px-3 py-3 hover:bg-white/15 transition"
+                    className="group rounded-2xl border border-white/10 bg-white/10 px-3 py-3 hover:bg-white/15 transition"
                   >
-                    <div className="h-10 w-10 rounded-2xl bg-black/35 border border-white/10 grid place-items-center text-[#D6A21E] shrink-0">
-                      <Phone size={18} />
-                    </div>
-                    <div className="min-w-0 flex-1">
-                      <div className="text-[11px] font-semibold uppercase tracking-[0.22em] text-white/60">
-                        Phone
+                    <div className="flex flex-col items-center text-center">
+                      <div className="h-9 w-9 rounded-2xl bg-black/35 border border-white/10 grid place-items-center text-[#D6A21E]">
+                        <Phone size={16} />
                       </div>
-                      <div className="mt-1 text-sm font-semibold text-white">
-                        (337) 306-9436
-                      </div>
+                      <div className="mt-2 text-[11px] font-semibold text-white/85">Call</div>
                     </div>
-                    <ArrowRight size={18} className="text-[#D6A21E] shrink-0 opacity-90 group-hover:opacity-100" />
                   </a>
 
                   <a
                     href={linkedInCompanyUrl}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="group flex items-center gap-3 rounded-2xl border border-white/10 bg-white/10 px-3 py-3 hover:bg-white/15 transition"
+                    className="group rounded-2xl border border-white/10 bg-white/10 px-3 py-3 hover:bg-white/15 transition"
                   >
-                    <div className="h-10 w-10 rounded-2xl bg-black/35 border border-white/10 grid place-items-center text-[#D6A21E] shrink-0">
-                      <Linkedin size={18} />
-                    </div>
-                    <div className="min-w-0 flex-1">
-                      <div className="text-[11px] font-semibold uppercase tracking-[0.22em] text-white/60">
-                        LinkedIn
+                    <div className="flex flex-col items-center text-center">
+                      <div className="h-9 w-9 rounded-2xl bg-black/35 border border-white/10 grid place-items-center text-[#D6A21E]">
+                        <Linkedin size={16} />
                       </div>
-                      <div className="mt-1 text-sm font-semibold text-white">
-                        Follow Fulcrum
-                      </div>
+                      <div className="mt-2 text-[11px] font-semibold text-white/85">LinkedIn</div>
                     </div>
-                    <ArrowRight size={18} className="text-[#D6A21E] shrink-0 opacity-90 group-hover:opacity-100" />
                   </a>
                 </div>
 
-                <div className="mt-4 flex gap-3">
-                  <Link to="/consultation" onClick={() => setMobileOpen(false)} className="inline-flex flex-1">
+                <div className="mt-3 grid gap-2">
+                  <Link to="/consultation" onClick={() => setMobileOpen(false)} className="inline-flex w-full">
                     <Button className="w-full rounded-full bg-[#D6A21E] text-black hover:bg-[#B88A16] px-6 py-3">
                       Get in touch <ArrowRight className="ml-2" size={18} />
                     </Button>
                   </Link>
-                  <Link to="/about#contact" onClick={() => setMobileOpen(false)} className="inline-flex">
-                    <Button variant="outline" className="rounded-full bg-white/10 text-white hover:bg-white/15 border border-white/10 px-5 py-3">
-                      Details
-                    </Button>
+                  <Link
+                    to="/about#contact"
+                    onClick={() => setMobileOpen(false)}
+                    className="text-xs font-semibold text-white/70 hover:text-white inline-flex items-center justify-center gap-2"
+                  >
+                    Contact details <ArrowRight size={16} className="text-[#D6A21E]" />
                   </Link>
                 </div>
               </div>
