@@ -19,6 +19,7 @@ import {
   Briefcase,
   Menu,
   X,
+  Mail,
   Phone,
   Calendar,
   CheckCircle2,
@@ -285,10 +286,10 @@ function AnnouncementBar({ open = true, onClose }) {
 
   return (
     <div className="bg-[#0F0F0F] text-white border-b border-white/10">
-      <div className="max-w-7xl mx-auto px-6 py-3 flex items-center justify-between gap-4">
-        <div className="flex items-center gap-3">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 py-2 sm:py-3 flex items-start sm:items-center justify-between gap-3 sm:gap-4">
+        <div className="flex items-start sm:items-center gap-3 min-w-0">
           <LimitedTimePill className="bg-[#D6A21E]/20" />
-          <p className="text-sm text-white/80">
+          <p className="text-xs sm:text-sm text-white/80 leading-snug">
             <span className="font-semibold text-white">Limited Time:</span>{" "}
             <span className="font-semibold text-white">Service consultation</span>{" "}
             with a{" "}
@@ -296,8 +297,8 @@ function AnnouncementBar({ open = true, onClose }) {
             on the call.
           </p>
         </div>
-        <div className="flex items-center gap-3">
-          <Link to="/consultation">
+        <div className="flex items-center gap-2 sm:gap-3 shrink-0">
+          <Link to="/consultation" className="hidden sm:inline-flex">
             <Button className="h-9 rounded-full bg-[#D6A21E] text-black hover:bg-[#B88A16] px-5">
               Book now <ArrowRight className="ml-2" size={18} />
             </Button>
@@ -305,10 +306,10 @@ function AnnouncementBar({ open = true, onClose }) {
           <button
             type="button"
             onClick={onClose}
-            className="text-white/60 hover:text-white text-sm px-2"
+            className="h-10 w-10 inline-flex items-center justify-center rounded-full border border-white/10 bg-white/5 text-white/80 hover:text-white hover:bg-white/10 transition"
             aria-label="Dismiss"
           >
-            ✕
+            <X size={18} />
           </button>
         </div>
       </div>
@@ -497,27 +498,85 @@ function Navbar() {
                 ))}
               </div>
 
-              <div className="mt-4 rounded-2xl border border-white/10 bg-white/10 p-4">
-                <div className="text-[11px] font-semibold uppercase tracking-[0.22em] text-white/65">
-                  Limited-time ROI assessment
-                </div>
-                <div className="mt-3 space-y-2 text-sm text-white/80">
-                  {[
-                    "Initial order value",
-                    "Lifetime value of customer",
-                    "Gross profit margin",
-                    "Win rate (close rate)",
-                  ].map((item) => (
-                    <div key={item} className="flex items-start gap-3">
-                      <span className="mt-[7px] h-1.5 w-1.5 rounded-full bg-[#D6A21E] shadow-[0_0_18px_rgba(214,162,30,0.55)]" />
-                      <span>{item}</span>
+              <div className="mt-4 rounded-3xl border border-white/10 bg-gradient-to-br from-black/35 via-black/25 to-[#D6A21E]/10 supports-[backdrop-filter]:bg-black/20 backdrop-blur-md p-4 shadow-[0_18px_60px_rgba(0,0,0,0.35)]">
+                <div className="flex items-center justify-between gap-4">
+                  <div>
+                    <div className="text-[11px] font-semibold uppercase tracking-[0.22em] text-white/65">
+                      Contact
                     </div>
-                  ))}
+                    <div className="mt-1 text-sm font-semibold text-white/90">
+                      Quick ways to reach us
+                    </div>
+                  </div>
                 </div>
-                <div className="mt-4">
-                  <Link to="/consultation" onClick={() => setMobileOpen(false)} className="inline-flex w-full">
+
+                <div className="mt-4 grid gap-3">
+                  <a
+                    href="mailto:info@workwithfulcrum.com"
+                    className="group flex items-center gap-3 rounded-2xl border border-white/10 bg-white/10 px-3 py-3 hover:bg-white/15 transition"
+                  >
+                    <div className="h-10 w-10 rounded-2xl bg-black/35 border border-white/10 grid place-items-center text-[#D6A21E] shrink-0">
+                      <Mail size={18} />
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <div className="text-[11px] font-semibold uppercase tracking-[0.22em] text-white/60">
+                        Email
+                      </div>
+                      <div className="mt-1 text-sm font-semibold text-white truncate">
+                        info@workwithfulcrum.com
+                      </div>
+                    </div>
+                    <ArrowRight size={18} className="text-[#D6A21E] shrink-0 opacity-90 group-hover:opacity-100" />
+                  </a>
+
+                  <a
+                    href="tel:+13373069436"
+                    className="group flex items-center gap-3 rounded-2xl border border-white/10 bg-white/10 px-3 py-3 hover:bg-white/15 transition"
+                  >
+                    <div className="h-10 w-10 rounded-2xl bg-black/35 border border-white/10 grid place-items-center text-[#D6A21E] shrink-0">
+                      <Phone size={18} />
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <div className="text-[11px] font-semibold uppercase tracking-[0.22em] text-white/60">
+                        Phone
+                      </div>
+                      <div className="mt-1 text-sm font-semibold text-white">
+                        (337) 306-9436
+                      </div>
+                    </div>
+                    <ArrowRight size={18} className="text-[#D6A21E] shrink-0 opacity-90 group-hover:opacity-100" />
+                  </a>
+
+                  <a
+                    href={linkedInCompanyUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="group flex items-center gap-3 rounded-2xl border border-white/10 bg-white/10 px-3 py-3 hover:bg-white/15 transition"
+                  >
+                    <div className="h-10 w-10 rounded-2xl bg-black/35 border border-white/10 grid place-items-center text-[#D6A21E] shrink-0">
+                      <Linkedin size={18} />
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <div className="text-[11px] font-semibold uppercase tracking-[0.22em] text-white/60">
+                        LinkedIn
+                      </div>
+                      <div className="mt-1 text-sm font-semibold text-white">
+                        Follow Fulcrum
+                      </div>
+                    </div>
+                    <ArrowRight size={18} className="text-[#D6A21E] shrink-0 opacity-90 group-hover:opacity-100" />
+                  </a>
+                </div>
+
+                <div className="mt-4 flex gap-3">
+                  <Link to="/consultation" onClick={() => setMobileOpen(false)} className="inline-flex flex-1">
                     <Button className="w-full rounded-full bg-[#D6A21E] text-black hover:bg-[#B88A16] px-6 py-3">
-                      Start ROI assessment <ArrowRight className="ml-2" size={18} />
+                      Get in touch <ArrowRight className="ml-2" size={18} />
+                    </Button>
+                  </Link>
+                  <Link to="/about#contact" onClick={() => setMobileOpen(false)} className="inline-flex">
+                    <Button variant="outline" className="rounded-full bg-white/10 text-white hover:bg-white/15 border border-white/10 px-5 py-3">
+                      Details
                     </Button>
                   </Link>
                 </div>
@@ -2020,7 +2079,7 @@ function About() {
 
         {/* Team Section */}
         <div className="relative">
-          <div className="relative z-10 flex items-end justify-between gap-8 flex-wrap mb-10">
+          <div className="relative z-10 flex items-end justify-between gap-8 flex-wrap mb-10 pt-24 md:pt-28">
             {/* Watermark logo near header */}
             <div className="pointer-events-none absolute left-1/2 -top-24 -translate-x-1/2 z-0">
               <img
@@ -3027,7 +3086,15 @@ function Services() {
                   </span>
                 </div>
 
-                <div className="mt-8 overflow-x-auto">
+                <div className="mt-6 sm:hidden flex items-center justify-between text-xs font-semibold text-black/45">
+                  <span>Swipe to see full pricing</span>
+                  <span>→</span>
+                </div>
+
+                <div
+                  className="mt-3 sm:mt-8 -mx-5 sm:mx-0 px-5 sm:px-0 overflow-x-auto pb-4"
+                  style={{ WebkitOverflowScrolling: "touch" }}
+                >
                   <div className="min-w-[820px] rounded-3xl border border-black/10 overflow-hidden bg-white/70">
                     <div className="grid grid-cols-[1.15fr_1.85fr]">
                       <div className="p-5 bg-[#F3EFE6]" />
