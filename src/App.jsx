@@ -43,6 +43,191 @@ import salesPipelineFailing from "./blogs/sales-pipeline-failing";
 import healthcareSpecializedFirm from "./blogs/healthcare-specialized-firm";
 import telehealthMarketing2025 from "./blogs/telehealth-marketing-2025";
 import conversionRateMistakes from "./blogs/conversion-rate-mistakes";
+
+let _pdfjs = null;
+let _pdfjsLoading = null;
+async function getPdfjs() {
+  if (_pdfjs) return _pdfjs;
+  if (_pdfjsLoading) return _pdfjsLoading;
+  _pdfjsLoading = (async () => {
+    const pdfjs = await import("pdfjs-dist");
+    const workerSrc = (await import("pdfjs-dist/build/pdf.worker.min.mjs?url")).default;
+    pdfjs.GlobalWorkerOptions.workerSrc = workerSrc;
+    _pdfjs = pdfjs;
+    return pdfjs;
+  })();
+  return _pdfjsLoading;
+}
+
+function PdfPageImage({
+  url,
+  page = 1,
+  scaleCap = 2.25,
+  className = "",
+  alt = "PDF preview",
+}) {
+  const hostRef = useRef(null);
+  const [hostW, setHostW] = useState(0);
+  const [imgSrc, setImgSrc] = useState(null);
+
+  useLayoutEffect(() => {
+    const el = hostRef.current;
+    if (!el) return;
+    const ro = new ResizeObserver(() => setHostW(el.clientWidth || 0));
+    ro.observe(el);
+    setHostW(el.clientWidth || 0);
+    return () => ro.disconnect();
+  }, []);
+
+  useEffect(() => {
+    let cancelled = false;
+    setImgSrc(null);
+    if (!url || !hostW) return;
+
+    (async () => {
+      try {
+        const pdfjs = await getPdfjs();
+        const loadingTask = pdfjs.getDocument(url);
+        const pdf = await loadingTask.promise;
+        const p = await pdf.getPage(page);
+
+        const baseViewport = p.getViewport({ scale: 1 });
+        const fitScale = hostW / baseViewport.width;
+        const scale = Math.max(1, Math.min(scaleCap, fitScale));
+        const viewport = p.getViewport({ scale });
+
+        const canvas = document.createElement("canvas");
+        canvas.width = Math.ceil(viewport.width);
+        canvas.height = Math.ceil(viewport.height);
+        const ctx = canvas.getContext("2d", { alpha: false });
+        if (!ctx) return;
+        ctx.fillStyle = "#ffffff";
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+        const renderTask = p.render({
+          canvasContext: ctx,
+          viewport,
+          background: "#ffffff",
+        });
+        await renderTask.promise;
+
+        const dataUrl = canvas.toDataURL("image/png");
+        if (!cancelled) setImgSrc(dataUrl);
+
+        try {
+          pdf.destroy?.();
+        } catch {
+          // ignore
+        }
+      } catch {
+        if (!cancelled) setImgSrc(null);
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [url, page, hostW, scaleCap]);
+
+  return (
+    <div ref={hostRef} className={cx("relative", className)}>
+      {imgSrc ? (
+        <img
+          src={imgSrc}
+          alt={alt}
+          className="h-full w-full object-contain"
+          draggable={false}
+        />
+      ) : (
+        <div className="h-full w-full grid place-items-center text-black/55 text-sm font-semibold">
+          Loading preview…
+        </div>
+      )}
+    </div>
+  );
+}
+
+function PdfDocumentImages({ url, renderScale = 1.6, className = "" }) {
+  const [pages, setPages] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    let cancelled = false;
+    setPages([]);
+    setLoading(true);
+    if (!url) return;
+
+    (async () => {
+      try {
+        const pdfjs = await getPdfjs();
+        const loadingTask = pdfjs.getDocument(url);
+        const pdf = await loadingTask.promise;
+
+        const imgs = [];
+        for (let n = 1; n <= pdf.numPages; n += 1) {
+          if (cancelled) break;
+          const p = await pdf.getPage(n);
+          const viewport = p.getViewport({ scale: renderScale });
+
+          const canvas = document.createElement("canvas");
+          canvas.width = Math.ceil(viewport.width);
+          canvas.height = Math.ceil(viewport.height);
+          const ctx = canvas.getContext("2d", { alpha: false });
+          if (!ctx) continue;
+          ctx.fillStyle = "#ffffff";
+          ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+          const renderTask = p.render({
+            canvasContext: ctx,
+            viewport,
+            background: "#ffffff",
+          });
+          await renderTask.promise;
+
+          const dataUrl = canvas.toDataURL("image/png");
+          imgs.push({ page: n, src: dataUrl });
+          if (!cancelled) setPages([...imgs]);
+        }
+
+        try {
+          pdf.destroy?.();
+        } catch {
+          // ignore
+        }
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [renderScale, url]);
+
+  return (
+    <div className={cx("space-y-6", className)}>
+      {loading ? (
+        <div className="rounded-3xl border border-black/10 bg-white p-10 shadow-sm text-black/60 font-semibold">
+          Loading document…
+        </div>
+      ) : null}
+
+      {pages.map((p) => (
+        <div
+          key={p.page}
+          className="relative overflow-hidden rounded-3xl border border-black/10 bg-white shadow-[0_26px_70px_rgba(18,18,18,0.12)]"
+        >
+          <img
+            src={p.src}
+            alt={`Capabilities statement page ${p.page}`}
+            className="w-full h-auto block"
+            draggable={false}
+          />
+        </div>
+      ))}
+    </div>
+  );
+}
 // TEMP UI COMPONENTS (fast fix – no shadcn needed)
 // UI COMPONENTS (no shadcn needed, but styled)
 function Button({ className = "", variant = "solid", children, href, ...props }) {
@@ -360,9 +545,27 @@ function Navbar() {
             Services
           </Link>
           <span className="mx-2 h-5 w-px bg-gradient-to-b from-transparent via-[#D6A21E]/55 to-transparent opacity-80" />
-          <Link className="px-3 py-2 hover:text-[#D6A21E]" to="/industries">
-            Industries
-          </Link>
+          <div className="relative group">
+            <div className="rounded-2xl border border-transparent group-hover:border-white/10 group-hover:bg-white/5 transition overflow-hidden group-hover:rounded-b-none">
+              <Link
+                className="block px-3 py-2 hover:text-[#D6A21E]"
+                to="/industries"
+              >
+                Industries
+              </Link>
+            </div>
+            {/* Dropdown visually attached inside the Industries pill */}
+            <div className="absolute left-0 top-full z-[95] w-full -mt-px opacity-0 invisible group-hover:opacity-100 group-hover:visible group-focus-within:opacity-100 group-focus-within:visible transition duration-200">
+              <div className="rounded-b-2xl border border-white/10 border-t-0 bg-[#121212] text-white shadow-[0_24px_90px_rgba(0,0,0,0.55)] overflow-hidden">
+                <Link
+                  to="/industries/government"
+                  className="flex items-center justify-center px-3 py-2 text-[12px] font-semibold text-white/90 hover:text-white hover:bg-white/10 transition"
+                >
+                  Government
+                </Link>
+              </div>
+            </div>
+          </div>
           <span className="mx-2 h-5 w-px bg-gradient-to-b from-transparent via-[#D6A21E]/55 to-transparent opacity-80" />
           <Link className="px-3 py-2 hover:text-[#D6A21E]" to="/case-studies">
             Case Studies
@@ -482,6 +685,7 @@ function Navbar() {
                   { to: "/about", label: "About & Contact" },
                   { to: "/services", label: "Services" },
                   { to: "/industries", label: "Industries" },
+                  { to: "/industries/government", label: "Government" },
                   { to: "/case-studies", label: "Case Studies" },
                   { to: "/academy", label: "Academy" },
                   { to: "/blogs", label: "Blogs" },
@@ -806,6 +1010,7 @@ export default function FulcrumWebsite() {
           <Route path="/services" element={<Services />} />
           <Route path="/services/core" element={<ServicesCore />} />
           <Route path="/industries" element={<Industries />} />
+          <Route path="/industries/government" element={<IndustriesGovernment />} />
           <Route path="/case-studies" element={<CaseStudies />} />
           <Route path="/blogs" element={<Blogs />} />
           <Route path="/blogs/:slug" element={<BlogPost />} />
@@ -3805,61 +4010,58 @@ function Industries() {
                             <p className="text-xs font-semibold uppercase tracking-wide text-black/50">
                               Typical focus
                             </p>
-                            <ul className="mt-4 space-y-3 text-sm text-black/75">
-                              {i.bullets.map((b) => (
-                                <li key={b} className="flex items-start gap-2">
-                                  <span className="text-[#D6A21E]">•</span>
-                                  <span>{b}</span>
-                                </li>
-                              ))}
-                            </ul>
+                            <div className="mt-4">
+                              <ul className="space-y-3 text-sm text-black/75">
+                                {i.bullets.map((b) => (
+                                  <li key={b} className="flex items-start gap-2">
+                                    <span className="text-[#D6A21E]">•</span>
+                                    <span>{b}</span>
+                                  </li>
+                                ))}
+                              </ul>
+                            </div>
                               {i.gsa ? (
                                 <div className="mt-6 pt-6 border-t border-black/10">
-                                  <div className="relative group">
-                                    <button
-                                      type="button"
-                                      className="w-full inline-flex items-center justify-center gap-2 rounded-full bg-[#F3EFE6] text-[#121212] hover:bg-[#EFE6D6] border border-black/10 px-6 py-3 text-sm font-semibold transition"
-                                      aria-label="View GSA research rates"
-                                    >
-                                      {i.gsa.label} <ArrowRight size={16} />
-                                    </button>
+                                  <div className="flex flex-col gap-3">
+                                    <Link to="/industries/government">
+                                      <Button className="w-full rounded-full bg-[#121212] text-[#D6A21E] hover:bg-black px-6">
+                                        Capabilities statement <ArrowRight className="ml-2" size={18} />
+                                      </Button>
+                                    </Link>
 
-                                    {/* hover / focus popover */}
-                                    <div className="absolute left-1/2 -translate-x-1/2 top-full z-[30] w-[320px] pt-2 opacity-0 invisible group-hover:opacity-100 group-hover:visible group-focus-within:opacity-100 group-focus-within:visible transition duration-200">
-                                      <div className="rounded-2xl border border-black/10 bg-white shadow-[0_24px_70px_rgba(18,18,18,0.12)] overflow-hidden">
-                                        <div className="p-4 border-b border-black/10 bg-[#F3EFE6]">
-                                          <div className="text-[11px] font-semibold uppercase tracking-[0.22em] text-black/60">
-                                            {i.gsa.sin}
-                                          </div>
-                                        </div>
-                                        <div className="p-4 space-y-3">
-                                          {i.gsa.rates.map((r) => (
-                                            <div key={r.role} className="flex items-start justify-between gap-4">
-                                              <div className="text-xs font-semibold text-black/70 leading-snug">
-                                                {r.role}
-                                              </div>
-                                              <div className="text-xs font-black text-[#121212] whitespace-nowrap">
-                                                <span className="text-[#D6A21E]">{r.rate.split("/")[0]}</span>/
-                                                {r.rate.split("/")[1]}
-                                              </div>
+                                    <div className="relative group">
+                                      <button
+                                        type="button"
+                                        className="w-full inline-flex items-center justify-center gap-2 rounded-full bg-[#F3EFE6] text-[#121212] hover:bg-[#EFE6D6] border border-black/10 px-6 py-3 text-sm font-semibold transition"
+                                        aria-label="View GSA research rates"
+                                      >
+                                        {i.gsa.label} <ArrowRight size={16} />
+                                      </button>
+
+                                      {/* hover / focus popover */}
+                                      <div className="absolute left-1/2 -translate-x-1/2 top-full z-[30] w-[320px] pt-2 opacity-0 invisible group-hover:opacity-100 group-hover:visible group-focus-within:opacity-100 group-focus-within:visible transition duration-200">
+                                        <div className="rounded-2xl border border-black/10 bg-white shadow-[0_24px_70px_rgba(18,18,18,0.12)] overflow-hidden">
+                                          <div className="p-4 border-b border-black/10 bg-[#F3EFE6]">
+                                            <div className="text-[11px] font-semibold uppercase tracking-[0.22em] text-black/60">
+                                              {i.gsa.sin}
                                             </div>
-                                          ))}
+                                          </div>
+                                          <div className="p-4 space-y-3">
+                                            {i.gsa.rates.map((r) => (
+                                              <div key={r.role} className="flex items-start justify-between gap-4">
+                                                <div className="text-xs font-semibold text-black/70 leading-snug">
+                                                  {r.role}
+                                                </div>
+                                                <div className="text-xs font-black text-[#121212] whitespace-nowrap">
+                                                  <span className="text-[#D6A21E]">{r.rate.split("/")[0]}</span>/
+                                                  {r.rate.split("/")[1]}
+                                                </div>
+                                              </div>
+                                            ))}
+                                          </div>
                                         </div>
                                       </div>
                                     </div>
-                                  </div>
-
-                                  <div className="mt-3">
-                                    <Button
-                                      href="/downloads/Fulcrum-Capabilities-Statement.pdf"
-                                      target="_blank"
-                                      rel="noopener noreferrer"
-                                      download
-                                      variant="outline"
-                                      className="w-full rounded-full bg-white text-[#121212] hover:bg-white/90 border border-black/10 px-6"
-                                    >
-                                      Download capabilities statement <ArrowRight className="ml-2" size={18} />
-                                    </Button>
                                   </div>
                                 </div>
                               ) : null}
@@ -3905,6 +4107,158 @@ function Industries() {
                   Book a consultation <ArrowRight className="ml-2" />
                 </Button>
               </Link>
+            </div>
+          </div>
+        </div>
+      </section>
+    </>
+  );
+}
+
+function IndustriesGovernment() {
+  const capabilitiesPdfUrl = "/downloads/Fulcrum-Capabilities-Statement.pdf";
+  const typicalFocus = [
+    "Stakeholder mapping + outreach",
+    "Program rollout planning",
+    "Visibility + reporting",
+  ];
+  const gsa = {
+    label: "GSA research rates",
+    sin: "SIN 541910 – Marketing Research & Analysis",
+    rates: [
+      { role: "Community Research & Engagement Specialist", rate: "$120.63/hr" },
+      { role: "Community Research & Outreach Specialist", rate: "$98.66/hr" },
+      { role: "Stakeholder Research & Development Specialist", rate: "$89.68/hr" },
+      { role: "Member Research & Recruitment Specialist", rate: "$138.59/hr" },
+    ],
+  };
+
+  return (
+    <>
+      <section className="relative bg-[#121212] text-white overflow-hidden">
+        <div className="absolute inset-0 pointer-events-none">
+          <div className="absolute inset-0 bg-[radial-gradient(980px_620px_at_22%_12%,rgba(214,162,30,0.20),transparent_60%),radial-gradient(760px_560px_at_80%_30%,rgba(255,255,255,0.08),transparent_62%),radial-gradient(900px_700px_at_50%_110%,rgba(0,0,0,0.70),transparent_55%)]" />
+          <div className="absolute inset-0 bg-gradient-to-b from-black/85 via-black/70 to-black/72" />
+          <div className="absolute inset-x-0 bottom-0 h-44 bg-gradient-to-b from-transparent via-[#F3EFE6]/75 to-[#F3EFE6]" />
+        </div>
+
+        <div className="relative max-w-7xl mx-auto px-6 py-20 sm:py-24">
+          <p className="inline-flex items-center gap-2 text-xs font-semibold tracking-wider uppercase text-white/75 bg-white/10 px-4 py-2 rounded-full">
+            Industries / Government
+          </p>
+          <h2 className="text-5xl md:text-6xl font-black mt-6 tracking-tight">
+            Government <span className="text-[#D6A21E]">Capabilities</span>
+          </h2>
+          <p className="text-white/70 text-lg md:text-xl mt-6 max-w-3xl">
+            Below is the capabilities statement with the government information included.
+          </p>
+
+          <div className="mt-10 flex flex-col sm:flex-row gap-4">
+            <Link to="/industries">
+              <Button className="bg-white/10 text-white hover:bg-white/15 rounded-full px-10 py-6 text-lg">
+                Back to industries
+              </Button>
+            </Link>
+            <a href={capabilitiesPdfUrl} download className="inline-flex">
+              <Button className="bg-[#D6A21E] text-black hover:bg-[#B88A16] rounded-full px-10 py-6 text-lg">
+                Download PDF <ArrowRight className="ml-2" />
+              </Button>
+            </a>
+          </div>
+        </div>
+      </section>
+
+      <section className="relative -mt-16 md:-mt-20 pb-28 px-6 bg-[#F3EFE6]">
+        <div className="max-w-7xl mx-auto">
+          <div className="grid lg:grid-cols-12 gap-6 lg:gap-10 items-start">
+            {/* Document (smaller at-a-glance) */}
+            <div className="lg:col-span-7 xl:col-span-8">
+              <div className="bg-white rounded-3xl border border-black/10 p-4 sm:p-6 shadow-[0_26px_70px_rgba(18,18,18,0.12)]">
+                <div className="flex items-start justify-between gap-4 flex-wrap">
+                  <div className="min-w-0">
+                    <div className="text-xs font-semibold uppercase tracking-[0.22em] text-black/55">
+                      Capabilities statement (preview)
+                    </div>
+                    <div className="mt-2 text-sm text-black/60">
+                      Scaled for readability at first glance. Download for full resolution.
+                    </div>
+                  </div>
+                  <a href={capabilitiesPdfUrl} download className="inline-flex">
+                    <Button className="rounded-full bg-[#121212] text-[#D6A21E] hover:bg-black px-5 py-2.5 text-sm">
+                      Download PDF <ArrowRight className="ml-1" size={18} />
+                    </Button>
+                  </a>
+                </div>
+
+                <div className="mt-6 max-w-[560px] mx-auto">
+                  <PdfDocumentImages url={capabilitiesPdfUrl} renderScale={1.25} />
+                </div>
+              </div>
+            </div>
+
+            {/* Government info */}
+            <div className="lg:col-span-5 xl:col-span-4 lg:sticky lg:top-24">
+              <div className="space-y-6">
+                <div className="rounded-3xl border border-black/10 bg-white/75 backdrop-blur-sm p-7 shadow-sm">
+                  <div className="text-xs font-semibold uppercase tracking-[0.22em] text-black/55">
+                    Typical focus
+                  </div>
+                  <div className="mt-4">
+                    <ul className="space-y-3 text-sm text-black/75">
+                      {typicalFocus.map((b) => (
+                        <li key={b} className="flex items-start gap-2">
+                          <span className="text-[#D6A21E]">•</span>
+                          <span>{b}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                </div>
+
+                <div className="rounded-3xl border border-black/10 bg-white/75 backdrop-blur-sm p-7 shadow-sm overflow-hidden">
+                  <div className="text-xs font-semibold uppercase tracking-[0.22em] text-black/55">
+                    {gsa.label}
+                  </div>
+                  <div className="mt-3 text-[12px] font-semibold text-black/60">
+                    {gsa.sin}
+                  </div>
+                  <div className="mt-5 space-y-3">
+                    {gsa.rates.map((r) => (
+                      <div
+                        key={r.role}
+                        className="flex items-start justify-between gap-4 rounded-2xl border border-black/10 bg-white p-4"
+                      >
+                        <div className="text-xs font-semibold text-black/70 leading-snug">
+                          {r.role}
+                        </div>
+                        <div className="text-xs font-black text-[#121212] whitespace-nowrap">
+                          <span className="text-[#D6A21E]">{r.rate.split("/")[0]}</span>/
+                          {r.rate.split("/")[1]}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="rounded-3xl border border-black/10 bg-[#121212] text-white p-7 shadow-sm">
+                  <div className="text-[11px] font-semibold uppercase tracking-[0.22em] text-white/60">
+                    Next step
+                  </div>
+                  <div className="mt-2 text-xl font-black">
+                    Want a government-ready growth plan?
+                  </div>
+                  <div className="mt-3 text-sm text-white/70 leading-relaxed">
+                    We’ll help you map stakeholders, build outreach, and execute with reporting.
+                  </div>
+                  <div className="mt-6">
+                    <Link to="/consultation" className="inline-flex">
+                      <Button className="rounded-full bg-[#D6A21E] text-black hover:bg-[#B88A16] px-6">
+                        Book a consultation <ArrowRight className="ml-2" size={18} />
+                      </Button>
+                    </Link>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -5193,11 +5547,21 @@ function Academy() {
 
         <div className="relative max-w-7xl mx-auto px-6 py-28 md:py-32">
           <div className="max-w-4xl mx-auto text-center">
-            <p className="inline-flex items-center justify-center gap-2 text-xs font-semibold tracking-wider uppercase text-black/70 bg-white/70 border border-black/10 px-4 py-2 rounded-full backdrop-blur-sm">
+            <motion.p
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.55, ease: [0.22, 1, 0.36, 1] }}
+              className="inline-flex items-center justify-center gap-2 text-xs font-semibold tracking-wider uppercase text-black/70 bg-white/70 border border-black/10 px-4 py-2 rounded-full backdrop-blur-sm"
+            >
               Academy
-            </p>
+            </motion.p>
 
-            <div className="mt-7 flex justify-center">
+            <motion.div
+              initial={{ opacity: 0, scale: 0.92 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 0.6, delay: 0.08, ease: [0.22, 1, 0.36, 1] }}
+              className="mt-7 flex justify-center"
+            >
               <div className="relative">
                 <div className="pointer-events-none absolute -inset-6 rounded-[2.5rem] bg-[#D6A21E]/20 blur-[22px]" />
                 <div className="pointer-events-none absolute -inset-2 rounded-[2.25rem] border border-black/10 bg-white/45 backdrop-blur-sm" />
@@ -5209,17 +5573,37 @@ function Academy() {
                   size={18}
                 />
               </div>
-            </div>
+            </motion.div>
 
-            <h2 className="text-6xl md:text-7xl font-black mt-7 tracking-tight leading-[0.95]">
+            <motion.h2
+              initial={{ opacity: 0, y: 14 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.65, delay: 0.12, ease: [0.22, 1, 0.36, 1] }}
+              className="text-6xl md:text-7xl font-black mt-7 tracking-tight leading-[0.95]"
+            >
               Fulcrum <span className="text-[#D6A21E]">Academy</span>
-            </h2>
-            <div className="mt-7 h-px w-[220px] md:w-[280px] mx-auto bg-gradient-to-r from-transparent via-black/15 to-transparent" />
-            <p className="text-black/70 text-lg md:text-2xl mt-6 max-w-3xl mx-auto leading-relaxed">
+            </motion.h2>
+            <motion.div
+              initial={{ opacity: 0, scaleX: 0.6 }}
+              animate={{ opacity: 1, scaleX: 1 }}
+              transition={{ duration: 0.6, delay: 0.18, ease: [0.22, 1, 0.36, 1] }}
+              className="mt-7 h-px w-[220px] md:w-[280px] mx-auto bg-gradient-to-r from-transparent via-black/15 to-transparent origin-center"
+            />
+            <motion.p
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.65, delay: 0.2, ease: [0.22, 1, 0.36, 1] }}
+              className="text-black/70 text-lg md:text-2xl mt-6 max-w-3xl mx-auto leading-relaxed"
+            >
               A recruiting + onboarding funnel for people who want growth, coaching, and a clear path to leadership.
-            </p>
+            </motion.p>
 
-            <div className="mt-10 flex flex-col sm:flex-row items-center justify-center gap-4">
+            <motion.div
+              initial={{ opacity: 0, y: 12 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: 0.26, ease: [0.22, 1, 0.36, 1] }}
+              className="mt-10 flex flex-col sm:flex-row items-center justify-center gap-4"
+            >
               <a href="#apply">
                 <Button className="bg-[#121212] text-[#D6A21E] hover:bg-black rounded-full px-10 py-6 text-lg shadow-sm hover:shadow transition">
                   Apply now <ArrowRight className="ml-2" />
@@ -5230,7 +5614,7 @@ function Academy() {
                   Meet the team
                 </Button>
               </Link>
-            </div>
+            </motion.div>
 
             <div className="mt-12 grid sm:grid-cols-3 gap-4">
               <div className="rounded-2xl border border-black/10 bg-white/65 backdrop-blur-sm px-5 py-5 shadow-sm">
