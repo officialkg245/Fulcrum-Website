@@ -1034,6 +1034,7 @@ export default function FulcrumWebsite() {
           <Route path="/industries" element={<Industries />} />
           <Route path="/industries/government" element={<IndustriesGovernment />} />
           <Route path="/case-studies" element={<CaseStudies />} />
+          <Route path="/action" element={<Action />} />
           <Route path="/blogs" element={<Blogs />} />
           <Route path="/blogs/:slug" element={<BlogPost />} />
           <Route path="/academy" element={<Academy />} />
@@ -1450,7 +1451,7 @@ function Home() {
                 </span>
               </h1>
               <p className="text-white/70 text-lg md:text-xl mt-6 max-w-2xl">
-                Finally, B2B organizations needing profitable growth have a firm to provide services that generate revenue opportunities, painlessly.
+                Our clients are the lever, we are the fulcrum and together we generate your next revenue opportunities in an aligned way - that’s leverage.
               </p>
 
               <div className="mt-10 flex flex-col sm:flex-row gap-4">
@@ -1461,7 +1462,7 @@ function Home() {
                 </Link>
                 <Link to="/case-studies">
                   <Button className="bg-white/10 text-white hover:bg-white/20 rounded-full px-8 sm:px-12 py-5 sm:py-6 text-lg">
-                    View results
+                    View our case studies <ArrowRight className="ml-2" />
                   </Button>
                 </Link>
               </div>
@@ -3248,6 +3249,14 @@ function Services() {
                 </div>
               ))}
             </div>
+
+            <div className="mt-10 flex justify-center">
+              <Link to="/action">
+                <Button className="bg-[#121212] text-[#D6A21E] hover:bg-black rounded-full px-10 py-6 text-lg">
+                  Complete our ROI data sheet <ArrowRight className="ml-2" />
+                </Button>
+              </Link>
+            </div>
           </div>
         </div>
       </section>
@@ -4363,6 +4372,924 @@ function ServiceBlock({ icon, title, summary, bullets, outcomes }) {
             </Button>
           </Link>
         </div>
+      </CardContent>
+    </Card>
+  );
+}
+
+function Action() {
+  return (
+    <>
+      <section className="bg-[#eef3fb] py-10 md:py-14 px-6">
+        <div className="max-w-7xl mx-auto">
+          {/* Page title (same background as flyer) */}
+          <div className="relative mb-6 md:mb-8 rounded-[2rem] border border-black/10 bg-white/55 backdrop-blur-sm shadow-[0_26px_70px_rgba(18,18,18,0.12)] overflow-hidden">
+            <div className="pointer-events-none absolute inset-0">
+              <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-[#D6A21E]/55 to-transparent" />
+              <div className="absolute -top-28 -right-28 w-[420px] h-[420px] bg-[#D6A21E]/12 rotate-12 rounded-[92px] blur-[90px]" />
+              <div className="absolute -bottom-28 -left-28 w-[520px] h-[520px] bg-black/5 -rotate-12 rounded-[96px] blur-[95px]" />
+              <div className="absolute inset-0 opacity-[0.08] [background:radial-gradient(rgba(0,0,0,0.10)_1px,transparent_1px)] [background-size:26px_26px]" />
+            </div>
+
+            <div className="relative p-8 md:p-10 text-center action-title-animate">
+              <h1 className="text-4xl md:text-5xl font-black mt-4 leading-[1.05] tracking-tight">
+                Taking <span className="text-[#D6A21E]">ACTION</span> with Fulcrum.
+              </h1>
+              <p className="text-2xl md:text-3xl font-black text-black/90 mt-4 tracking-tight">
+                You’re in the right place.
+              </p>
+              <p className="text-black/70 mt-4 max-w-3xl mx-auto leading-relaxed">
+                Nearly a decade helping 300+ B2B organizations unlock revenue through repeatable systems.
+              </p>
+
+              <div className="mt-7 flex justify-center">
+                <a
+                  href="#roi"
+                  className="text-base md:text-lg font-black text-[#121212] hover:text-black underline decoration-[#D6A21E]/60 underline-offset-4"
+                >
+                  Fill out our data sheet below
+                </a>
+              </div>
+            </div>
+          </div>
+
+          <div className="action-landscape-wrap">
+            <div className="sheet" role="document" aria-label="ACTION landscape flyer">
+              <div className="spine" aria-hidden="true" />
+              <div className="foil" aria-hidden="true" />
+
+              <div className="content">
+                <div className="sheetTop">
+                  <div className="sheetRule" aria-hidden="true" />
+                  <div className="sheetLabel">
+                    <span className="sheetDot" aria-hidden="true" />
+                    ROI Data Sheet
+                  </div>
+                  <div className="logo">
+                    <img src="/brand/fulcrum-wordmark.png" alt="Fulcrum" />
+                  </div>
+                  <div className="sheetMeta">
+                    <span className="sheetPill">ACTION</span>
+                  </div>
+                </div>
+
+                <div className="ds-main">
+                  <div className="ds-left">
+                    <div className="ds-hero">
+                      <div className="ds-h">What you’re buying</div>
+                      <div className="ds-bullets">
+                        {[
+                          "A system for generating qualified opportunities",
+                          "Direct access to real market feedback",
+                          "A structured path to scalable revenue growth",
+                        ].map((t) => (
+                          <div key={t} className="ds-b">
+                            <span className="ds-bdot" aria-hidden="true" />
+                            <span>{t}</span>
+                          </div>
+                        ))}
+                      </div>
+                      <div className="ds-note">
+                        Not leads. Not activity. A repeatable system you own.
+                      </div>
+                    </div>
+
+                    <div className="ds-cards">
+                      <section className="ds-card">
+                        <div className="ds-ctop">
+                          <div className="ds-ck">Before we begin</div>
+                          <div className="ds-tag">The math has to work</div>
+                        </div>
+                        <div className="ds-metrics">
+                          {["Initial Contract Value", "Lifetime Value (LTV)", "Gross Margin", "Close Rate"].map((t) => (
+                            <div key={t} className="ds-m">
+                              <span className="ds-bdot" aria-hidden="true" />
+                              <span className="ds-mt">{t}</span>
+                            </div>
+                          ))}
+                        </div>
+                        <div className="ds-mini">
+                          We model ROI from projected activity + investment. If the math doesn’t work, we’ll tell you — and we won’t recommend
+                          moving forward.
+                        </div>
+                      </section>
+
+                      <section className="ds-card">
+                        <div className="ds-ctop">
+                          <div className="ds-ck">A.C.T.I.O.N. snapshot</div>
+                          <div className="ds-tag">6-step loop</div>
+                        </div>
+                        <div className="ds-action">
+                          {[
+                            ["A", "Assess"],
+                            ["C", "Create"],
+                            ["T", "Tailor"],
+                            ["I", "Initiate"],
+                            ["O", "Optimize"],
+                            ["N", "Normalize"],
+                          ].map(([l, t]) => (
+                            <div key={l} className="ds-a">
+                              <span className="ds-aL">{l}</span>
+                              <span className="ds-aT">{t}</span>
+                            </div>
+                          ))}
+                        </div>
+                        <div className="ds-mini">
+                          If you want quick leads without building a system, we’re probably not the right fit.
+                        </div>
+                      </section>
+                    </div>
+                  </div>
+
+                  <aside className="ds-right" id="roi">
+                    <div className="ds-formCard">
+                      <div className="ds-formTop">
+                        <div>
+                          <div className="ds-formK">Fill out this data sheet</div>
+                          <div className="ds-formT">ROI inputs</div>
+                        </div>
+                        <div className="ds-chip">Priority</div>
+                      </div>
+                      <div className="ds-formHelp">
+                        We’ll review your economics and follow up with ROI modeling + proposal next steps.
+                      </div>
+                      <ActionRoiForm variant="flyer" />
+                    </div>
+                  </aside>
+                </div>
+
+                <div className="ds-footer">
+                  <span>info@workwithfulcrum.com</span>
+                  <span className="ds-sep" aria-hidden="true" />
+                  <span>337-306-9436</span>
+                  <span className="ds-sep" aria-hidden="true" />
+                  <span>workwithfulcrum.com</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <style>{`
+            .action-title-animate{
+              animation: actionTitleIn 560ms cubic-bezier(.2,.9,.2,1) both;
+            }
+            @keyframes actionTitleIn{
+              from{ opacity: 0; transform: translateY(10px); filter: blur(2px); }
+              to{ opacity: 1; transform: translateY(0); filter: blur(0); }
+            }
+            @media (prefers-reduced-motion: reduce){
+              .action-title-animate{ animation: none; }
+            }
+
+            .action-landscape-wrap{
+              display:flex;
+              justify-content:center;
+              padding: 18px 0;
+            }
+            .action-landscape-wrap .sheet{
+              --ink:#0b0f14;
+              --muted:#516074;
+              --paper:#ffffff;
+              --gold:#f2b705;
+              --gold2:#d6a21e;
+              --line:#e6edf6;
+              --shadow: 0 26px 80px rgba(11,15,20,.14);
+              --shadow2: 0 12px 28px rgba(11,15,20,.10);
+              width: min(1200px, 100%);
+              border-radius: 26px;
+              box-shadow: var(--shadow);
+              overflow: hidden;
+              position: relative;
+              background: var(--paper);
+              border: 1px solid rgba(11,15,20,.06);
+              transform-origin: 50% 40%;
+              animation: fulcrumFlyerIn 540ms cubic-bezier(.2,.9,.2,1) both;
+            }
+            @keyframes fulcrumFlyerIn{
+              from{ opacity: 0; transform: translateY(12px) scale(.985); filter: blur(2px); }
+              to{ opacity: 1; transform: translateY(0) scale(1); filter: blur(0); }
+            }
+            @media (prefers-reduced-motion: reduce){
+              .action-landscape-wrap .sheet{ animation: none; }
+            }
+            .action-landscape-wrap .spine{
+              position:absolute; left:0; top:0; bottom:0; width: 16px; z-index:0;
+              background: linear-gradient(180deg, var(--gold) 0%, #f7c22d 28%, #1a2432 78%, #0b0f14 100%);
+            }
+            .action-landscape-wrap .foil{
+              position:absolute; inset:0; z-index:0; pointer-events:none;
+              background:
+                radial-gradient(900px 520px at 18% 8%, rgba(242,183,5,.16), transparent 60%),
+                radial-gradient(760px 520px at 82% 22%, rgba(255,255,255,.18), transparent 64%),
+                radial-gradient(1000px 760px at 50% 120%, rgba(11,15,20,.06), transparent 58%),
+                linear-gradient(180deg, rgba(238,243,251,.75), rgba(255,255,255,1) 46%);
+              opacity: .9;
+            }
+            .action-landscape-wrap .content{
+              position:relative; z-index:1;
+              padding: 14px 18px 12px 28px;
+              display:flex;
+              flex-direction:column;
+              gap: 8px;
+            }
+
+            /* Top bar */
+            .action-landscape-wrap .sheetTop{
+              display:grid;
+              grid-template-columns: 1fr auto 1fr;
+              align-items:center;
+              gap: 10px;
+              padding: 10px 12px;
+              border: 1px solid rgba(230,237,246,.95);
+              background: rgba(255,255,255,.86);
+              border-radius: 18px;
+              box-shadow: var(--shadow2);
+              position: relative;
+              overflow: hidden;
+            }
+            .action-landscape-wrap .sheetRule{
+              position:absolute;
+              left:0; right:0; top:0;
+              height: 1px;
+              pointer-events:none;
+              background: linear-gradient(to right, transparent, rgba(242,183,5,.24), transparent);
+              opacity: .95;
+            }
+            .action-landscape-wrap .sheetLabel{
+              display:inline-flex;
+              align-items:center;
+              gap: 10px;
+              font-size: 11px;
+              letter-spacing: .22em;
+              text-transform: uppercase;
+              color: rgba(81,96,116,.95);
+              font-weight: 950;
+              white-space: nowrap;
+              justify-self: start;
+            }
+            .action-landscape-wrap .sheetDot{
+              width: 9px;
+              height: 9px;
+              border-radius: 3px;
+              background: linear-gradient(180deg, var(--gold), var(--gold2));
+              box-shadow: 0 0 0 4px rgba(242,183,5,.12);
+              flex: 0 0 9px;
+            }
+            .action-landscape-wrap .logo{
+              width: 210px;
+              justify-self: center;
+              border: 1px solid rgba(230,237,246,.95);
+              border-radius: 14px;
+              padding: 9px 12px;
+              background: rgba(255,255,255,.95);
+              box-shadow: var(--shadow2);
+            }
+            .action-landscape-wrap .logo img{ display:block; width:100%; height:auto; filter: contrast(1.25) brightness(0.9); }
+            .action-landscape-wrap .sheetMeta{ justify-self: end; }
+            .action-landscape-wrap .sheetPill{
+              padding: 7px 10px;
+              border-radius: 999px;
+              border: 1px solid rgba(242,183,5,.35);
+              background: rgba(242,183,5,.10);
+              color: rgba(11,15,20,.80);
+              font-size: 11.5px;
+              font-weight: 900;
+              white-space: nowrap;
+            }
+
+            /* Main layout */
+            .action-landscape-wrap .ds-main{
+              display:grid;
+              grid-template-columns: 1.05fr .95fr;
+              gap: 12px;
+              align-items:start;
+              min-height: 0;
+            }
+            .action-landscape-wrap .ds-left{
+              display:flex;
+              flex-direction:column;
+              gap: 10px;
+              min-height: 0;
+            }
+            .action-landscape-wrap .ds-right{ min-height: 0; }
+
+            .action-landscape-wrap .ds-hero{
+              border: 1px solid rgba(230,237,246,.95);
+              background: rgba(255,255,255,.88);
+              border-radius: 20px;
+              box-shadow: var(--shadow2);
+              padding: 12px 14px;
+            }
+            .action-landscape-wrap .ds-h{
+              font-size: 11px;
+              letter-spacing: .22em;
+              text-transform: uppercase;
+              color: rgba(81,96,116,.95);
+              font-weight: 950;
+            }
+            .action-landscape-wrap .ds-bullets{
+              margin-top: 10px;
+              display:grid;
+              gap: 8px;
+              color: rgba(11,15,20,.86);
+              font-size: 13px;
+              font-weight: 850;
+              line-height: 1.25;
+            }
+            .action-landscape-wrap .ds-b{
+              display:flex;
+              gap: 10px;
+              align-items:flex-start;
+            }
+            .action-landscape-wrap .ds-bdot{
+              width: 10px;
+              height: 10px;
+              border-radius: 4px;
+              margin-top: 3px;
+              background: linear-gradient(180deg, var(--gold), var(--gold2));
+              box-shadow: 0 0 0 4px rgba(242,183,5,.12);
+              flex: 0 0 10px;
+            }
+            .action-landscape-wrap .ds-note{
+              margin-top: 10px;
+              border-radius: 16px;
+              padding: 10px 12px;
+              background: linear-gradient(90deg, rgba(242,183,5,.16), rgba(242,183,5,.05));
+              border: 1px solid rgba(242,183,5,.30);
+              color: rgba(11,15,20,.86);
+              font-weight: 850;
+              font-size: 12.5px;
+              line-height: 1.35;
+            }
+
+            .action-landscape-wrap .ds-cards{
+              display:grid;
+              grid-template-columns: 1fr 1fr;
+              gap: 10px;
+              min-height: 0;
+            }
+            .action-landscape-wrap .ds-card{
+              border: 1px solid rgba(230,237,246,.95);
+              background: rgba(255,255,255,.86);
+              border-radius: 20px;
+              box-shadow: var(--shadow2);
+              padding: 12px 12px;
+              display:flex;
+              flex-direction:column;
+              gap: 10px;
+              min-height: 0;
+            }
+            .action-landscape-wrap .ds-ctop{
+              display:flex;
+              align-items:center;
+              justify-content:space-between;
+              gap: 10px;
+            }
+            .action-landscape-wrap .ds-ck{
+              font-size: 11px;
+              letter-spacing: .22em;
+              text-transform: uppercase;
+              color: rgba(81,96,116,.95);
+              font-weight: 950;
+            }
+            .action-landscape-wrap .ds-tag{
+              padding: 6px 10px;
+              border-radius: 999px;
+              border: 1px solid rgba(242,183,5,.35);
+              background: rgba(242,183,5,.10);
+              color: rgba(11,15,20,.82);
+              font-size: 11px;
+              font-weight: 900;
+              white-space: nowrap;
+            }
+            .action-landscape-wrap .ds-metrics{
+              display:grid;
+              grid-template-columns: 1fr;
+              gap: 8px;
+            }
+            .action-landscape-wrap .ds-m{
+              display:flex;
+              gap: 10px;
+              align-items:flex-start;
+              padding: 8px 10px;
+              border: 1px solid rgba(230,237,246,.95);
+              background: rgba(251,252,255,.92);
+              border-radius: 14px;
+            }
+            .action-landscape-wrap .ds-mt{
+              font-size: 12.5px;
+              font-weight: 900;
+              color: rgba(11,15,20,.84);
+              line-height: 1.2;
+            }
+            .action-landscape-wrap .ds-mini{
+              color: rgba(81,96,116,.92);
+              font-size: 12px;
+              line-height: 1.35;
+              font-weight: 750;
+            }
+            .action-landscape-wrap .ds-action{
+              display:grid;
+              grid-template-columns: 1fr 1fr;
+              gap: 8px;
+            }
+            .action-landscape-wrap .ds-a{
+              display:flex;
+              align-items:center;
+              gap: 10px;
+              padding: 8px 10px;
+              border: 1px solid rgba(230,237,246,.95);
+              background: rgba(251,252,255,.92);
+              border-radius: 14px;
+            }
+            .action-landscape-wrap .ds-aL{
+              width: 28px;
+              height: 28px;
+              border-radius: 12px;
+              display:grid;
+              place-items:center;
+              font-weight: 950;
+              color: rgba(11,15,20,.92);
+              background: linear-gradient(180deg, rgba(242,183,5,.55), rgba(242,183,5,.12));
+              border: 1px solid rgba(242,183,5,.40);
+              flex: 0 0 28px;
+            }
+            .action-landscape-wrap .ds-aT{
+              font-size: 12.5px;
+              font-weight: 950;
+              color: rgba(11,15,20,.86);
+            }
+
+            .action-landscape-wrap .ds-formCard{
+              border-radius: 22px;
+              border: 1px solid rgba(242,183,5,.50);
+              background: linear-gradient(180deg, rgba(255,255,255,.96), rgba(242,183,5,.06));
+              box-shadow: 0 20px 54px rgba(242,183,5,.16), var(--shadow2);
+              padding: 12px 14px;
+              overflow:auto;
+            }
+            .action-landscape-wrap .ds-formTop{
+              display:flex;
+              align-items:flex-start;
+              justify-content:space-between;
+              gap: 10px;
+            }
+            .action-landscape-wrap .ds-formK{
+              font-size: 10.5px;
+              letter-spacing: .22em;
+              text-transform: uppercase;
+              color: rgba(81,96,116,.95);
+              font-weight: 950;
+            }
+            .action-landscape-wrap .ds-formT{
+              margin-top: 4px;
+              font-size: 20px;
+              font-weight: 950;
+              letter-spacing: -0.4px;
+              color: rgba(11,15,20,.92);
+            }
+            .action-landscape-wrap .ds-chip{
+              border-radius: 999px;
+              padding: 6px 10px;
+              background: rgba(11,15,20,.92);
+              color: rgba(242,183,5,1);
+              font-size: 11px;
+              font-weight: 950;
+              white-space: nowrap;
+            }
+            .action-landscape-wrap .ds-formHelp{
+              margin-top: 8px;
+              color: rgba(11,15,20,.70);
+              font-size: 12px;
+              line-height: 1.35;
+              font-weight: 750;
+            }
+
+            /* Flyer-form styling (used by ActionRoiForm variant="flyer") */
+            .action-landscape-wrap .roi-grid{
+              display:grid;
+              grid-template-columns: 1fr 1fr;
+              gap: 10px;
+              margin-top: 10px;
+            }
+            .action-landscape-wrap .roi-field{ display:flex; flex-direction:column; gap: 6px; }
+            .action-landscape-wrap .roi-label{
+              font-size: 10px;
+              letter-spacing: .18em;
+              text-transform: uppercase;
+              color: rgba(81,96,116,.95);
+              font-weight: 950;
+            }
+            .action-landscape-wrap .roi-input{
+              width:100%;
+              border: 1px solid rgba(230,237,246,.95);
+              border-radius: 14px;
+              padding: 10px 12px;
+              font-size: 12.5px;
+              outline: none;
+              background: #fff;
+              color: rgba(11,15,20,.92);
+            }
+            .action-landscape-wrap .roi-input:focus{
+              border-color: rgba(242,183,5,.60);
+              box-shadow: 0 0 0 3px rgba(242,183,5,.14);
+            }
+            .action-landscape-wrap .roi-error{
+              margin-top: 8px;
+              font-size: 11px;
+              color: #b42318;
+              font-weight: 850;
+            }
+            .action-landscape-wrap .roi-submit{
+              margin-top: 10px;
+              border-radius: 999px;
+              padding: 12px 14px;
+              font-size: 12.5px;
+              font-weight: 950;
+            }
+            .action-landscape-wrap .roi-submit--ok{
+              background: linear-gradient(180deg, rgba(242,183,5,1), rgba(214,162,30,1));
+              color: rgba(11,15,20,.96);
+            }
+            .action-landscape-wrap .roi-submit--no{
+              background: rgba(11,15,20,.08);
+              color: rgba(11,15,20,.35);
+              cursor:not-allowed;
+            }
+
+            .action-landscape-wrap .ds-footer{
+              margin-top: 6px;
+              display:flex;
+              flex-wrap:wrap;
+              gap: 10px 14px;
+              justify-content:center;
+              color: rgba(81,96,116,.95);
+              font-size: 11.5px;
+              font-weight: 850;
+              letter-spacing: .02em;
+            }
+            .action-landscape-wrap .ds-sep{
+              width: 1px;
+              height: 14px;
+              background: rgba(11,15,20,.10);
+              align-self:center;
+            }
+
+            @page { size: landscape; margin: 0.45in; }
+            @media print{
+              .action-landscape-wrap{ padding: 0; }
+              .action-landscape-wrap .sheet{
+                aspect-ratio: 11 / 8.5;
+                box-shadow:none;
+                border-radius: 0;
+                border: none;
+              }
+            }
+            @media (max-width: 980px){
+              .action-landscape-wrap .ds-main{ grid-template-columns: 1fr; }
+              .action-landscape-wrap .ds-cards{ grid-template-columns: 1fr; }
+              .action-landscape-wrap .ds-action{ grid-template-columns: 1fr; }
+              .action-landscape-wrap .roi-grid{ grid-template-columns: 1fr; }
+              .action-landscape-wrap .sheetTop{ grid-template-columns: 1fr; justify-items: start; }
+              .action-landscape-wrap .logo{ justify-self: start; }
+              .action-landscape-wrap .sheetMeta{ justify-self: start; }
+            }
+          `}</style>
+        </div>
+      </section>
+
+      {/* Transition spacer (restored) */}
+      <section className="bg-[#eef3fb]">
+        <div className="h-12 md:h-16" />
+        <div className="h-10 md:h-14 bg-gradient-to-b from-[#eef3fb] to-[#F3EFE6]" />
+      </section>
+
+      {/* Detailed ACTION plan (below flyer) */}
+      <section className="px-6 pb-20 bg-[#F3EFE6]">
+        <div className="max-w-6xl mx-auto">
+          <div className="rounded-3xl border border-black/10 bg-white shadow-sm overflow-hidden relative">
+            <div className="pointer-events-none absolute inset-0" />
+            <div className="p-8 md:p-10">
+              <p className="text-xs font-semibold tracking-[0.22em] uppercase text-black/60">Detailed version</p>
+              <h2 className="text-3xl md:text-4xl font-black mt-3">
+                Our A.C.T.I.O.N. Framework — <span className="text-[#D6A21E]">full breakdown</span>
+              </h2>
+              <p className="text-black/70 mt-4 max-w-4xl leading-relaxed">
+                A proven system built from thousands of campaigns to turn market activity into revenue and repeatable growth.
+              </p>
+
+              <div className="mt-8 grid lg:grid-cols-2 gap-5">
+                {[
+                  {
+                    n: "1",
+                    t: "Assess the Opportunity",
+                    d: "We evaluate your current state, goals, and constraints—anchored in real economics, not assumptions.",
+                    o: "A clear understanding of what’s possible and what it will take.",
+                  },
+                  {
+                    n: "2",
+                    t: "Create the Plan",
+                    d: "We align on scope of work, objectives and targets, and economic structure. Then we conduct a structured onboarding to extract what’s needed to execute.",
+                    o: "A defined plan and onboarding asset you own.",
+                  },
+                  {
+                    n: "3",
+                    t: "Tailor the Plan",
+                    d: "Over 2–3 weeks, we build your campaign infrastructure: target audiences, messaging & positioning, offers, outreach systems, and reporting. This is the asset you are investing in.",
+                    o: "A fully built, ready-to-launch revenue engine (owned by you).",
+                  },
+                  {
+                    n: "4",
+                    t: "Initiate the Plan",
+                    d: "We execute daily outreach with one primary objective: Create Notable Connections—verified interactions with qualified decision-makers that create meaningful business conversations. Conversations → insights. Insights → opportunities. Opportunities → revenue.",
+                    o: "Consistent pipeline generation and real-time market intelligence.",
+                  },
+                  {
+                    n: "5",
+                    t: "Optimize the Plan",
+                    d: "We continuously refine based on market feedback, conversion data, and your internal changes.",
+                    o: "Increasing efficiency and improving ROI over time.",
+                  },
+                  {
+                    n: "6",
+                    t: "Normalize What Works",
+                    d: "Every engagement reveals one of three truths: No Interest (problem/solution misalignment), Interest No Purchase (product/market gap), Customers Buy (scale opportunity). We operationalize what works into playbooks, training, and internal systems.",
+                    o: "A repeatable, scalable revenue engine inside your business.",
+                  },
+                ].map((s) => (
+                  <div key={s.n} className="relative overflow-hidden rounded-3xl border border-black/10 bg-[#F3EFE6] p-6">
+                    <div className="pointer-events-none absolute inset-0">
+                      <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-[#D6A21E]/55 to-transparent" />
+                      <div className="absolute -top-24 -right-24 w-[320px] h-[320px] bg-[#D6A21E]/10 rotate-12 rounded-[76px] blur-[80px]" />
+                      <div className="absolute -bottom-24 -left-24 w-[360px] h-[360px] bg-black/5 -rotate-12 rounded-[88px] blur-[90px]" />
+                    </div>
+                    <div className="relative">
+                      <div className="text-[#D6A21E] font-black text-2xl">{s.n}</div>
+                      <div className="font-black text-xl mt-2">{s.t}</div>
+                      <p className="text-black/70 mt-2 leading-relaxed">{s.d}</p>
+                      <div className="mt-4 h-px w-full bg-gradient-to-r from-transparent via-black/10 to-transparent" />
+                      <div className="mt-3 text-sm font-semibold text-black/75">Outcome</div>
+                      <div className="text-black/70 mt-2 leading-relaxed">{s.o}</div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              <div className="mt-10 grid lg:grid-cols-2 gap-5">
+                <div className="rounded-3xl border border-black/10 bg-white p-8 shadow-sm">
+                  <p className="text-xs font-semibold tracking-[0.22em] uppercase text-black/60">What you’re actually buying</p>
+                  <div className="mt-4 text-2xl md:text-3xl font-black">Not leads. Not activity.</div>
+                  <p className="text-black/70 mt-4 leading-relaxed">You’re investing in:</p>
+                  <div className="mt-5 space-y-3 text-black/75">
+                    {[
+                      "A system for generating qualified opportunities",
+                      "Direct access to real market feedback",
+                      "A structured path to scalable revenue growth",
+                    ].map((t) => (
+                      <div key={t} className="flex items-start gap-3">
+                        <span className="mt-[7px] h-1.5 w-1.5 rounded-full bg-[#D6A21E]" />
+                        <span className="leading-relaxed">{t}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="rounded-3xl border border-black/10 bg-[#121212] text-white p-8 shadow-sm relative overflow-hidden">
+                  <div className="pointer-events-none absolute inset-0">
+                    <div className="absolute -top-28 -left-28 w-[420px] h-[420px] bg-[#D6A21E]/16 -rotate-12 rounded-[88px] blur-[70px]" />
+                    <div className="absolute -bottom-28 -right-28 w-[520px] h-[520px] bg-white/10 rotate-12 rounded-[96px] blur-[85px]" />
+                  </div>
+                  <div className="relative">
+                    <p className="text-xs font-semibold tracking-[0.22em] uppercase text-white/70">Fit matters</p>
+                    <div className="text-xl md:text-2xl font-black mt-4">
+                      If you’re looking for quick leads without building a system…
+                    </div>
+                    <p className="text-white/70 mt-4 leading-relaxed">
+                      We’re probably not the right fit. If you want a partner to help you build a repeatable, scalable growth engine—this is
+                      exactly what we do.
+                    </p>
+
+                    <div className="mt-6 h-px w-full bg-gradient-to-r from-transparent via-white/12 to-transparent" />
+
+                    <p className="text-xs font-semibold tracking-[0.22em] uppercase text-white/70 mt-8">Timeline & expectations</p>
+                    <div className="mt-4 space-y-2 text-white/80">
+                      {[
+                        ["Proposal process (2–4 weeks)", "Assess → ROI → Plan alignment"],
+                        ["Onboarding (2–3 weeks)", "Kickoff → Build foundation"],
+                        ["Execution (ongoing)", "Initiate → Optimize → Normalize (6 months to multi-year engagements)"],
+                        ["Reporting", "Weekly updates + ongoing communication"],
+                      ].map(([a, b]) => (
+                        <div key={a} className="rounded-2xl border border-white/10 bg-white/5 p-4">
+                          <div className="font-semibold">{a}</div>
+                          <div className="text-sm text-white/70 mt-1">{b}</div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div className="mt-10 rounded-3xl border border-black/10 bg-[#F3EFE6] p-8">
+                <p className="text-xs font-semibold tracking-[0.22em] uppercase text-black/60">Your next step</p>
+                <div className="mt-4 grid md:grid-cols-2 gap-6">
+                  <div className="rounded-3xl border border-black/10 bg-white/75 backdrop-blur-sm p-8">
+                    <div className="font-black text-xl">If we’ve completed discovery</div>
+                    <p className="text-black/70 mt-3 leading-relaxed">
+                      We move into ROI modeling and proposal development.
+                    </p>
+                  </div>
+                  <div className="rounded-3xl border border-black/10 bg-white/75 backdrop-blur-sm p-8">
+                    <div className="font-black text-xl">If not</div>
+                    <p className="text-black/70 mt-3 leading-relaxed">
+                      We begin with a focused assessment to determine if we can create value.
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="mt-8 flex flex-col sm:flex-row gap-3 justify-center">
+                <Link to="/consultation" className="inline-flex">
+                  <Button className="bg-[#121212] text-[#D6A21E] hover:bg-black rounded-full px-10 py-6 text-lg">
+                    Book a follow-up <ArrowRight className="ml-2" />
+                  </Button>
+                </Link>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+    </>
+  );
+}
+
+function ActionRoiForm({ variant = "card" }) {
+  const [submitted, setSubmitted] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+  const [form, setForm] = useState({
+    name: "",
+    email: "",
+    company: "",
+    icv: "",
+    ltv: "",
+    grossMargin: "",
+    closeRate: "",
+    notes: "",
+  });
+
+  const canSubmit = useMemo(() => {
+    return (
+      form.name.trim() &&
+      form.email.trim() &&
+      form.icv.trim() &&
+      form.ltv.trim() &&
+      form.grossMargin.trim() &&
+      form.closeRate.trim()
+    );
+  }, [form]);
+
+  function update(key) {
+    return (e) => setForm((p) => ({ ...p, [key]: e.target.value }));
+  }
+
+  function onSubmit(e) {
+    e.preventDefault();
+    if (!canSubmit || loading) return;
+    setLoading(true);
+    setError("");
+
+    (async () => {
+      try {
+        const goals = [
+          "ACTION ROI inputs",
+          `Initial Contract Value: ${form.icv}`,
+          `Lifetime Value (LTV): ${form.ltv}`,
+          `Gross Margin: ${form.grossMargin}%`,
+          `Close Rate: ${form.closeRate}%`,
+          form.notes ? `Notes: ${form.notes}` : "",
+        ]
+          .filter(Boolean)
+          .join("\n");
+
+        const r = await fetch("/api/consultation", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            name: form.name,
+            email: form.email,
+            phone: "",
+            company: form.company,
+            website: "",
+            service: "ACTION",
+            budget: "",
+            timeline: "",
+            goals,
+            consent: true,
+            sourceUrl: typeof window !== "undefined" ? window.location.href : "",
+          }),
+        });
+        const data = await r.json().catch(() => ({}));
+        if (!r.ok) throw new Error(data?.error || "Unable to submit. Please try again.");
+        setSubmitted(true);
+      } catch (err) {
+        setError(String(err?.message || err));
+      } finally {
+        setLoading(false);
+      }
+    })();
+  }
+
+  const formBody = submitted ? (
+    <div className={variant === "flyer" ? "bar" : "mt-8 rounded-2xl border border-black/10 bg-[#F3EFE6] p-6"}>
+      <div className="font-black">Submitted</div>
+      <p className={variant === "flyer" ? "mini-sub" : "text-black/70 mt-2"}>
+        We’ll review the inputs and follow up with ROI modeling + proposal next steps.
+      </p>
+      <Button
+        className={variant === "flyer"
+          ? "mt-3 bg-[#121212] text-[#D6A21E] hover:bg-black rounded-full px-6 py-3 text-sm"
+          : "mt-5 bg-[#121212] text-[#D6A21E] hover:bg-black rounded-full px-8"}
+        onClick={() => setSubmitted(false)}
+      >
+        Submit another
+      </Button>
+    </div>
+  ) : (
+    <form onSubmit={onSubmit} className={variant === "flyer" ? "action-roi-form" : "mt-8 space-y-6"}>
+      <div className={variant === "flyer" ? "roi-grid" : "grid md:grid-cols-2 gap-5"}>
+        <label className={variant === "flyer" ? "roi-field" : undefined}>
+          <span className={variant === "flyer" ? "roi-label" : undefined}>Full name *</span>
+          <input className={variant === "flyer" ? "roi-input" : "w-full border border-black/10 rounded-xl p-4"} value={form.name} onChange={update("name")} />
+        </label>
+        <label className={variant === "flyer" ? "roi-field" : undefined}>
+          <span className={variant === "flyer" ? "roi-label" : undefined}>Email *</span>
+          <input className={variant === "flyer" ? "roi-input" : "w-full border border-black/10 rounded-xl p-4"} value={form.email} onChange={update("email")} />
+        </label>
+        <label className={variant === "flyer" ? "roi-field" : undefined}>
+          <span className={variant === "flyer" ? "roi-label" : undefined}>Company</span>
+          <input className={variant === "flyer" ? "roi-input" : "w-full border border-black/10 rounded-xl p-4"} value={form.company} onChange={update("company")} />
+        </label>
+        <label className={variant === "flyer" ? "roi-field" : undefined}>
+          <span className={variant === "flyer" ? "roi-label" : undefined}>Initial Contract Value *</span>
+          <input className={variant === "flyer" ? "roi-input" : "w-full border border-black/10 rounded-xl p-4"} value={form.icv} onChange={update("icv")} placeholder="e.g. 25000" />
+        </label>
+        <label className={variant === "flyer" ? "roi-field" : undefined}>
+          <span className={variant === "flyer" ? "roi-label" : undefined}>Lifetime Value (LTV) *</span>
+          <input className={variant === "flyer" ? "roi-input" : "w-full border border-black/10 rounded-xl p-4"} value={form.ltv} onChange={update("ltv")} placeholder="e.g. 120000" />
+        </label>
+        <label className={variant === "flyer" ? "roi-field" : undefined}>
+          <span className={variant === "flyer" ? "roi-label" : undefined}>Gross Margin (%) *</span>
+          <input className={variant === "flyer" ? "roi-input" : "w-full border border-black/10 rounded-xl p-4"} value={form.grossMargin} onChange={update("grossMargin")} placeholder="e.g. 65" />
+        </label>
+        <label className={variant === "flyer" ? "roi-field" : undefined}>
+          <span className={variant === "flyer" ? "roi-label" : undefined}>Close Rate (%) *</span>
+          <input className={variant === "flyer" ? "roi-input" : "w-full border border-black/10 rounded-xl p-4"} value={form.closeRate} onChange={update("closeRate")} placeholder="e.g. 20" />
+        </label>
+        <label className={variant === "flyer" ? "roi-field" : undefined}>
+          <span className={variant === "flyer" ? "roi-label" : undefined}>Notes</span>
+          <input className={variant === "flyer" ? "roi-input" : "w-full border border-black/10 rounded-xl p-4"} value={form.notes} onChange={update("notes")} placeholder="Optional context" />
+        </label>
+      </div>
+
+      {error ? <p className={variant === "flyer" ? "roi-error" : "text-xs text-red-700"}>{error}</p> : null}
+
+      <Button
+        type="submit"
+        className={cx(
+          variant === "flyer" ? "roi-submit" : "rounded-full px-10 py-6 text-lg",
+          canSubmit && !loading
+            ? variant === "flyer"
+              ? "roi-submit--ok"
+              : "bg-[#D6A21E] text-black hover:bg-[#B88A16]"
+            : variant === "flyer"
+              ? "roi-submit--no"
+              : "bg-black/10 text-black/40 cursor-not-allowed hover:bg-black/10"
+        )}
+        disabled={!canSubmit || loading}
+      >
+        {loading ? "Submitting…" : "Submit ROI inputs"}
+      </Button>
+    </form>
+  );
+
+  if (variant === "flyer") return formBody;
+
+  return (
+    <Card className="rounded-3xl border border-black/10 bg-white shadow-sm overflow-hidden">
+      <CardContent className="p-10">
+        <div className="flex items-center justify-between gap-4 flex-wrap">
+          <div>
+            <p className="text-xs font-semibold tracking-[0.22em] uppercase text-black/60">Submit your data</p>
+            <h3 className="text-2xl font-black mt-3">ROI inputs</h3>
+          </div>
+          <span className="text-xs font-semibold bg-[#121212] text-[#D6A21E] px-3 py-1 rounded-full">Discovery follow-up</span>
+        </div>
+
+        <p className="text-black/70 mt-4 leading-relaxed">
+          Share your basic economics so we can model ROI and recommend the right next step.
+        </p>
+
+        {formBody}
       </CardContent>
     </Card>
   );
@@ -8531,7 +9458,7 @@ const apprentices = [
   {
     name: "Kirstianna Bounds",
     role: "Apprentice",
-    img: "/apprentices/kirstianna-bounds.png",
+    img: "",
   },
   {
     name: "Timyra Wilson",
