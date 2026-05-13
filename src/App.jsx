@@ -742,7 +742,7 @@ function Navbar() {
                   </a>
 
                   <a
-                    href="tel:+13373069436"
+                    href="tel:+13373350046"
                     className="group rounded-2xl border border-white/10 bg-white/10 px-3 py-3 hover:bg-white/15 transition"
                   >
                     <div className="flex flex-col items-center text-center">
@@ -878,8 +878,8 @@ function SiteFooter() {
                 <a className="block hover:text-black" href="mailto:info@workwithfulcrum.com">
                   info@workwithfulcrum.com
                 </a>
-                <a className="block hover:text-black" href="tel:+13373069436">
-                  337-306-9436
+                <a className="block hover:text-black" href="tel:+13373350046">
+                  337-335-0046
                 </a>
               </div>
             </div>
@@ -1451,7 +1451,7 @@ function Home() {
                 </span>
               </h1>
               <p className="text-white/70 text-lg md:text-xl mt-6 max-w-2xl">
-                Our clients are the lever, we are the fulcrum and together we generate your next revenue opportunities in an aligned way - that’s leverage.
+                We grow B2B companies’ revenue opportunities through performance-driven sales, outreach, and growth services aligned to your ROI.
               </p>
 
               <div className="mt-10 flex flex-col sm:flex-row gap-4">
@@ -2373,7 +2373,7 @@ function About() {
               </p>
               <div className="space-y-3 text-black/70">
                 <div className="flex items-center gap-3"><span className="text-[#D6A21E]"><Phone size={18} /></span><span>info@workwithfulcrum.com</span></div>
-                <div className="flex items-center gap-3"><span className="text-[#D6A21E]"><Phone size={18} /></span><span>337-306-9436</span></div>
+                <div className="flex items-center gap-3"><span className="text-[#D6A21E]"><Phone size={18} /></span><span>337-335-0046</span></div>
                 <div className="flex items-center gap-3"><span className="text-[#D6A21E]"><Target size={18} /></span><span>108 Kol Dr, Broussard, LA 70518</span></div>
               </div>
               <div className="mt-8">
@@ -4393,7 +4393,7 @@ function Action() {
 
             <div className="relative p-8 md:p-10 text-center action-title-animate">
               <h1 className="text-4xl md:text-5xl font-black mt-4 leading-[1.05] tracking-tight">
-                Taking <span className="text-[#D6A21E]">ACTION</span> with Fulcrum.
+                What’s <span className="text-[#D6A21E]">next</span> when working with us?
               </h1>
               <p className="text-2xl md:text-3xl font-black text-black/90 mt-4 tracking-tight">
                 You’re in the right place.
@@ -4521,7 +4521,7 @@ function Action() {
                 <div className="ds-footer">
                   <span>info@workwithfulcrum.com</span>
                   <span className="ds-sep" aria-hidden="true" />
-                  <span>337-306-9436</span>
+                  <span>337-335-0046</span>
                   <span className="ds-sep" aria-hidden="true" />
                   <span>workwithfulcrum.com</span>
                 </div>
@@ -6939,11 +6939,11 @@ function AcademyTrackSales() {
                       info@workwithfulcrum.com
                     </a>
 
-                    <a className="citem" href="tel:+13373069436">
+                    <a className="citem" href="tel:+13373350046">
                       <svg className="cicon" viewBox="0 0 24 24" aria-hidden="true">
                         <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.8 19.8 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.08 4.18 2 2 0 0 1 4.06 2h3a2 2 0 0 1 2 1.72c.12.86.3 1.7.54 2.5a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.58-1.06a2 2 0 0 1 2.11-.45c.8.24 1.64.42 2.5.54A2 2 0 0 1 22 16.92z" />
                       </svg>
-                      337-306-9436
+                      337-335-0046
                     </a>
 
                     <a className="citem" href="https://www.workwithfulcrum.com" target="_blank" rel="noopener noreferrer">
@@ -7083,11 +7083,11 @@ function AcademyTrackSales() {
                       info@workwithfulcrum.com
                     </a>
 
-                    <a className="citem" href="tel:+13373069436">
+                    <a className="citem" href="tel:+13373350046">
                       <svg className="cicon" viewBox="0 0 24 24" aria-hidden="true">
                         <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.8 19.8 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.08 4.18 2 2 0 0 1 4.06 2h3a2 2 0 0 1 2 1.72c.12.86.3 1.7.54 2.5a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.58-1.06a2 2 0 0 1 2.11-.45c.8.24 1.64.42 2.5.54A2 2 0 0 1 22 16.92z" />
                       </svg>
-                      337-306-9436
+                      337-335-0046
                     </a>
 
                     <a className="citem" href="https://www.workwithfulcrum.com" target="_blank" rel="noopener noreferrer">
@@ -7594,11 +7594,11 @@ function AcademyTrackMarketing() {
                       info@workwithfulcrum.com
                     </a>
 
-                    <a className="citem" href="tel:+13373069436">
+                    <a className="citem" href="tel:+13373350046">
                       <svg className="cicon" viewBox="0 0 24 24" aria-hidden="true">
                         <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.8 19.8 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.08 4.18 2 2 0 0 1 4.06 2h3a2 2 0 0 1 2 1.72c.12.86.3 1.7.54 2.5a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.58-1.06a2 2 0 0 1 2.11-.45c.8.24 1.64.42 2.5.54A2 2 0 0 1 22 16.92z" />
                       </svg>
-                      337-306-9436
+                      337-335-0046
                     </a>
 
                     <a className="citem" href="https://www.workwithfulcrum.com" target="_blank" rel="noopener noreferrer">
@@ -7842,11 +7842,11 @@ function AcademyTrackMarketing() {
                       </svg>
                       info@workwithfulcrum.com
                     </a>
-                    <a className="citem" href="tel:+13373069436">
+                    <a className="citem" href="tel:+13373350046">
                       <svg className="cicon" viewBox="0 0 24 24" aria-hidden="true">
                         <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.8 19.8 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.08 4.18 2 2 0 0 1 4.06 2h3a2 2 0 0 1 2 1.72c.12.86.3 1.7.54 2.5a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.58-1.06a2 2 0 0 1 2.11-.45c.8.24 1.64.42 2.5.54A2 2 0 0 1 22 16.92z" />
                       </svg>
-                      337-306-9436
+                      337-335-0046
                     </a>
                     <a className="citem" href="https://www.workwithfulcrum.com" target="_blank" rel="noopener noreferrer">
                       <svg className="cicon" viewBox="0 0 24 24" aria-hidden="true">
@@ -8463,11 +8463,11 @@ function AcademyTrackOperations() {
                       info@workwithfulcrum.com
                     </a>
 
-                    <a className="citem" href="tel:+13373069436">
+                    <a className="citem" href="tel:+13373350046">
                       <svg className="cicon" viewBox="0 0 24 24" aria-hidden="true">
                         <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.8 19.8 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.08 4.18 2 2 0 0 1 4.06 2h3a2 2 0 0 1 2 1.72c.12.86.3 1.7.54 2.5a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.58-1.06a2 2 0 0 1 2.11-.45c.8.24 1.64.42 2.5.54A2 2 0 0 1 22 16.92z" />
                       </svg>
-                      337-306-9436
+                      337-335-0046
                     </a>
 
                     <a className="citem" href="https://www.workwithfulcrum.com" target="_blank" rel="noopener noreferrer">
@@ -8615,11 +8615,11 @@ function AcademyTrackOperations() {
                       info@workwithfulcrum.com
                     </a>
 
-                    <a className="citem" href="tel:+13373069436">
+                    <a className="citem" href="tel:+13373350046">
                       <svg className="cicon" viewBox="0 0 24 24" aria-hidden="true">
                         <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.8 19.8 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.08 4.18 2 2 0 0 1 4.06 2h3a2 2 0 0 1 2 1.72c.12.86.3 1.7.54 2.5a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.58-1.06a2 2 0 0 1 2.11-.45c.8.24 1.64.42 2.5.54A2 2 0 0 1 22 16.92z" />
                       </svg>
-                      337-306-9436
+                      337-335-0046
                     </a>
 
                     <a className="citem" href="https://www.workwithfulcrum.com" target="_blank" rel="noopener noreferrer">
