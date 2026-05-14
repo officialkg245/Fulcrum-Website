@@ -60,6 +60,19 @@
         <input type="file" name="resume" />
         <input type="text" name="sourceUrl" />
       </form>
+      <!-- Simple Netlify-detected form (dashboard + optional plain HTML submit) -->
+      <form name="contact" method="POST" netlify>
+        <input type="hidden" name="form-name" value="contact" />
+        <p>
+          <label>Name <input type="text" name="name" /></label>
+        </p>
+        <p>
+          <label>Email <input type="email" name="email" /></label>
+        </p>
+        <p>
+          <button type="submit">Send</button>
+        </p>
+      </form>
     </div>
     <div id="root"></div>
     <script type="module" src="/src/main.jsx"></script>
