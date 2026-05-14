@@ -7,6 +7,60 @@
     <title>fulcrum-site</title>
   </head>
   <body>
+    <!-- Netlify Forms: static definitions for SPA build detection (Vite + React) -->
+    <div style="display: none" aria-hidden="true">
+      <form
+        name="consultation-request"
+        method="POST"
+        data-netlify="true"
+        data-netlify-honeypot="bot-field"
+      >
+        <input type="hidden" name="form-name" value="consultation-request" />
+        <input name="bot-field" />
+        <input type="text" name="name" />
+        <input type="email" name="email" />
+        <input type="text" name="phone" />
+        <input type="text" name="company" />
+        <input type="text" name="website" />
+        <input type="text" name="service" />
+        <input type="text" name="budget" />
+        <input type="text" name="timeline" />
+        <textarea name="goals"></textarea>
+        <input type="text" name="consent" />
+        <input type="text" name="sourceUrl" />
+      </form>
+      <form name="action-roi" method="POST" data-netlify="true" data-netlify-honeypot="bot-field">
+        <input type="hidden" name="form-name" value="action-roi" />
+        <input name="bot-field" />
+        <input type="text" name="name" />
+        <input type="email" name="email" />
+        <input type="text" name="company" />
+        <input type="text" name="icv" />
+        <input type="text" name="ltv" />
+        <input type="text" name="grossMargin" />
+        <input type="text" name="closeRate" />
+        <input type="text" name="notes" />
+        <input type="text" name="service" />
+        <input type="text" name="sourceUrl" />
+      </form>
+      <form
+        name="academy-application"
+        method="POST"
+        data-netlify="true"
+        data-netlify-honeypot="bot-field"
+        enctype="multipart/form-data"
+      >
+        <input type="hidden" name="form-name" value="academy-application" />
+        <input name="bot-field" />
+        <input type="text" name="name" />
+        <input type="email" name="email" />
+        <input type="text" name="phone" />
+        <input type="text" name="status" />
+        <textarea name="why"></textarea>
+        <input type="file" name="resume" />
+        <input type="text" name="sourceUrl" />
+      </form>
+    </div>
     <div id="root"></div>
     <script type="module" src="/src/main.jsx"></script>
   </body>

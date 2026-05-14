@@ -59,6 +59,36 @@ async function getPdfjs() {
   return _pdfjsLoading;
 }
 
+const NETLIFY_FORM_CONSULTATION = "consultation-request";
+const NETLIFY_FORM_ACTION_ROI = "action-roi";
+const NETLIFY_FORM_ACADEMY = "academy-application";
+
+async function submitNetlifyUrlEncoded(formName, fields) {
+  const body = new URLSearchParams();
+  body.append("form-name", formName);
+  for (const [key, value] of Object.entries(fields)) {
+    if (key === "form-name" || value === undefined || value === null) continue;
+    body.append(key, String(value));
+  }
+  const r = await fetch("/", {
+    method: "POST",
+    headers: { "Content-Type": "application/x-www-form-urlencoded" },
+    body: body.toString(),
+  });
+  if (!r.ok) throw new Error("Unable to submit. Please try again.");
+}
+
+async function submitNetlifyMultipart(formName, formData) {
+  const out = new FormData();
+  out.append("form-name", formName);
+  for (const [key, value] of formData.entries()) {
+    if (key === "form-name") continue;
+    out.append(key, value);
+  }
+  const r = await fetch("/", { method: "POST", body: out });
+  if (!r.ok) throw new Error("Unable to submit. Please try again.");
+}
+
 function PdfPageImage({
   url,
   page = 1,
@@ -5160,36 +5190,19 @@ function ActionRoiForm({ variant = "card" }) {
 
     (async () => {
       try {
-        const goals = [
-          "ACTION ROI inputs",
-          `Initial Contract Value: ${form.icv}`,
-          `Lifetime Value (LTV): ${form.ltv}`,
-          `Gross Margin: ${form.grossMargin}%`,
-          `Close Rate: ${form.closeRate}%`,
-          form.notes ? `Notes: ${form.notes}` : "",
-        ]
-          .filter(Boolean)
-          .join("\n");
-
-        const r = await fetch("/api/consultation", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            name: form.name,
-            email: form.email,
-            phone: "",
-            company: form.company,
-            website: "",
-            service: "ACTION",
-            budget: "",
-            timeline: "",
-            goals,
-            consent: true,
-            sourceUrl: typeof window !== "undefined" ? window.location.href : "",
-          }),
+        await submitNetlifyUrlEncoded(NETLIFY_FORM_ACTION_ROI, {
+          "bot-field": "",
+          name: form.name,
+          email: form.email,
+          company: form.company,
+          icv: form.icv,
+          ltv: form.ltv,
+          grossMargin: form.grossMargin,
+          closeRate: form.closeRate,
+          notes: form.notes,
+          service: "ACTION",
+          sourceUrl: typeof window !== "undefined" ? window.location.href : "",
         });
-        const data = await r.json().catch(() => ({}));
-        if (!r.ok) throw new Error(data?.error || "Unable to submit. Please try again.");
         setSubmitted(true);
       } catch (err) {
         setError(String(err?.message || err));
@@ -5215,39 +5228,98 @@ function ActionRoiForm({ variant = "card" }) {
       </Button>
     </div>
   ) : (
-    <form onSubmit={onSubmit} className={variant === "flyer" ? "action-roi-form" : "mt-8 space-y-6"}>
+    <form
+      name="action-roi"
+      method="POST"
+      data-netlify="true"
+      data-netlify-honeypot="bot-field"
+      onSubmit={onSubmit}
+      className={variant === "flyer" ? "action-roi-form" : "mt-8 space-y-6"}
+    >
+      <input type="hidden" name="form-name" value="action-roi" />
+      <p className="hidden">
+        <label>
+          Don’t fill this out: <input name="bot-field" tabIndex={-1} autoComplete="off" />
+        </label>
+      </p>
       <div className={variant === "flyer" ? "roi-grid" : "grid md:grid-cols-2 gap-5"}>
         <label className={variant === "flyer" ? "roi-field" : undefined}>
           <span className={variant === "flyer" ? "roi-label" : undefined}>Full name *</span>
-          <input className={variant === "flyer" ? "roi-input" : "w-full border border-black/10 rounded-xl p-4"} value={form.name} onChange={update("name")} />
+          <input
+            name="name"
+            className={variant === "flyer" ? "roi-input" : "w-full border border-black/10 rounded-xl p-4"}
+            value={form.name}
+            onChange={update("name")}
+          />
         </label>
         <label className={variant === "flyer" ? "roi-field" : undefined}>
           <span className={variant === "flyer" ? "roi-label" : undefined}>Email *</span>
-          <input className={variant === "flyer" ? "roi-input" : "w-full border border-black/10 rounded-xl p-4"} value={form.email} onChange={update("email")} />
+          <input
+            name="email"
+            type="email"
+            className={variant === "flyer" ? "roi-input" : "w-full border border-black/10 rounded-xl p-4"}
+            value={form.email}
+            onChange={update("email")}
+          />
         </label>
         <label className={variant === "flyer" ? "roi-field" : undefined}>
           <span className={variant === "flyer" ? "roi-label" : undefined}>Company</span>
-          <input className={variant === "flyer" ? "roi-input" : "w-full border border-black/10 rounded-xl p-4"} value={form.company} onChange={update("company")} />
+          <input
+            name="company"
+            className={variant === "flyer" ? "roi-input" : "w-full border border-black/10 rounded-xl p-4"}
+            value={form.company}
+            onChange={update("company")}
+          />
         </label>
         <label className={variant === "flyer" ? "roi-field" : undefined}>
           <span className={variant === "flyer" ? "roi-label" : undefined}>Initial Contract Value *</span>
-          <input className={variant === "flyer" ? "roi-input" : "w-full border border-black/10 rounded-xl p-4"} value={form.icv} onChange={update("icv")} placeholder="e.g. 25000" />
+          <input
+            name="icv"
+            className={variant === "flyer" ? "roi-input" : "w-full border border-black/10 rounded-xl p-4"}
+            value={form.icv}
+            onChange={update("icv")}
+            placeholder="e.g. 25000"
+          />
         </label>
         <label className={variant === "flyer" ? "roi-field" : undefined}>
           <span className={variant === "flyer" ? "roi-label" : undefined}>Lifetime Value (LTV) *</span>
-          <input className={variant === "flyer" ? "roi-input" : "w-full border border-black/10 rounded-xl p-4"} value={form.ltv} onChange={update("ltv")} placeholder="e.g. 120000" />
+          <input
+            name="ltv"
+            className={variant === "flyer" ? "roi-input" : "w-full border border-black/10 rounded-xl p-4"}
+            value={form.ltv}
+            onChange={update("ltv")}
+            placeholder="e.g. 120000"
+          />
         </label>
         <label className={variant === "flyer" ? "roi-field" : undefined}>
           <span className={variant === "flyer" ? "roi-label" : undefined}>Gross Margin (%) *</span>
-          <input className={variant === "flyer" ? "roi-input" : "w-full border border-black/10 rounded-xl p-4"} value={form.grossMargin} onChange={update("grossMargin")} placeholder="e.g. 65" />
+          <input
+            name="grossMargin"
+            className={variant === "flyer" ? "roi-input" : "w-full border border-black/10 rounded-xl p-4"}
+            value={form.grossMargin}
+            onChange={update("grossMargin")}
+            placeholder="e.g. 65"
+          />
         </label>
         <label className={variant === "flyer" ? "roi-field" : undefined}>
           <span className={variant === "flyer" ? "roi-label" : undefined}>Close Rate (%) *</span>
-          <input className={variant === "flyer" ? "roi-input" : "w-full border border-black/10 rounded-xl p-4"} value={form.closeRate} onChange={update("closeRate")} placeholder="e.g. 20" />
+          <input
+            name="closeRate"
+            className={variant === "flyer" ? "roi-input" : "w-full border border-black/10 rounded-xl p-4"}
+            value={form.closeRate}
+            onChange={update("closeRate")}
+            placeholder="e.g. 20"
+          />
         </label>
         <label className={variant === "flyer" ? "roi-field" : undefined}>
           <span className={variant === "flyer" ? "roi-label" : undefined}>Notes</span>
-          <input className={variant === "flyer" ? "roi-input" : "w-full border border-black/10 rounded-xl p-4"} value={form.notes} onChange={update("notes")} placeholder="Optional context" />
+          <input
+            name="notes"
+            className={variant === "flyer" ? "roi-input" : "w-full border border-black/10 rounded-xl p-4"}
+            value={form.notes}
+            onChange={update("notes")}
+            placeholder="Optional context"
+          />
         </label>
       </div>
 
@@ -9237,16 +9309,20 @@ function ConsultationForm() {
 
     (async () => {
       try {
-        const r = await fetch("/api/consultation", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            ...form,
-            sourceUrl: typeof window !== "undefined" ? window.location.href : "",
-          }),
+        await submitNetlifyUrlEncoded(NETLIFY_FORM_CONSULTATION, {
+          "bot-field": "",
+          name: form.name,
+          email: form.email,
+          phone: form.phone,
+          company: form.company,
+          website: form.website,
+          service: form.service,
+          budget: form.budget,
+          timeline: form.timeline,
+          goals: form.goals,
+          consent: form.consent ? "yes" : "no",
+          sourceUrl: typeof window !== "undefined" ? window.location.href : "",
         });
-        const data = await r.json().catch(() => ({}));
-        if (!r.ok) throw new Error(data?.error || "Unable to submit. Please try again.");
         setSubmitted(true);
       } catch (err) {
         setError(String(err?.message || err));
@@ -9290,10 +9366,24 @@ function ConsultationForm() {
   return (
     <Card className="rounded-3xl border border-black/10 bg-white">
       <CardContent className="p-10">
-        <form onSubmit={onSubmit} className="space-y-6">
+        <form
+          name="consultation-request"
+          method="POST"
+          data-netlify="true"
+          data-netlify-honeypot="bot-field"
+          onSubmit={onSubmit}
+          className="space-y-6"
+        >
+          <input type="hidden" name="form-name" value="consultation-request" />
+          <p className="hidden">
+            <label>
+              Don’t fill this out: <input name="bot-field" tabIndex={-1} autoComplete="off" />
+            </label>
+          </p>
           <div className="grid md:grid-cols-2 gap-5">
             <Field label="Full name" required>
               <input
+                name="name"
                 className="w-full border border-black/10 rounded-xl p-4"
                 value={form.name}
                 onChange={update("name")}
@@ -9302,6 +9392,8 @@ function ConsultationForm() {
             </Field>
             <Field label="Email" required>
               <input
+                name="email"
+                type="email"
                 className="w-full border border-black/10 rounded-xl p-4"
                 value={form.email}
                 onChange={update("email")}
@@ -9310,6 +9402,7 @@ function ConsultationForm() {
             </Field>
             <Field label="Phone">
               <input
+                name="phone"
                 className="w-full border border-black/10 rounded-xl p-4"
                 value={form.phone}
                 onChange={update("phone")}
@@ -9318,6 +9411,7 @@ function ConsultationForm() {
             </Field>
             <Field label="Company">
               <input
+                name="company"
                 className="w-full border border-black/10 rounded-xl p-4"
                 value={form.company}
                 onChange={update("company")}
@@ -9326,6 +9420,7 @@ function ConsultationForm() {
             </Field>
             <Field label="Website">
               <input
+                name="website"
                 className="w-full border border-black/10 rounded-xl p-4"
                 value={form.website}
                 onChange={update("website")}
@@ -9334,6 +9429,7 @@ function ConsultationForm() {
             </Field>
             <Field label="Service interest">
               <select
+                name="service"
                 className="w-full border border-black/10 rounded-xl p-4 bg-white"
                 value={form.service}
                 onChange={update("service")}
@@ -9347,6 +9443,7 @@ function ConsultationForm() {
             </Field>
             <Field label="Budget range">
               <select
+                name="budget"
                 className="w-full border border-black/10 rounded-xl p-4 bg-white"
                 value={form.budget}
                 onChange={update("budget")}
@@ -9360,6 +9457,7 @@ function ConsultationForm() {
             </Field>
             <Field label="Timeline">
               <select
+                name="timeline"
                 className="w-full border border-black/10 rounded-xl p-4 bg-white"
                 value={form.timeline}
                 onChange={update("timeline")}
@@ -9375,6 +9473,7 @@ function ConsultationForm() {
 
           <Field label="What are your goals?" required>
             <textarea
+              name="goals"
               className="w-full border border-black/10 rounded-xl p-4"
               rows={5}
               value={form.goals}
@@ -9386,6 +9485,7 @@ function ConsultationForm() {
           <label className="flex items-start gap-3 text-sm text-black/70">
             <input
               type="checkbox"
+              name="consent"
               className="mt-1"
               checked={form.consent}
               onChange={update("consent")}
@@ -9643,6 +9743,7 @@ function AcademyApplication() {
     (async () => {
       try {
         const fd = new FormData();
+        fd.append("bot-field", "");
         fd.append("name", form.name);
         fd.append("email", form.email);
         fd.append("phone", form.phone);
@@ -9651,9 +9752,7 @@ function AcademyApplication() {
         if (form.resume) fd.append("resume", form.resume);
         fd.append("sourceUrl", typeof window !== "undefined" ? window.location.href : "");
 
-        const r = await fetch("/api/academy", { method: "POST", body: fd });
-        const data = await r.json().catch(() => ({}));
-        if (!r.ok) throw new Error(data?.error || "Unable to submit. Please try again.");
+        await submitNetlifyMultipart(NETLIFY_FORM_ACADEMY, fd);
         setSubmitted(true);
       } catch (err) {
         setError(String(err?.message || err));
@@ -9690,10 +9789,25 @@ function AcademyApplication() {
   return (
     <Card className="rounded-3xl border border-black/10 bg-white">
       <CardContent className="p-10">
-        <form onSubmit={onSubmit} className="space-y-6">
+        <form
+          name="academy-application"
+          method="POST"
+          data-netlify="true"
+          data-netlify-honeypot="bot-field"
+          encType="multipart/form-data"
+          onSubmit={onSubmit}
+          className="space-y-6"
+        >
+          <input type="hidden" name="form-name" value="academy-application" />
+          <p className="hidden">
+            <label>
+              Don’t fill this out: <input name="bot-field" tabIndex={-1} autoComplete="off" />
+            </label>
+          </p>
           <div className="grid md:grid-cols-2 gap-5">
             <Field label="Full name" required>
               <input
+                name="name"
                 className="w-full border border-black/10 rounded-xl p-4"
                 placeholder="Your name"
                 value={form.name}
@@ -9702,6 +9816,8 @@ function AcademyApplication() {
             </Field>
             <Field label="Email" required>
               <input
+                name="email"
+                type="email"
                 className="w-full border border-black/10 rounded-xl p-4"
                 placeholder="you@email.com"
                 value={form.email}
@@ -9710,6 +9826,7 @@ function AcademyApplication() {
             </Field>
             <Field label="Phone" required>
               <input
+                name="phone"
                 className="w-full border border-black/10 rounded-xl p-4"
                 placeholder="(555) 555-5555"
                 value={form.phone}
@@ -9718,6 +9835,7 @@ function AcademyApplication() {
             </Field>
             <Field label="Current status">
               <select
+                name="status"
                 className="w-full border border-black/10 rounded-xl p-4 bg-white"
                 value={form.status}
                 onChange={update("status")}
@@ -9734,6 +9852,7 @@ function AcademyApplication() {
           <Field label="Upload resume" required>
             <div className="rounded-2xl border border-black/10 bg-[#F3EFE6] p-5">
               <input
+                name="resume"
                 type="file"
                 accept=".pdf,.doc,.docx,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
                 onChange={onResumeChange}
@@ -9752,6 +9871,7 @@ function AcademyApplication() {
 
           <Field label="Why do you want to join Fulcrum Academy?" required>
             <textarea
+              name="why"
               className="w-full border border-black/10 rounded-xl p-4"
               rows={5}
               placeholder="Tell us what you’re aiming for and what makes you a good fit..."
