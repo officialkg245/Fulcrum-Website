@@ -62,31 +62,90 @@ async function getPdfjs() {
 const NETLIFY_FORM_CONSULTATION = "consultation-request";
 const NETLIFY_FORM_ACTION_ROI = "action-roi";
 const NETLIFY_FORM_ACADEMY = "academy-application";
+const NETLIFY_FORM_CONTACT = "contact";
+
+/** Netlify Forms: POST the current URL path (SPA-safe); posting only “/” often 404s off the homepage. */
+function getNetlifyFormActionPath() {
+  if (typeof window === "undefined") return "/";
+  const path = window.location.pathname || "/";
+  const search = window.location.search || "";
+  return `${path}${search}`;
+}
+
+function netlifySubmissionErrorMessage(status) {
+  if (status === 404) {
+    return "Form was not found on this URL (404). Ensure Netlify form detection is enabled, redeploy, and try again from the live site (not local Vite dev).";
+  }
+  if (status === 405) {
+    return "This server rejected the form submission (405). Try again from your deployed Netlify URL.";
+  }
+  return `Submission failed (${status}). Please try again.`;
+}
 
 async function submitNetlifyUrlEncoded(formName, fields) {
-  const body = new URLSearchParams();
-  body.append("form-name", formName);
-  for (const [key, value] of Object.entries(fields)) {
-    if (key === "form-name" || value === undefined || value === null) continue;
-    body.append(key, String(value));
+  const buildBody = () => {
+    const body = new URLSearchParams();
+    body.append("form-name", formName);
+    for (const [key, value] of Object.entries(fields)) {
+      if (key === "form-name" || value === undefined || value === null) continue;
+      body.append(key, String(value));
+    }
+    return body.toString();
+  };
+
+  const bodyString = buildBody();
+  const primaryAction = getNetlifyFormActionPath();
+
+  const doFetch = (action) =>
+    fetch(action, {
+      method: "POST",
+      headers: { "Content-Type": "application/x-www-form-urlencoded" },
+      credentials: "same-origin",
+      body: bodyString,
+    });
+
+  let r = await doFetch(primaryAction);
+  await r.text();
+  if (!r.ok && r.status === 404 && primaryAction !== "/") {
+    r = await doFetch("/");
+    await r.text();
   }
-  const r = await fetch("/", {
-    method: "POST",
-    headers: { "Content-Type": "application/x-www-form-urlencoded" },
-    body: body.toString(),
-  });
-  if (!r.ok) throw new Error("Unable to submit. Please try again.");
+  if (!r.ok) throw new Error(netlifySubmissionErrorMessage(r.status));
 }
 
 async function submitNetlifyMultipart(formName, formData) {
-  const out = new FormData();
-  out.append("form-name", formName);
-  for (const [key, value] of formData.entries()) {
-    if (key === "form-name") continue;
-    out.append(key, value);
+  const buildOut = () => {
+    const out = new FormData();
+    out.append("form-name", formName);
+    for (const [key, value] of formData.entries()) {
+      if (key === "form-name") continue;
+      out.append(key, value);
+    }
+    return out;
+  };
+
+  const out = buildOut();
+  const primaryAction = getNetlifyFormActionPath();
+
+  const doFetch = (action) =>
+    fetch(action, {
+      method: "POST",
+      credentials: "same-origin",
+      body: out,
+    });
+
+  let r = await doFetch(primaryAction);
+  await r.text();
+  if (!r.ok && r.status === 404 && primaryAction !== "/") {
+    const outRetry = buildOut();
+    r = await fetch("/", {
+      method: "POST",
+      credentials: "same-origin",
+      body: outRetry,
+    });
+    await r.text();
   }
-  const r = await fetch("/", { method: "POST", body: out });
-  if (!r.ok) throw new Error("Unable to submit. Please try again.");
+  if (!r.ok) throw new Error(netlifySubmissionErrorMessage(r.status));
 }
 
 function PdfPageImage({
@@ -2394,7 +2453,8 @@ function About() {
         </div>
 
         {/* Contact Section */}
-        <div id="contact" className="grid md:grid-cols-2 gap-10 items-start">
+        <div id="contact" className="space-y-10">
+          <div className="grid md:grid-cols-2 gap-10 items-start">
           <Card className="rounded-3xl border border-black/10 bg-white">
             <CardContent className="p-10">
               <h3 className="text-2xl font-black mb-4">Get in Touch</h3>
@@ -2436,6 +2496,9 @@ function About() {
               </div>
             </CardContent>
           </Card>
+          </div>
+
+          <ContactForm />
         </div>
 
         {/* Google Maps (full-bleed within page) */}
@@ -5230,7 +5293,7 @@ function ActionRoiForm({ variant = "card" }) {
   ) : (
     <form
       name="action-roi"
-      method="POST"
+      method="post"
       data-netlify="true"
       data-netlify-honeypot="bot-field"
       onSubmit={onSubmit}
@@ -9226,6 +9289,136 @@ function AcademyTrackOperations() {
   );
 }
 
+function ContactForm() {
+  const [submitted, setSubmitted] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+  const [form, setForm] = useState({ name: "", email: "", message: "" });
+
+  const canSubmit = useMemo(() => {
+    return form.name.trim() && form.email.trim() && form.message.trim();
+  }, [form]);
+
+  function update(key) {
+    return (e) => setForm((p) => ({ ...p, [key]: e.target.value }));
+  }
+
+  function onSubmit(e) {
+    e.preventDefault();
+    if (!canSubmit || loading) return;
+    setLoading(true);
+    setError("");
+
+    (async () => {
+      try {
+        await submitNetlifyUrlEncoded(NETLIFY_FORM_CONTACT, {
+          "bot-field": "",
+          name: form.name,
+          email: form.email,
+          message: form.message,
+          sourceUrl: typeof window !== "undefined" ? window.location.href : "",
+        });
+        setSubmitted(true);
+      } catch (err) {
+        setError(String(err?.message || err));
+      } finally {
+        setLoading(false);
+      }
+    })();
+  }
+
+  if (submitted) {
+    return (
+      <Card className="rounded-3xl border border-black/10 bg-white">
+        <CardContent className="p-10">
+          <div className="flex items-start gap-4">
+            <div className="mt-1 text-[#D6A21E]"><CheckCircle2 size={28} /></div>
+            <div>
+              <h3 className="text-2xl font-black">Message sent</h3>
+              <p className="text-black/70 mt-2">We’ll get back to you within 1–2 business days.</p>
+              <Button
+                className="mt-6 bg-[#D6A21E] text-black hover:bg-[#B88A16] rounded-full px-8"
+                onClick={() => {
+                  setSubmitted(false);
+                  setForm({ name: "", email: "", message: "" });
+                }}
+              >
+                Send another
+              </Button>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  return (
+    <Card className="rounded-3xl border border-black/10 bg-white">
+      <CardContent className="p-10">
+        <h3 className="text-2xl font-black mb-2">Send a message</h3>
+        <p className="text-black/70 mb-6">Prefer email without booking a call? Use this form and we’ll reply from info@workwithfulcrum.com.</p>
+        <form
+          name="contact"
+          method="post"
+          data-netlify="true"
+          data-netlify-honeypot="bot-field"
+          onSubmit={onSubmit}
+          className="space-y-5"
+        >
+          <input type="hidden" name="form-name" value="contact" />
+          <p className="hidden">
+            <label>
+              Don’t fill this out: <input name="bot-field" tabIndex={-1} autoComplete="off" />
+            </label>
+          </p>
+          <Field label="Name" required>
+            <input
+              name="name"
+              className="w-full border border-black/10 rounded-xl p-4"
+              value={form.name}
+              onChange={update("name")}
+              placeholder="Your name"
+            />
+          </Field>
+          <Field label="Email" required>
+            <input
+              name="email"
+              type="email"
+              className="w-full border border-black/10 rounded-xl p-4"
+              value={form.email}
+              onChange={update("email")}
+              placeholder="you@company.com"
+            />
+          </Field>
+          <Field label="Message" required>
+            <textarea
+              name="message"
+              className="w-full border border-black/10 rounded-xl p-4"
+              rows={5}
+              value={form.message}
+              onChange={update("message")}
+              placeholder="How can we help?"
+            />
+          </Field>
+          <Button
+            type="submit"
+            className={cx(
+              "rounded-full px-10 py-5 text-lg",
+              canSubmit && !loading
+                ? "bg-[#D6A21E] text-black hover:bg-[#B88A16]"
+                : "bg-black/10 text-black/40 cursor-not-allowed hover:bg-black/10"
+            )}
+            disabled={!canSubmit || loading}
+          >
+            {loading ? "Sending…" : "Send message"}
+          </Button>
+          {error ? <p className="text-xs text-red-700">{error}</p> : null}
+        </form>
+      </CardContent>
+    </Card>
+  );
+}
+
 function Consultation() {
   return (
     <section className="relative py-28 px-6 max-w-4xl mx-auto overflow-hidden">
@@ -9368,7 +9561,7 @@ function ConsultationForm() {
       <CardContent className="p-10">
         <form
           name="consultation-request"
-          method="POST"
+          method="post"
           data-netlify="true"
           data-netlify-honeypot="bot-field"
           onSubmit={onSubmit}
@@ -9791,7 +9984,7 @@ function AcademyApplication() {
       <CardContent className="p-10">
         <form
           name="academy-application"
-          method="POST"
+          method="post"
           data-netlify="true"
           data-netlify-honeypot="bot-field"
           encType="multipart/form-data"
