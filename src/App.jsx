@@ -1150,6 +1150,20 @@ const brands = [
   { src: "/brands/schoolmint.png", alt: "SchoolMint" },
   { src: "/brands/southern-miss.png", alt: "The University of Southern Mississippi" },
   { src: "/brands/skillmasters.png", alt: "Skillmasters" },
+  { src: "/brands/united-vision-logistics.png", alt: "United Vision Logistics" },
+  { src: "/brands/smartmd.png", alt: "SMARTMD" },
+  { src: "/brands/ksqdesign.png", alt: "ksqdesign" },
+  { src: "/brands/argosy-healthcare-partners.png", alt: "Argosy Healthcare Partners" },
+  { src: "/brands/amerisourcebergen.png", alt: "AmerisourceBergen" },
+  { src: "/brands/cencora.png", alt: "Cencora" },
+  { src: "/brands/lhc-group.png", alt: "LHC Group" },
+  { src: "/brands/the-stonewall-group.png", alt: "The Stonewall Group" },
+  { src: "/brands/cardiovascular-logistics.png", alt: "Cardiovascular Logistics" },
+  { src: "/brands/chamber.png", alt: "Chamber" },
+  { src: "/brands/ace-specialties.png", alt: "ACE Specialties" },
+  { src: "/brands/keaty-real-estate.png", alt: "Keaty Real Estate" },
+  { src: "/brands/pdi.png", alt: "PDI" },
+  { src: "/brands/ev-pump-and-equipment.png", alt: "EV Pump and Equipment" },
 ];
 
 // Homepage "Culture" section data (swap with real links/posts anytime)
@@ -2399,14 +2413,8 @@ function About() {
 
           <div className="relative z-10 mt-8">
             <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-8">
-              {team.map((member) => (
-                <a
-                  key={member.name + member.role}
-                  href={member.linkedin}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="group"
-                >
+              {team.map((member) => {
+                const card = (
                   <div className="relative overflow-hidden rounded-3xl border border-black/10 shadow-md hover:shadow-xl transition">
                     <div className="aspect-[3/4] bg-black/5 relative overflow-hidden">
                       {member.img ? (
@@ -2434,11 +2442,13 @@ function About() {
                       <div className="absolute inset-x-0 bottom-0 h-28 bg-gradient-to-t from-black/70 via-black/30 to-transparent" />
                       {/* blur only behind text */}
                       <div className="absolute inset-x-0 bottom-0 p-4 bg-black/35 backdrop-blur-sm text-center">
-                        <div className="pointer-events-none absolute left-1/2 top-0 -translate-x-1/2 -translate-y-1/2 opacity-0 scale-90 transition-all duration-300 group-hover:opacity-100 group-hover:scale-100 z-20">
-                          <div className="h-9 w-9 rounded-full bg-white text-[#121212] grid place-items-center shadow-lg ring-1 ring-black/10">
-                            <Linkedin size={16} className="text-[#121212]" />
+                        {member.linkedin ? (
+                          <div className="pointer-events-none absolute left-1/2 top-0 -translate-x-1/2 -translate-y-1/2 opacity-0 scale-90 transition-all duration-300 group-hover:opacity-100 group-hover:scale-100 z-20">
+                            <div className="h-9 w-9 rounded-full bg-white text-[#121212] grid place-items-center shadow-lg ring-1 ring-black/10">
+                              <Linkedin size={16} className="text-[#121212]" />
+                            </div>
                           </div>
-                        </div>
+                        ) : null}
                         <h4 className="font-black text-lg text-white group-hover:text-[#D6A21E] transition">
                           {member.name}
                         </h4>
@@ -2446,8 +2456,28 @@ function About() {
                       </div>
                     </div>
                   </div>
-                </a>
-              ))}
+                );
+
+                if (member.linkedin) {
+                  return (
+                    <a
+                      key={member.name + member.role}
+                      href={member.linkedin}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="group"
+                    >
+                      {card}
+                    </a>
+                  );
+                }
+
+                return (
+                  <div key={member.name + member.role} className="group">
+                    {card}
+                  </div>
+                );
+              })}
             </div>
           </div>
         </div>
@@ -2565,6 +2595,13 @@ const team = [
       "Oversees financial operations, budgeting, and reporting to support sustainable growth.",
     linkedin: "https://www.linkedin.com/in/laurenschoeffler/",
     img: "/team/lauren.png",
+  },
+  {
+    name: "Rinna Delos Reyes",
+    role: "Administrative Lead",
+    description:
+      "Supports day-to-day operations, coordination, and administrative excellence across the team.",
+    img: "/team/rinna-delos-reyes.png",
   },
 ];
 
