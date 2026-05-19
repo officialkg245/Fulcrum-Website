@@ -42,6 +42,7 @@ import healthcareServiceLaunch from "./blogs/healthcare-service-launch";
 import salesPipelineFailing from "./blogs/sales-pipeline-failing";
 import healthcareSpecializedFirm from "./blogs/healthcare-specialized-firm";
 import telehealthMarketing2025 from "./blogs/telehealth-marketing-2025";
+import { applyPageMeta } from "./lib/pageMeta";
 import conversionRateMistakes from "./blogs/conversion-rate-mistakes";
 
 let _pdfjs = null;
@@ -1013,6 +1014,16 @@ function SiteFooter() {
   );
 }
 
+function DocumentHead() {
+  const { pathname } = useLocation();
+
+  useEffect(() => {
+    applyPageMeta(pathname, { blogPosts });
+  }, [pathname]);
+
+  return null;
+}
+
 function ScrollToTopOnNavigate() {
   const { pathname, search, hash } = useLocation();
 
@@ -1074,6 +1085,7 @@ export default function FulcrumWebsite() {
 
   return (
     <Router>
+      <DocumentHead />
       <ScrollToTopOnNavigate />
       <div className="min-h-screen bg-[#F3EFE6] text-[#121212]">
         {/* Header spacer to prevent layout jump */}
