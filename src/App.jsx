@@ -6818,7 +6818,7 @@ function Academy() {
         </div>
       </section>
 
-      {/* Notable apprentices (auto-moving) */}
+      {/* Notable apprentices */}
       <section className="relative -mt-16 md:-mt-20 pb-12 px-6">
         <div className="max-w-7xl mx-auto">
           <div className="bg-white rounded-3xl border border-black/10 p-10 md:p-12 shadow-[0_26px_70px_rgba(18,18,18,0.12)] relative overflow-hidden">
@@ -6848,7 +6848,7 @@ function Academy() {
               </div>
 
               <div className="mt-10">
-                <ApprenticeMarquee />
+                <ApprenticeGrid />
               </div>
             </div>
           </div>
@@ -9819,127 +9819,89 @@ const apprentices = [
   },
 ];
 
-function ApprenticeMarquee() {
-  const row = [...apprentices, ...apprentices];
+function apprenticeInitials(name = "") {
+  return name
+    .split(" ")
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((w) => w[0]?.toUpperCase())
+    .join("");
+}
+
+function ApprenticeCard({ apprentice }) {
+  const a = apprentice;
 
   return (
-    <div className="relative">
-      {/* Edge fades */}
-      <div className="pointer-events-none absolute left-0 top-0 bottom-0 w-24 bg-gradient-to-r from-[#F3EFE6] to-transparent z-10" />
-      <div className="pointer-events-none absolute right-0 top-0 bottom-0 w-24 bg-gradient-to-l from-[#F3EFE6] to-transparent z-10" />
+    <div className="group relative">
+      <div className="pointer-events-none absolute -inset-[3px] rounded-[1.85rem] bg-gradient-to-br from-[#D6A21E]/0 via-[#D6A21E]/0 to-[#D6A21E]/0 opacity-0 blur-lg transition-opacity duration-500 group-hover:from-[#D6A21E]/30 group-hover:via-[#D6A21E]/10 group-hover:to-transparent group-hover:opacity-100" />
 
-      <div className="overflow-hidden">
-        <div className="flex gap-8 fulcrum-apprentice-marquee items-stretch">
-          {row.map((a, i) => (
-            <div key={i} className="min-w-[220px] md:min-w-[260px]">
-              <Card className="rounded-3xl border border-black/10 bg-white/80 overflow-hidden shadow-sm">
-                <div className="h-56 bg-[#F3EFE6] relative overflow-hidden">
-                  {/* premium frame */}
-                  <div className="pointer-events-none absolute inset-0">
-                    <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-[#D6A21E]/55 to-transparent" />
-                    <div className="absolute -top-14 -right-14 h-40 w-40 rounded-[44px] bg-[#D6A21E]/12 rotate-12 blur-[30px]" />
-                    <div className="absolute -bottom-16 -left-16 h-44 w-44 rounded-[48px] bg-black/5 -rotate-12 blur-[34px]" />
-                  </div>
-                  {a.img ? (
-                    <img
-                      src={a.img}
-                      alt={a.name}
-                      className="w-full h-full object-cover"
-                      style={{
-                        objectPosition: a.objectPosition || "50% 50%",
-                        transform: a.imgTransform || undefined,
-                        transformOrigin: a.imgTransform ? "50% 30%" : undefined,
-                      }}
-                      loading="lazy"
-                      draggable={false}
-                      onError={(e) => {
-                        e.currentTarget.style.display = "none";
-                        const fb = e.currentTarget.parentElement?.querySelector("[data-fallback]");
-                        if (fb) fb.style.display = "grid";
-                      }}
-                    />
-                  ) : null}
-                  {a.maskBottomLeft ? (
-                    <div
-                      aria-hidden="true"
-                      className="pointer-events-none absolute left-0 bottom-0 h-44 w-56"
-                      style={{
-                        background:
-                          "radial-gradient(240px 220px at 0% 100%, rgba(243,239,230,1) 0%, rgba(243,239,230,1) 70%, rgba(243,239,230,0) 78%)",
-                      }}
-                    />
-                  ) : null}
-                  <div
-                    data-fallback
-                    style={{ display: a.img ? "none" : "grid" }}
-                    className="absolute inset-0 grid place-items-center"
-                  >
-                    <div className="h-full w-full relative overflow-hidden">
-                      <div className="absolute inset-0 bg-gradient-to-br from-[#121212] via-[#1b1b1b] to-[#D6A21E]/35" />
-                      <div className="absolute inset-0 pointer-events-none">
-                        <img
-                          src="/fulcrum-logo.jpg"
-                          alt=""
-                          aria-hidden="true"
-                          className="absolute left-1/2 top-1/2 w-[340px] max-w-none -translate-x-1/2 -translate-y-1/2 opacity-[0.06]"
-                          style={{ filter: "grayscale(1) contrast(1.05)" }}
-                          loading="lazy"
-                          draggable={false}
-                        />
-                      </div>
-                      <div className="absolute -top-12 -right-12 w-48 h-48 rounded-[48px] bg-white/10 rotate-12 blur-[1px]" />
-                      <div className="absolute -bottom-16 -left-16 w-56 h-56 rounded-[56px] bg-black/10 -rotate-12 blur-[2px]" />
-                      <div className="absolute inset-0 grid place-items-center">
-                        <div className="h-24 w-24 rounded-full bg-white/10 ring-1 ring-white/20 backdrop-blur-sm grid place-items-center shadow-sm">
-                          <span className="text-2xl font-black tracking-tight text-white">
-                            {(a.name || "")
-                              .split(" ")
-                              .filter(Boolean)
-                              .slice(0, 2)
-                              .map((w) => w[0]?.toUpperCase())
-                              .join("")}
-                          </span>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-                <CardContent
-                  className="p-5 relative"
-                  style={{
-                    background:
-                      "linear-gradient(180deg, rgba(255,255,255,0.92) 0%, rgba(243,239,230,0.65) 100%)",
-                  }}
-                >
-                  <div className="pointer-events-none absolute inset-0 opacity-[0.35] [background:radial-gradient(rgba(0,0,0,0.10)_1px,transparent_1px)] [background-size:22px_22px]" />
-                  <div className="relative">
-                    <div className="h-px w-full bg-gradient-to-r from-transparent via-[#D6A21E]/55 to-transparent" />
-                    <h4 className="font-black mt-3">{a.name}</h4>
-                    <p className="text-sm text-black/60 mt-1">{a.role}</p>
-                  </div>
-                </CardContent>
-              </Card>
+      <div className="relative overflow-hidden rounded-3xl border border-black/10 bg-[#121212] shadow-[0_20px_55px_rgba(18,18,18,0.16)] transition-all duration-500 group-hover:-translate-y-1 group-hover:shadow-[0_28px_72px_rgba(214,162,30,0.22)] group-hover:border-[#D6A21E]/25">
+        <div className="aspect-[3/4] relative overflow-hidden bg-[#1a1a1a]">
+          <div className="pointer-events-none absolute inset-0 z-10">
+            <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-[#D6A21E]/80 to-transparent" />
+            <div className="absolute inset-x-0 bottom-0 h-px bg-gradient-to-r from-transparent via-white/15 to-transparent" />
+            <div className="absolute inset-0 bg-[radial-gradient(circle_at_80%_0%,rgba(214,162,30,0.18),transparent_42%)]" />
+          </div>
+
+          <div className="absolute top-4 left-4 z-20">
+            <span
+              className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-[#D6A21E]/40 bg-[#121212]/80 text-[#D6A21E] backdrop-blur-md shadow-[0_0_24px_rgba(214,162,30,0.2)]"
+              aria-label="Fulcrum Academy"
+            >
+              <GraduationCap size={16} aria-hidden="true" />
+            </span>
+          </div>
+
+          {a.img ? (
+            <img
+              src={a.img}
+              alt={a.name}
+              className="h-full w-full object-cover object-[50%_20%] transition-transform duration-700 ease-out group-hover:scale-[1.04]"
+              style={{ objectPosition: a.objectPosition || "50% 20%" }}
+              loading="lazy"
+              draggable={false}
+              onError={(e) => {
+                e.currentTarget.style.display = "none";
+                const fb = e.currentTarget.parentElement?.querySelector("[data-fallback]");
+                if (fb) fb.style.display = "grid";
+              }}
+            />
+          ) : null}
+
+          <div
+            data-fallback
+            style={{ display: a.img ? "none" : "grid" }}
+            className="absolute inset-0 z-[1] grid place-items-center"
+          >
+            <div className="absolute inset-0 bg-gradient-to-br from-[#121212] via-[#1c1c1c] to-[#D6A21E]/40" />
+            <div className="absolute inset-0 opacity-[0.12] [background:radial-gradient(rgba(255,255,255,0.35)_1px,transparent_1px)] [background-size:20px_20px]" />
+            <div className="relative z-[1] h-28 w-28 rounded-full bg-white/10 ring-1 ring-[#D6A21E]/35 backdrop-blur-sm grid place-items-center shadow-lg">
+              <span className="text-3xl font-black tracking-tight text-white">
+                {apprenticeInitials(a.name)}
+              </span>
             </div>
-          ))}
+          </div>
+
+          <div className="absolute inset-x-0 bottom-0 h-36 bg-gradient-to-t from-black/85 via-black/45 to-transparent z-10" />
+          <div className="absolute inset-x-0 bottom-0 z-20 p-5 pt-10 bg-black/40 backdrop-blur-md border-t border-white/10 text-center">
+            <div className="mx-auto mb-3 h-px w-12 bg-gradient-to-r from-transparent via-[#D6A21E] to-transparent" />
+            <h4 className="font-black text-lg text-white group-hover:text-[#D6A21E] transition-colors duration-300">
+              {a.name}
+            </h4>
+            <p className="text-sm text-white/75 mt-1">{a.role}</p>
+          </div>
         </div>
       </div>
+    </div>
+  );
+}
 
-      <style>{`
-        .fulcrum-apprentice-marquee {
-          width: max-content;
-          will-change: transform;
-          animation: apprentice-scroll 32s linear infinite;
-          padding: 8px 0;
-        }
-        .fulcrum-apprentice-marquee:hover { animation-duration: 70s; }
-        @keyframes apprentice-scroll {
-          0% { transform: translateX(0); }
-          100% { transform: translateX(-50%); }
-        }
-        @media (prefers-reduced-motion: reduce) {
-          .fulcrum-apprentice-marquee { animation: none; }
-        }
-      `}</style>
+function ApprenticeGrid() {
+  return (
+    <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
+      {apprentices.map((a) => (
+        <ApprenticeCard key={a.name + a.role} apprentice={a} />
+      ))}
     </div>
   );
 }
