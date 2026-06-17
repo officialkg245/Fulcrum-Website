@@ -1478,6 +1478,69 @@ function LinkedInPostSkeleton() {
   );
 }
 
+function ForgeExpertBadge({ className = "", compact = false }) {
+  return (
+    <div className={cx("relative w-fit", className)}>
+      <div
+        className={cx(
+          "pointer-events-none absolute rounded-[2.25rem] opacity-80 blur-2xl",
+          compact ? "-inset-4" : "-inset-6"
+        )}
+        style={{
+          background:
+            "radial-gradient(circle at 50% 50%, rgba(124,58,237,0.42) 0%, rgba(214,162,30,0.18) 42%, transparent 72%)",
+        }}
+      />
+      <div
+        className={cx(
+          "pointer-events-none absolute rounded-[2rem] bg-[#D6A21E]/12 blur-xl",
+          compact ? "-inset-2" : "-inset-3"
+        )}
+      />
+
+      <div
+        className={cx(
+          "relative rounded-[1.75rem] p-[2px] bg-gradient-to-br from-[#D6A21E]/80 via-[#C4B5FD]/70 to-[#7C3AED]/80 shadow-[0_0_42px_rgba(124,58,237,0.35),0_18px_48px_rgba(0,0,0,0.45)]",
+          compact && "rounded-[1.35rem]"
+        )}
+      >
+        <div
+          className={cx(
+            "relative overflow-hidden rounded-[1.65rem] border border-white/15 bg-gradient-to-br from-[#1a1a1a]/95 via-[#121212] to-[#0f0f12]",
+            compact ? "rounded-[1.25rem] px-4 py-4 md:px-5 md:py-5" : "px-5 py-5 md:px-6 md:py-6"
+          )}
+        >
+          <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_50%_0%,rgba(255,255,255,0.12),transparent_55%)]" />
+          <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/35 to-transparent" />
+          <div
+            className={cx(
+              "pointer-events-none absolute -right-8 -top-8 rounded-full bg-[#7C3AED]/20 blur-2xl",
+              compact ? "h-16 w-16" : "h-24 w-24"
+            )}
+          />
+          <div
+            className={cx(
+              "pointer-events-none absolute -left-8 -bottom-8 rounded-full bg-[#D6A21E]/15 blur-2xl",
+              compact ? "h-16 w-16" : "h-24 w-24"
+            )}
+          />
+
+          <img
+            src="/badges/forge-expert.png"
+            alt="Forge Expert certified"
+            className={cx(
+              "relative z-[1] object-contain drop-shadow-[0_10px_28px_rgba(124,58,237,0.55)] transition-transform duration-500 hover:scale-[1.03]",
+              compact ? "h-20 w-20 md:h-28 md:w-28" : "h-28 w-28 md:h-36 md:w-36"
+            )}
+            loading="lazy"
+            draggable={false}
+          />
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function Home() {
   const li = useLinkedInPosts({
     companyId: linkedInCompanyId,
@@ -1555,10 +1618,10 @@ function Home() {
         {/* Bottom bleed into page */}
         <div className="pointer-events-none absolute inset-x-0 bottom-0 h-24 bg-gradient-to-b from-transparent to-[#F3EFE6]" />
 
-        <div className="relative max-w-7xl mx-auto px-6 py-20 sm:py-24 lg:py-28">
-          <div className="grid lg:grid-cols-3 gap-10 items-center">
+        <div className="relative max-w-7xl mx-auto px-6 py-20 sm:py-24 lg:pt-28 lg:pb-6">
+          <div className="grid lg:grid-cols-3 gap-10 items-start">
             {/* Left luxury copy */}
-            <div className="lg:col-span-2">
+            <div className="lg:col-span-2 pt-8 sm:pt-10 lg:pt-11">
               {/* Brand wordmark */}
               <h1 className="mt-5 leading-[1.08] overflow-visible">
                 <span className="inline-block pb-2 text-5xl sm:text-6xl md:text-7xl font-black tracking-tight bg-gradient-to-r from-[#D6A21E] via-[#F2D27A] to-[#D6A21E] text-transparent bg-clip-text">
@@ -1569,12 +1632,15 @@ function Home() {
                 We grow B2B companies’ revenue opportunities through performance-driven sales, outreach, and growth services aligned to your ROI.
               </p>
 
-              <div className="mt-10 flex flex-col sm:flex-row gap-4">
-                <Link to="/consultation">
-                  <Button className="bg-[#D6A21E] text-black hover:bg-[#B88A16] rounded-full px-8 sm:px-12 py-5 sm:py-6 text-lg shadow-[0_0_40px_rgba(214,162,30,0.35)]">
-                    Limited-Time ROI Assessment <ArrowRight className="ml-2" />
-                  </Button>
-                </Link>
+              <div className="mt-10 flex flex-col sm:flex-row sm:items-start gap-4">
+                <div className="flex flex-col items-start gap-6">
+                  <Link to="/consultation">
+                    <Button className="bg-[#D6A21E] text-black hover:bg-[#B88A16] rounded-full px-8 sm:px-12 py-5 sm:py-6 text-lg shadow-[0_0_40px_rgba(214,162,30,0.35)]">
+                      Limited-Time ROI Assessment <ArrowRight className="ml-2" />
+                    </Button>
+                  </Link>
+                  <ForgeExpertBadge compact />
+                </div>
                 <Link to="/case-studies">
                   <Button className="bg-white/10 text-white hover:bg-white/20 rounded-full px-8 sm:px-12 py-5 sm:py-6 text-lg">
                     View our case studies <ArrowRight className="ml-2" />
@@ -1585,7 +1651,7 @@ function Home() {
             </div>
 
             {/* Right glass card */}
-            <div className="relative rounded-3xl border border-white/15 bg-white/8 backdrop-blur-xl p-8 md:p-10 shadow-[0_24px_70px_rgba(0,0,0,0.45)] overflow-hidden">
+            <div className="relative rounded-3xl border border-white/15 bg-white/8 backdrop-blur-xl p-8 md:p-10 shadow-[0_24px_70px_rgba(0,0,0,0.45)] overflow-hidden lg:mt-1 xl:mt-2">
               <div className="pointer-events-none absolute inset-0">
                 <div className="absolute -top-28 -right-28 w-[360px] h-[360px] bg-[#D6A21E]/16 rounded-[84px] blur-[80px]" />
                 <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/18 to-transparent" />
@@ -1655,7 +1721,7 @@ function Home() {
           </div>
         </div>
         {/* Full-bleed marquee */}
-        <div className="mt-14 relative left-1/2 right-1/2 -ml-[50vw] -mr-[50vw] w-screen overflow-hidden">
+        <div className="mt-14 lg:mt-4 relative left-1/2 right-1/2 -ml-[50vw] -mr-[50vw] w-screen overflow-hidden">
           <div className="bg-white/5 border-y border-white/10 backdrop-blur-sm py-6 w-screen overflow-hidden">
             <div className="max-w-7xl mx-auto px-6">
               <div className="flex items-end justify-between gap-6 flex-wrap">
@@ -5658,11 +5724,14 @@ function CaseStudies() {
       {
         slug: "tachyus",
         company: "Tachyus",
+        website: "https://www.tachyus.com",
         industry: "Startups",
+        whoWeServe: "Technology Companies",
         category: "Sales",
         serviceLine: "Fulcrum business development",
         label: "Results",
         description: "Over 100% ROI and new enterprise customers secured.",
+        downloadUrl: "/case-studies/tachyus.pdf",
         image: "/case-study-images/tachyus.png",
         imagePos: "50% 45%",
       },
