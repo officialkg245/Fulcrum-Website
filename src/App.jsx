@@ -2500,6 +2500,7 @@ function About() {
                           src={member.img}
                           alt={member.name}
                           className="h-full w-full object-cover object-[50%_20%] transition-transform duration-500 ease-out group-hover:scale-[1.05]"
+                          style={{ objectPosition: member.objectPosition || "50% 20%" }}
                           loading="lazy"
                           draggable={false}
                           onError={(e) => {
@@ -2508,14 +2509,19 @@ function About() {
                             if (fb) fb.style.display = "grid";
                           }}
                         />
-                      ) : null}
-                      <div
-                        data-fallback
-                        style={{ display: member.img ? "none" : "grid" }}
-                        className="absolute inset-0 grid place-items-center text-black/40"
-                      >
-                        Photo Slot
-                      </div>
+                      ) : (
+                        <div
+                          data-fallback
+                          className="absolute inset-0 grid place-items-center pb-24"
+                        >
+                          <div className="absolute inset-0 bg-gradient-to-br from-[#121212] via-[#1c1c1c] to-[#D6A21E]/35" />
+                          <div className="relative z-[1] h-28 w-28 rounded-full bg-white/10 ring-1 ring-[#D6A21E]/35 backdrop-blur-sm grid place-items-center shadow-lg">
+                            <span className="text-3xl font-black tracking-tight text-white">
+                              {memberInitials(member.name)}
+                            </span>
+                          </div>
+                        </div>
+                      )}
                       {/* readability gradient (no blur) */}
                       <div className="absolute inset-x-0 bottom-0 h-28 bg-gradient-to-t from-black/70 via-black/30 to-transparent" />
                       {/* blur only behind text */}
@@ -2641,6 +2647,15 @@ function About() {
   );
 }
 
+function memberInitials(name = "") {
+  return name
+    .split(" ")
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((w) => w[0]?.toUpperCase())
+    .join("");
+}
+
 const team = [
   {
     name: "Reece Theriot, MBA",
@@ -2680,6 +2695,21 @@ const team = [
     description:
       "Supports day-to-day operations, coordination, and administrative excellence across the team.",
     img: "/team/rinna-delos-reyes.png",
+  },
+  {
+    name: "Christian Merrick",
+    role: "Project Manager",
+    description:
+      "Leads client initiatives and execution cadence to keep projects on track and outcomes measurable.",
+    img: "/team/christian.png",
+    objectPosition: "50% 24%",
+  },
+  {
+    name: "Emanuel Thomas",
+    role: "Project Manager",
+    description:
+      "Coordinates delivery across accounts and helps teams turn strategy into consistent, accountable execution.",
+    img: "",
   },
 ];
 
@@ -9843,23 +9873,31 @@ function ConsultationForm() {
 const apprentices = [
   {
     name: "Keijae Eeves",
-    role: "Social Media Manager",
+    role: "Media Manager",
     img: "/apprentices/keijae.png",
+    objectPosition: "50% 16%",
+    imgScale: 1.14,
   },
   {
     name: "Aaron Simon",
     role: "Project Manager",
     img: "/apprentices/aaron.png",
+    objectPosition: "50% 12%",
+    imgScale: 1.18,
   },
   {
     name: "Jacob McCullars",
-    role: "Brand Ambassador",
+    role: "Project Manager",
     img: "/apprentices/jacob.png",
+    objectPosition: "50% 15%",
+    imgScale: 1.16,
   },
   {
-    name: "Christian Merrick",
-    role: "Project Manager",
-    img: "/apprentices/christian.png",
+    name: "James Williams",
+    role: "Apprentice",
+    img: "/apprentices/james-williams.png",
+    objectPosition: "50% 20%",
+    imgScale: 1.08,
   },
   {
     name: "Joshua Cooper",
@@ -9875,16 +9913,15 @@ const apprentices = [
     name: "Timyra Wilson",
     role: "Apprentice",
     img: "/apprentices/timyra-wilson-v2.png",
+    objectPosition: "50% 18%",
+    imgScale: 1.1,
   },
   {
     name: "Tobin Thevenot",
     role: "Apprentice",
     img: "/apprentices/tobin-thevenot.png",
-  },
-  {
-    name: "Emanuel Thomas",
-    role: "Project Manager",
-    img: "",
+    objectPosition: "50% 18%",
+    imgScale: 1.1,
   },
 ];
 
@@ -9925,8 +9962,12 @@ function ApprenticeCard({ apprentice }) {
             <img
               src={a.img}
               alt={a.name}
-              className="h-full w-full object-cover object-[50%_20%] transition-transform duration-700 ease-out group-hover:scale-[1.04]"
-              style={{ objectPosition: a.objectPosition || "50% 20%" }}
+              className="h-full w-full object-cover contrast-[1.08] brightness-[1.04] saturate-[1.06] transition-transform duration-700 ease-out"
+              style={{
+                objectPosition: a.objectPosition || "50% 18%",
+                transform: `scale(${a.imgScale || 1.12})`,
+                transformOrigin: "50% 22%",
+              }}
               loading="lazy"
               draggable={false}
               onError={(e) => {
