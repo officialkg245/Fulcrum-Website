@@ -2709,7 +2709,32 @@ const team = [
     role: "Project Manager",
     description:
       "Coordinates delivery across accounts and helps teams turn strategy into consistent, accountable execution.",
-    img: "",
+    img: "/team/emanuel.png",
+    objectPosition: "50% 18%",
+  },
+  {
+    name: "Keijae Eeves",
+    role: "Media Manager",
+    description:
+      "Owns media execution and content systems that support Fulcrum’s brand presence and client outreach.",
+    img: "/team/keijae.png",
+    objectPosition: "50% 16%",
+  },
+  {
+    name: "Aaron Simon",
+    role: "Project Manager",
+    description:
+      "Drives project delivery and client coordination so initiatives move from plan to measurable results.",
+    img: "/team/aaron.png",
+    objectPosition: "50% 12%",
+  },
+  {
+    name: "Jacob McCullars",
+    role: "Project Manager",
+    description:
+      "Supports client execution and keeps sales and marketing initiatives organized, paced, and accountable.",
+    img: "/team/jacob.png",
+    objectPosition: "50% 15%",
   },
 ];
 
@@ -9872,27 +9897,6 @@ function ConsultationForm() {
 
 const apprentices = [
   {
-    name: "Keijae Eeves",
-    role: "Media Manager",
-    img: "/apprentices/keijae.png",
-    objectPosition: "50% 16%",
-    imgScale: 1.14,
-  },
-  {
-    name: "Aaron Simon",
-    role: "Project Manager",
-    img: "/apprentices/aaron.png",
-    objectPosition: "50% 12%",
-    imgScale: 1.18,
-  },
-  {
-    name: "Jacob McCullars",
-    role: "Project Manager",
-    img: "/apprentices/jacob.png",
-    objectPosition: "50% 15%",
-    imgScale: 1.16,
-  },
-  {
     name: "James Williams",
     role: "Apprentice",
     img: "/apprentices/james-williams.png",
@@ -9908,20 +9912,6 @@ const apprentices = [
     name: "Kirstianna Bounds",
     role: "Apprentice",
     img: "",
-  },
-  {
-    name: "Timyra Wilson",
-    role: "Apprentice",
-    img: "/apprentices/timyra-wilson-v2.png",
-    objectPosition: "50% 18%",
-    imgScale: 1.1,
-  },
-  {
-    name: "Tobin Thevenot",
-    role: "Apprentice",
-    img: "/apprentices/tobin-thevenot.png",
-    objectPosition: "50% 18%",
-    imgScale: 1.1,
   },
 ];
 
